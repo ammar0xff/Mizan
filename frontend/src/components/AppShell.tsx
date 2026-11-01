@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Building2, Clock, LogOut, Menu, Moon, Scale, Search, Settings, ShieldCheck, ShoppingCart, Sun, UserRound } from "lucide-react";
+import { Building2, Clock, LogOut, Menu, Moon, Scale, Search, Settings, ShieldCheck, ShoppingCart, Sun, UserRound, Blocks } from "lucide-react";
 import { api } from "@/lib/api";
 import { NAV_GROUPS, NAV_ITEMS, type NavItem } from "@/lib/nav";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/stores/auth";
+import { useModulesStore } from "@/stores/modules";
 import { Avatar, AvatarFallback } from "@/components/kit/avatar";
 import { Badge } from "@/components/kit/badge";
 import { Button } from "@/components/kit/button";
@@ -42,10 +43,12 @@ export function useBranch() {
 function AppSidebar({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = useLocation().pathname;
   const { can, tenant } = useAuth();
+  const { hasModule, activePreset, presets } = useModulesStore();
+  const currentPreset = presets.find((p) => p.id === activePreset);
   const tenantTrialEnds = tenant?.trial_ends_at
     ? new Intl.DateTimeFormat("ar-EG-u-nu-latn", { day: "numeric", month: "long" }).format(new Date(tenant.trial_ends_at))
     : "";
-  const visible = NAV_ITEMS.filter((n) => !n.perm || can(n.perm));
+  const visible = NAV_ITEMS.filter((n) => (!n.perm || can(n.perm)) && (!n.module || hasModule(n.module)));
   const groups = (Object.keys(NAV_GROUPS) as NavItem["group"][])
     .map((g) => ({ id: g, label: NAV_GROUPS[g], items: visible.filter((n) => n.group === g) }))
     .filter((g) => g.items.length > 0);
@@ -57,7 +60,14 @@ function AppSidebar({ onNavigate }: { onNavigate?: () => void }) {
           <Scale className="size-5" aria-hidden />
         </span>
         <div className="flex flex-col leading-tight">
-          <span className="font-bold">ميزان</span>
+          <div className="flex items-center gap-1.5">
+            <span className="font-bold">ميزان</span>
+            {currentPreset && (
+              <span className="rounded bg-sidebar-primary/20 px-1.5 py-0.5 text-[9px] font-bold text-sidebar-primary">
+                {currentPreset.name.split(" ")[0]}
+              </span>
+            )}
+          </div>
           <span className="truncate text-xs text-sidebar-foreground/60">{tenant?.name ?? "مساحة العمل"}</span>
         </div>
       </div>
@@ -91,18 +101,33 @@ function AppSidebar({ onNavigate }: { onNavigate?: () => void }) {
       </nav>
       {/* Pinned quick access footer for compact displays */}
       <div className="shrink-0 border-t border-sidebar-border bg-sidebar/95 p-3 backdrop-blur">
-        <div className="mb-2 flex items-center justify-between gap-1.5">
+        <div className="mb-2 flex items-center justify-between gap-1">
+          {can("settings") && (
+            <Link
+              to="/modules"
+              onClick={onNavigate}
+              className={cn(
+                "flex flex-1 items-center justify-center gap-1 rounded-md py-1.5 text-[11px] font-medium transition hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                pathname.startsWith("/modules") ? "bg-sidebar-accent text-sidebar-accent-foreground font-semibold" : "text-sidebar-foreground/70"
+              )}
+              title="سوق الوحدات والأنشطة"
+            >
+              <Blocks className="size-3" />
+              <span>الوحدات</span>
+            </Link>
+          )}
+
           {can("settings") && (
             <Link
               to="/settings"
               onClick={onNavigate}
               className={cn(
-                "flex flex-1 items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-medium transition hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                "flex flex-1 items-center justify-center gap-1 rounded-md py-1.5 text-[11px] font-medium transition hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                 pathname.startsWith("/settings") ? "bg-sidebar-accent text-sidebar-accent-foreground font-semibold" : "text-sidebar-foreground/70"
               )}
               title="إعدادات المتجر والنظام"
             >
-              <Settings className="size-3.5" />
+              <Settings className="size-3" />
               <span>الإعدادات</span>
             </Link>
           )}
@@ -112,12 +137,12 @@ function AppSidebar({ onNavigate }: { onNavigate?: () => void }) {
               to="/users"
               onClick={onNavigate}
               className={cn(
-                "flex flex-1 items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-medium transition hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                "flex flex-1 items-center justify-center gap-1 rounded-md py-1.5 text-[11px] font-medium transition hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                 pathname.startsWith("/users") ? "bg-sidebar-accent text-sidebar-accent-foreground font-semibold" : "text-sidebar-foreground/70"
               )}
               title="المستخدمون والصلاحيات"
             >
-              <ShieldCheck className="size-3.5" />
+              <ShieldCheck className="size-3" />
               <span>المستخدمون</span>
             </Link>
           )}
@@ -319,6 +344,12 @@ export default function Shell() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const pathname = useLocation().pathname;
+  const fetchModules = useModulesStore((s) => s.fetchModules);
+
+  useEffect(() => {
+    fetchModules();
+  }, [fetchModules]);
+
   useHotkeySearch(() => setSearchOpen(true));
 
   return (

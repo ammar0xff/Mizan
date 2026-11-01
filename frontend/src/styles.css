@@ -211,6 +211,10 @@ button, [role="button"], a, input, select, textarea {
   display: inline-block;
 }
 
+td.num, th.num {
+  display: table-cell;
+}
+
 /* ── Density variables (default: compact terminal) ── */
 :root {
   --density-row-h: 2.25rem;

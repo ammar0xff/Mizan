@@ -24,6 +24,7 @@ from app.api.routers import (
     suppliers,
     users,
     wallets,
+    modules,
 )
 from app.api.routers import collections as collections_router
 from app.api.routers import export as export_router
@@ -62,4 +63,5 @@ router.include_router(periods.router)
 router.include_router(export_router.router)
 router.include_router(notifications.router)
 router.include_router(updater_router.router)
+router.include_router(modules.router)
 

@@ -16,6 +16,9 @@ const InventoryPage = lazy(() => import("@/features/inventory/InventoryPage"));
 const ReportsPage = lazy(() => import("@/features/reports/ReportsPage"));
 const ArchivePage = lazy(() => import("@/features/archive/ArchivePage"));
 const OperationsPage = lazy(() => import("@/features/operations/OperationsPage"));
+const ModulesPage = lazy(() => import("@/features/modules/ModulesPage"));
+const RestaurantTablesPage = lazy(() => import("@/features/restaurant/RestaurantTablesPage"));
+const SchoolStudentsPage = lazy(() => import("@/features/school/SchoolStudentsPage"));
 import { Link, Navigate, Route, Routes } from "react-router-dom";
 import LandingPage from "@/features/marketing/LandingPage";
 import PricingPage from "@/features/marketing/PricingPage";
@@ -23,6 +26,7 @@ import SignupPage from "@/features/marketing/SignupPage";
 import OnboardingWizard from "@/features/marketing/OnboardingWizard";
 import { Lock } from "lucide-react";
 import { useAuth } from "@/stores/auth";
+import { useModulesStore } from "@/stores/modules";
 import { NAV_ITEMS } from "@/lib/nav";
 import { Button } from "@/components/kit/button";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/kit/empty";
@@ -33,11 +37,32 @@ function Page({ children }: { children: React.ReactNode }) {
   return <Suspense fallback={<div className="grid place-items-center p-16"><span className="h-6 w-6 animate-spin rounded-full border-2 border-brand border-t-transparent" /></div>}>{children}</Suspense>;
 }
 
-function Guard({ perm, children }: { perm: string; children: React.ReactNode }) {
+function Guard({ perm, module, children }: { perm: string; module?: string; children: React.ReactNode }) {
   const { token, user, can } = useAuth();
+  const hasModule = useModulesStore((s) => s.hasModule);
   if (!token || !user) return <Navigate to="/login" replace />;
+  if (module && !hasModule(module)) {
+    return (
+      <Empty className="mx-auto mt-16 max-w-md border border-dashed">
+        <EmptyHeader>
+          <EmptyMedia variant="icon">
+            <Lock />
+          </EmptyMedia>
+          <EmptyTitle>الوحدة غير مفعّلة في منشأتك</EmptyTitle>
+          <EmptyDescription>
+            هذه الشاشة تتطلب تفعيل وحدة متخصصة لمجال عملك. يمكنك تفعيلها فوراً بنقرة واحدة من مركز الوحدات والتطبيقات.
+          </EmptyDescription>
+        </EmptyHeader>
+        <EmptyContent>
+          <Button nativeButton={false} render={<Link to="/modules" />}>
+            الانتقال إلى مركز الوحدات والتطبيقات
+          </Button>
+        </EmptyContent>
+      </Empty>
+    );
+  }
   if (perm && !can(perm)) {
-    const fallback = NAV_ITEMS.find((n) => !n.perm || can(n.perm));
+    const fallback = NAV_ITEMS.find((n) => (!n.perm || can(n.perm)) && (!n.module || hasModule(n.module)));
     return (
       <Empty className="mx-auto mt-16 max-w-md border border-dashed">
         <EmptyHeader>
@@ -105,6 +130,10 @@ export default function App() {
         <Route path="/reports" element={<Guard perm="reports"><ReportsPage /></Guard>} />
         <Route path="/users" element={<Guard perm="users"><UsersPage /></Guard>} />
         <Route path="/settings" element={<Guard perm="settings"><SettingsPage /></Guard>} />
+        <Route path="/modules" element={<Guard perm=""><ModulesPage /></Guard>} />
+        <Route path="/restaurant/tables" element={<Guard perm="" module="restaurant"><RestaurantTablesPage /></Guard>} />
+        <Route path="/restaurant/kitchen" element={<Guard perm="" module="restaurant"><RestaurantTablesPage /></Guard>} />
+        <Route path="/school/students" element={<Guard perm="" module="school"><SchoolStudentsPage /></Guard>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

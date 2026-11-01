@@ -1,0 +1,142 @@
+import { create } from "zustand";
+import { api } from "@/lib/api";
+import { sound } from "@/lib/sound";
+
+export interface ModuleManifest {
+  id: string;
+  name: string;
+  name_en: string;
+  category: string;
+  version: string;
+  icon: string;
+  description: string;
+  dependencies: string[];
+  is_core: boolean;
+  is_installed: boolean;
+  badge?: string | null;
+}
+
+export interface BusinessPreset {
+  id: string;
+  name: string;
+  name_en: string;
+  icon: string;
+  badge: string;
+  description: string;
+  modules: string[];
+}
+
+interface ModulesState {
+  activePreset: string;
+  activeModules: string[];
+  catalog: ModuleManifest[];
+  presets: BusinessPreset[];
+  isLoaded: boolean;
+  isLoading: boolean;
+  fetchModules: () => Promise<void>;
+  hasModule: (moduleId: string) => boolean;
+  applyPreset: (presetId: string) => Promise<boolean>;
+  toggleModule: (moduleId: string, enabled: boolean) => Promise<boolean>;
+}
+
+const DEFAULT_ACTIVE = ["core", "inventory", "pos", "finance", "hr"];
+
+export const useModulesStore = create<ModulesState>((set, get) => ({
+  activePreset: localStorage.getItem("vendora.active_preset") || "retail",
+  activeModules: (() => {
+    try {
+      const saved = localStorage.getItem("vendora.active_modules");
+      return saved ? JSON.parse(saved) : DEFAULT_ACTIVE;
+    } catch {
+      return DEFAULT_ACTIVE;
+    }
+  })(),
+  catalog: [],
+  presets: [],
+  isLoaded: false,
+  isLoading: false,
+
+  fetchModules: async () => {
+    try {
+      set({ isLoading: true });
+      const data = await api.get<{
+        active_preset: string;
+        active_modules: string[];
+        catalog: ModuleManifest[];
+        presets: BusinessPreset[];
+      }>("/modules");
+
+      localStorage.setItem("vendora.active_preset", data.active_preset);
+      localStorage.setItem("vendora.active_modules", JSON.stringify(data.active_modules));
+
+      set({
+        activePreset: data.active_preset,
+        activeModules: data.active_modules,
+        catalog: data.catalog,
+        presets: data.presets,
+        isLoaded: true,
+        isLoading: false,
+      });
+    } catch {
+      set({ isLoading: false });
+    }
+  },
+
+  hasModule: (moduleId: string) => {
+    if (!moduleId || moduleId === "core") return true;
+    return get().activeModules.includes(moduleId);
+  },
+
+  applyPreset: async (presetId: string) => {
+    try {
+      sound.click();
+      const res = await api.post<{
+        detail: string;
+        active_preset: string;
+        active_modules: string[];
+      }>("/modules/presets/apply", { preset_id: presetId });
+
+      sound.success();
+      localStorage.setItem("vendora.active_preset", res.active_preset);
+      localStorage.setItem("vendora.active_modules", JSON.stringify(res.active_modules));
+
+      set((state) => ({
+        activePreset: res.active_preset,
+        activeModules: res.active_modules,
+        catalog: state.catalog.map((m) => ({
+          ...m,
+          is_installed: res.active_modules.includes(m.id),
+        })),
+      }));
+      return true;
+    } catch (e) {
+      sound.error();
+      return false;
+    }
+  },
+
+  toggleModule: async (moduleId: string, enabled: boolean) => {
+    try {
+      sound.click();
+      const res = await api.post<{
+        detail: string;
+        active_modules: string[];
+      }>(`/modules/${moduleId}/toggle`, { enabled });
+
+      sound.success();
+      localStorage.setItem("vendora.active_modules", JSON.stringify(res.active_modules));
+
+      set((state) => ({
+        activeModules: res.active_modules,
+        catalog: state.catalog.map((m) => ({
+          ...m,
+          is_installed: res.active_modules.includes(m.id),
+        })),
+      }));
+      return true;
+    } catch (e) {
+      sound.error();
+      throw e;
+    }
+  },
+}));
