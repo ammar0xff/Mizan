@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Building2, Clock, LogOut, Menu, Moon, Scale, Search, Sun, UserRound } from "lucide-react";
+import { Building2, Clock, LogOut, Menu, Moon, Scale, Search, ShoppingCart, Sun, UserRound } from "lucide-react";
 import { api } from "@/lib/api";
 import { NAV_GROUPS, NAV_ITEMS, type NavItem } from "@/lib/nav";
 import { cn } from "@/lib/utils";
@@ -17,6 +17,9 @@ import { Sheet, SheetContent, SheetTitle } from "@/components/kit/sheet";
 import { PageTransition } from "@/components/motion";
 import { dateTime } from "@/lib/format";
 import { CommandPalette, TrialBanner, useHotkeySearch } from "@/components/shell-parts";
+import { useUiStore } from "@/stores/ui";
+import { sound } from "@/lib/sound";
+import { Kbd } from "@/components/kit/kbd";
 
 interface Warehouse {
   id: string;
@@ -107,6 +110,7 @@ function AppTopbar({ onOpenMenu, onOpenSearch }: { onOpenMenu: () => void; onOpe
   const navigate = useNavigate();
   const { user, tenant, logout } = useAuth();
   const { warehouses, branchId, branchName, setBranchId } = useBranch();
+  const { density, toggleDensity, soundMuted, toggleSound } = useUiStore();
 
   const shift = useQuery({
     queryKey: ["shift", "topbar", branchId],
@@ -117,27 +121,43 @@ function AppTopbar({ onOpenMenu, onOpenSearch }: { onOpenMenu: () => void; onOpe
   });
 
   function toggleTheme() {
+    sound.click();
     const dark = document.documentElement.classList.toggle("dark");
     localStorage.setItem("vendora.theme", dark ? "dark" : "light");
   }
 
+  // Global F2 shortcut to jump to POS from any screen
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "F2" && window.location.pathname !== "/pos") {
+        e.preventDefault();
+        sound.click();
+        navigate("/pos");
+      }
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [navigate]);
+
   return (
-    <header className="no-print sticky top-0 z-30 flex h-16 items-center gap-2 border-b bg-background/90 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/75 md:px-6">
+    <header className="no-print sticky top-0 z-30 flex h-14 items-center gap-2 border-b border-border/80 bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/80 md:px-6 dark:border-white/10">
       <Button variant="ghost" size="icon" className="lg:hidden" onClick={onOpenMenu} aria-label="فتح القائمة">
-        <Menu />
+        <Menu className="size-4" />
       </Button>
 
+      {/* Branch selector with tactile badge */}
       <DropdownMenu>
-        <DropdownMenuTrigger render={<Button variant="outline" size="sm" />}>
-          <Building2 data-icon="inline-start" />
-          <span className="max-w-32 truncate">{branchName}</span>
+        <DropdownMenuTrigger render={<Button variant="outline" size="sm" className="h-8 gap-2 px-2.5 font-medium" />}>
+          <Building2 className="size-3.5 text-primary" data-icon="inline-start" />
+          <span className="max-w-32 truncate text-xs">{branchName}</span>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="w-52">
+        <DropdownMenuContent align="start" className="w-56">
           <DropdownMenuGroup>
-            <DropdownMenuLabel>الفرع الحالي</DropdownMenuLabel>
+            <DropdownMenuLabel>الفروع والمخازن</DropdownMenuLabel>
             <DropdownMenuRadioGroup
               value={branchId ?? ""}
               onValueChange={(v) => {
+                sound.click();
                 localStorage.setItem("vendora.branch", String(v));
                 setBranchId(String(v));
               }}
@@ -152,62 +172,106 @@ function AppTopbar({ onOpenMenu, onOpenSearch }: { onOpenMenu: () => void; onOpe
         </DropdownMenuContent>
       </DropdownMenu>
 
+      {/* Active Shift Indicator */}
       <Link to="/shifts" className="hidden sm:block">
         {shift.data ? (
-          <Badge variant="success" className="h-7 gap-1.5 px-2.5">
-            <span className="size-1.5 rounded-full bg-success" aria-hidden />
-            وردية مفتوحة · <span className="num">{dateTime(shift.data.started_at)}</span>
+          <Badge variant="success" className="h-6 gap-1.5 px-2 text-[11px] font-semibold">
+            <span className="size-1.5 animate-pulse rounded-full bg-emerald-500" aria-hidden />
+            وردية نشطة · <span className="num">{dateTime(shift.data.started_at)}</span>
           </Badge>
         ) : (
-          <Badge variant="secondary" className="h-7 gap-1.5 px-2.5">
-            <Clock className="size-3" aria-hidden />
-            لا توجد وردية
+          <Badge variant="secondary" className="h-6 gap-1.5 px-2 text-[11px]">
+            <Clock className="size-3 text-muted-foreground" aria-hidden />
+            بدون وردية
           </Badge>
         )}
       </Link>
 
-      <div className="ms-auto flex items-center gap-1">
+      <div className="ms-auto flex items-center gap-1.5">
+        {/* Quick F2 POS Jump */}
+        <Link
+          to="/pos"
+          onClick={() => sound.click()}
+          className="hidden md:inline-flex items-center gap-1.5 rounded-md border border-primary/30 bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary transition hover:bg-primary/20"
+        >
+          <ShoppingCart className="size-3.5" />
+          <span>نقطة البيع</span>
+          <Kbd className="border-primary/20 bg-primary/15 text-primary">F2</Kbd>
+        </Link>
+
+        {/* Search Command Palette Trigger */}
         <button
           onClick={onOpenSearch}
-          className="hidden h-9 items-center gap-2 rounded-md border border-input bg-card px-3 text-sm text-muted-foreground transition hover:bg-accent md:flex md:w-64"
+          className="hidden h-8 items-center gap-2 rounded-md border border-input bg-card px-2.5 text-xs text-muted-foreground transition hover:border-foreground/30 hover:bg-accent md:flex md:w-56"
           aria-label="بحث شامل (Ctrl+K)"
         >
-          <Search className="size-4" aria-hidden />
-          <span className="flex-1 text-start">ابحث أو انتقل…</span>
-          <kbd className="rounded border bg-muted px-1.5 py-0.5 text-[10px]">Ctrl K</kbd>
+          <Search className="size-3.5" aria-hidden />
+          <span className="flex-1 text-start">ابحث أو أمر…</span>
+          <Kbd>⌘K</Kbd>
         </button>
-        <Button variant="ghost" size="icon" className="md:hidden" onClick={onOpenSearch} aria-label="بحث شامل">
-          <Search />
-        </Button>
-        <Button variant="ghost" size="icon" aria-label="تبديل الوضع الليلي" onClick={toggleTheme}>
-          <Sun className="dark:hidden" />
-          <Moon className="hidden dark:block" />
+        <Button variant="ghost" size="icon" className="h-8 w-8 md:hidden" onClick={onOpenSearch} aria-label="بحث شامل">
+          <Search className="size-4" />
         </Button>
 
+        {/* View Density Switcher */}
+        <button
+          onClick={toggleDensity}
+          title={density === "compact" ? "التحويل للوضع المريح" : "التحويل لوضع الكثافة العالية"}
+          className="flex h-8 items-center gap-1 rounded-md border border-border/80 px-2 text-xs font-medium text-muted-foreground transition hover:bg-accent hover:text-foreground"
+        >
+          <span className="font-mono text-[10px] uppercase font-bold tracking-wider">
+            {density === "compact" ? "كثيف" : "مريح"}
+          </span>
+        </button>
+
+        {/* Audio Feedback Toggle */}
+        <button
+          onClick={toggleSound}
+          title={soundMuted ? "تفعيل الأصوات التفاعلية" : "كتم الأصوات"}
+          className={`flex h-8 w-8 items-center justify-center rounded-md border border-border/80 transition hover:bg-accent ${
+            soundMuted ? "text-muted-foreground" : "text-primary"
+          }`}
+        >
+          <span className="sr-only">الأصوات</span>
+          {soundMuted ? (
+            <span className="font-mono text-[11px] opacity-60">🔇</span>
+          ) : (
+            <span className="font-mono text-[11px]">🔔</span>
+          )}
+        </button>
+
+        {/* Theme Toggle */}
+        <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="تبديل الوضع الليلي" onClick={toggleTheme}>
+          <Sun className="size-4 dark:hidden" />
+          <Moon className="size-4 hidden dark:block" />
+        </Button>
+
+        {/* User Menu */}
         <DropdownMenu>
-          <DropdownMenuTrigger render={<Button variant="ghost" className="h-10 gap-2 px-2" />} aria-label="قائمة المستخدم">
-            <Avatar className="size-8">
-              <AvatarFallback>{(user?.full_name ?? "؟").split(" ")[0].slice(0, 2)}</AvatarFallback>
+          <DropdownMenuTrigger render={<Button variant="ghost" className="h-8 gap-2 px-1.5" />} aria-label="قائمة المستخدم">
+            <Avatar className="size-7">
+              <AvatarFallback className="text-xs font-semibold">{(user?.full_name ?? "؟").split(" ")[0].slice(0, 2)}</AvatarFallback>
             </Avatar>
             <span className="hidden flex-col items-start leading-tight md:flex">
-              <span className="text-sm font-medium">{user?.full_name}</span>
-              <span className="text-xs text-muted-foreground">{tenant?.plan === "trial" ? "تجربة مجانية" : tenant?.name ?? user?.role}</span>
+              <span className="text-xs font-medium">{user?.full_name}</span>
+              <span className="text-[10px] text-muted-foreground">{tenant?.plan === "trial" ? "تجربة مجانية" : tenant?.name ?? user?.role}</span>
             </span>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuGroup>
               <DropdownMenuItem onClick={() => navigate("/settings")}>
-                <UserRound />
+                <UserRound className="size-4" />
                 الإعدادات
               </DropdownMenuItem>
               <DropdownMenuItem
                 variant="destructive"
                 onClick={() => {
+                  sound.click();
                   logout();
                   navigate("/login", { replace: true });
                 }}
               >
-                <LogOut />
+                <LogOut className="size-4" />
                 تسجيل الخروج
               </DropdownMenuItem>
             </DropdownMenuGroup>

@@ -198,6 +198,72 @@ body {
   display: inline-block;
 }
 
+/* ── Density variables (default: compact terminal) ── */
+:root {
+  --density-row-h: 2.25rem;
+  --density-table-py: 0.35rem;
+  --density-table-px: 0.75rem;
+  --density-ctrl-h: 2.25rem;
+  --density-gap: 1rem;
+}
+
+html[data-density="comfortable"] {
+  --density-row-h: 2.75rem;
+  --density-table-py: 0.625rem;
+  --density-table-px: 1rem;
+  --density-ctrl-h: 2.5rem;
+  --density-gap: 1.5rem;
+}
+
+/* ── Precision Terminal surfaces & borders ── */
+.precision-surface {
+  background: var(--card);
+  border: 1px solid var(--border);
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.04);
+}
+
+.dark .precision-surface {
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.4), inset 0 1px 0 0 rgb(255 255 255 / 0.05);
+}
+
+.precision-glass {
+  background: color-mix(in oklab, var(--card) 85%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+}
+
+.dark .precision-glass {
+  background: color-mix(in oklab, var(--card) 75%, transparent);
+  border: 1px solid color-mix(in oklab, var(--border) 60%, white 8%);
+  box-shadow: inset 0 1px 0 0 rgb(255 255 255 / 0.08);
+}
+
+/* Receipt ticket slip with dashed perforation & tear edge */
+.receipt-paper {
+  background: var(--card);
+  border: 1px solid var(--border);
+  position: relative;
+  box-shadow: 0 4px 20px -2px rgb(0 0 0 / 0.06);
+}
+
+.dark .receipt-paper {
+  box-shadow: 0 8px 24px -4px rgb(0 0 0 / 0.5), inset 0 1px 0 0 rgb(255 255 255 / 0.06);
+}
+
+.receipt-perforation {
+  background-image: repeating-linear-gradient(to right, var(--border) 0, var(--border) 6px, transparent 6px, transparent 12px);
+  height: 1px;
+}
+
+/* Tactile button active click spring */
+.tactile-btn {
+  transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.08s ease;
+}
+.tactile-btn:active:not(:disabled) {
+  transform: scale(0.975);
+}
+
 /* Slim quiet scrollbars matching the palette in both themes */
 * {
   scrollbar-width: thin;

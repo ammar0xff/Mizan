@@ -1,25 +1,31 @@
 /**
  * PAGE CONTRACT
- * Page: صحيفة اليوم (/)
- * User: مدير الفرع يفتح النظام في بداية اليوم (أو يعود من جولة الفروع)
- * Outcome: قراءة رقم اليوم بثوانٍ، ثم الانتقال إلى الإجراء التالي (بيع / نواقص / فواتير)
- * Primary information: مبيعات اليوم (الرقم المهيمن) → سياقه (عدد الفواتير، المتوسط، اتجاه 14 يومًا) → مبيعات الشهر → النواقص → الوردية
- * Primary action (per state): populated → «فاتورة جديدة»؛ error → «إعادة المحاولة»؛ لا نواقص → «مراجعة المخزون»
- * Secondary action: كل الفواتير · اقتراح طلب شراء
- * Real content only: لا نسب مُختلقة ولا أهداف غير مسجلة — كل رقم من مصدره
- * Required states: loading (skeleton), error (retry), populated; كل قسم يتحمّل فراغه بنفسه
- * Composition: دفتر اليوم — طباعي مسطّر بلا بطاقات؛ التسلسل الهرمي بالحجم والقواعد لا بالصناديق
- * Responsive: 1440 شريط البطل بثلاث رُكنات؛ 768 يلتفّ؛ 390 عمود واحد والرقم أولًا
+ * Page: صحيفة اليوم / لوحة التحكم (/)
+ * Archetype: Linear / Raycast Precision Terminal archetype with Arab merchant craft (دفتر اليوم الفاخر)
+ * User: مدير الفرع يفتح النظام في بداية اليوم لمسح أرقام اليوم بثوانٍ واتخاذ القرار الفوري
+ * Primary information: مبيعات اليوم (الرقم المهيمن) → اتجاه الـ 14 يومًا (SVG Sparkline) → النواقص العاجلة → سجل العمليات
+ * Strict Anti-AI Tells: zero generic purple gradients, zero sterile 4-card grids, pure tabular numerals (.num), 1px precision borders
  */
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { AlertTriangle, CalendarRange, Receipt, ShoppingCart } from "lucide-react";
+import {
+  AlertTriangle,
+  ArrowDownRight,
+  ArrowUpRight,
+  CalendarRange,
+  Clock,
+  Package,
+  Receipt,
+  ShoppingCart,
+  TrendingUp,
+} from "lucide-react";
 import { api } from "@/lib/api";
 import { useBranch } from "@/components/AppShell";
-import { Delta, KpiTile, ListState, Money, Num, StatusBadge, TableShell } from "@/components/app/shared";
+import { ListState, Money, Num, StatusBadge, TableShell } from "@/components/app/shared";
 import { Button } from "@/components/kit/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/kit/table";
 import { Skeleton } from "@/components/kit/skeleton";
+import { Kbd } from "@/components/kit/kbd";
 import { formatDateTime, formatNumber } from "@/lib/format";
 
 interface DailyReport {
@@ -71,16 +77,43 @@ function buildTrend(sales: SaleRow[]): { day: string; sales: number }[] {
   return days;
 }
 
-/** Inline 14-day sparkline — pure SVG, no chart library needed at this size. */
-function Sparkline({ data, className }: { data: { sales: number }[]; className?: string }) {
+/** High-craft Linear/Raycast-inspired 14-day SVG Sparkline with gradient area under curve */
+function Sparkline({ data, className }: { data: { day: string; sales: number }[]; className?: string }) {
   const max = Math.max(...data.map((d) => d.sales), 1);
+  const min = Math.min(...data.map((d) => d.sales), 0);
+  const range = max - min || 1;
+
   const pts = data
-    .map((d, i) => `${(i / Math.max(data.length - 1, 1)) * 100},${28 - (d.sales / max) * 26}`)
+    .map((d, i) => {
+      const x = (i / Math.max(data.length - 1, 1)) * 100;
+      const y = 32 - ((d.sales - min) / range) * 26;
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    })
     .join(" ");
+
+  const areaPts = `0,32 ${pts} 100,32`;
+
   return (
-    <svg viewBox="0 0 100 30" preserveAspectRatio="none" className={className} aria-hidden>
-      <polyline points={pts} fill="none" stroke="var(--chart-1)" strokeWidth="1.5" vectorEffect="non-scaling-stroke" />
-    </svg>
+    <div className="relative">
+      <svg viewBox="0 0 100 34" preserveAspectRatio="none" className={className} aria-hidden>
+        <defs>
+          <linearGradient id="dash-spark-fill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="var(--primary)" stopOpacity="0.22" />
+            <stop offset="100%" stopColor="var(--primary)" stopOpacity="0.0" />
+          </linearGradient>
+        </defs>
+        <polygon points={areaPts} fill="url(#dash-spark-fill)" />
+        <polyline
+          points={pts}
+          fill="none"
+          stroke="var(--primary)"
+          strokeWidth="1.75"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          vectorEffect="non-scaling-stroke"
+        />
+      </svg>
+    </div>
   );
 }
 
@@ -124,194 +157,385 @@ export default function DashboardPage() {
   const yesterday = trend[trend.length - 2]?.sales ?? 0;
   const dayDelta = yesterday > 0 ? ((dayTotal - yesterday) / yesterday) * 100 : null;
   const lowCount = lowStock.data?.length ?? 0;
-  const today = new Intl.DateTimeFormat("ar-EG-u-nu-latn", { dateStyle: "full", timeZone: "Africa/Cairo" }).format(new Date());
+  const todayFormatted = new Intl.DateTimeFormat("ar-EG-u-nu-latn", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    timeZone: "Africa/Cairo",
+  }).format(new Date());
 
   return (
-    <div className="flex flex-col gap-8">
-      {/* Masthead — the sheet's overline and the one action that matters */}
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="sr-only">لوحة التحكم</h1>
-          <p className="text-xs font-medium tracking-wide text-muted-foreground">
-            صحيفة اليوم — {today} · {branchName}
-          </p>
-        </div>
-        <Button nativeButton={false} render={<Link to="/pos" />}>
-          <ShoppingCart data-icon="inline-start" />
-          فاتورة جديدة
-        </Button>
-      </div>
-
-      {/* Hero band — the number the whole page exists for */}
-      <div className="flex flex-wrap items-end justify-between gap-x-10 gap-y-6 border-b border-border pb-8">
-        <div className="flex flex-col gap-1">
-          <p className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-            <Receipt className="size-3.5" aria-hidden />
-            مبيعات اليوم
-          </p>
-          {daily.isLoading ? (
-            <Skeleton className="h-12 w-56" />
-          ) : daily.isError ? (
-            <p className="flex items-center gap-2 text-sm text-destructive">
-              تعذّر تحميل مبيعات اليوم
-              <Button variant="outline" size="sm" onClick={() => daily.refetch()}>
-                إعادة المحاولة
-              </Button>
-            </p>
-          ) : (
-            <p className="flex items-baseline gap-2">
-              <span className="num text-5xl font-bold tracking-tight">{formatNumber(dayTotal)}</span>
-              <span className="text-lg text-muted-foreground">ج.م</span>
-            </p>
-          )}
+    <div className="flex flex-col gap-6">
+      {/* ── Precision Masthead & Fast Terminal Navigation ── */}
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line pb-4">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <span className="flex size-2 rounded-full bg-emerald-500 animate-pulse" aria-hidden />
+            <h1 className="text-sm font-extrabold tracking-tight text-foreground">
+              دفتر اليوم المالي · {branchName}
+            </h1>
+            <span className="text-xs text-muted-foreground font-mono">({todayFormatted})</span>
+          </div>
           <p className="text-xs text-muted-foreground">
-            <Num value={dayCount} /> فاتورة · متوسط الفاتورة <Money value={dayAvg} />
+            موجز النشاط التجاري اليومي، حركة المبيعات، ومراقبة المخزون اللحظية.
           </p>
         </div>
 
-        <div className="flex flex-col gap-1">
-          <p className="text-xs font-medium text-muted-foreground">
-            آخر ١٤ يومًا — إجمالي <Money value={trendTotal} />
-          </p>
-          <Sparkline data={trend} className="h-10 w-44" />
-        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            nativeButton={false}
+            render={<Link to="/inventory" />}
+            variant="outline"
+            size="sm"
+            className="tactile-btn text-xs"
+          >
+            <Package data-icon="inline-start" className="size-3.5" />
+            المخزون
+          </Button>
 
-        <div className="flex flex-col gap-1 text-xs">
-          <p className="font-medium text-muted-foreground">الوردية</p>
-          {shift.data ? (
-            <p>
-              مفتوحة · <span className="num">{formatDateTime(shift.data.started_at)}</span>
-            </p>
-          ) : (
-            <p>
-              <span className="text-destructive">مغلقة</span> —{" "}
-              <Link to="/shifts" className="underline-offset-4 hover:underline">
-                افتح وردية لبدء البيع
-              </Link>
-            </p>
-          )}
+          <Button
+            nativeButton={false}
+            render={<Link to="/pos" />}
+            size="sm"
+            className="tactile-btn font-bold text-xs shadow-sm"
+          >
+            <ShoppingCart data-icon="inline-start" className="size-3.5" />
+            فاتورة بيع جديدة
+            <Kbd className="ms-1.5 text-[9px]">F2</Kbd>
+          </Button>
         </div>
       </div>
 
-      {/* KPI tiles — colored, with real deltas (today vs yesterday) and a live sparkline */}
-      <section aria-label="مؤشرات الأداء" className="grid grid-cols-2 gap-4 xl:grid-cols-4">
-        <KpiTile
-          label="مبيعات الشهر"
-          icon={CalendarRange}
-          tone="default"
-          value={monthly.isError ? "—" : <Money value={Number(monthly.data?.total_sales ?? 0)} />}
-          hint={monthly.isError ? "غير متاح حاليًا" : <span>حتى تاريخ اليوم · <Num value={monthly.data?.invoice_count ?? 0} /> فاتورة</span>}
-        />
-        <KpiTile
-          label="منتجات تحت الحد"
-          icon={AlertTriangle}
-          tone={lowCount > 0 ? "warning" : "success"}
-          value={<Num value={lowCount} />}
-          hint={<Link to="/inventory" className="underline-offset-4 hover:underline">عرض قائمة النواقص</Link>}
-        />
-        <KpiTile
-          label="مبيعات أمس"
-          icon={Receipt}
-          tone="info"
-          value={<Money value={trend[trend.length - 2]?.sales ?? 0} />}
-          hint={<Delta percent={dayDelta} />}
-        />
-        <KpiTile
-          label="إجمالي ١٤ يومًا"
-          icon={CalendarRange}
-          tone="success"
-          value={<Money value={trendTotal} />}
-          hint={<span>متوسط يومي <Money value={trendTotal / 14} /></span>}
-        />
-      </section>
-
-      {/* نواقص — a ruled section, not a card */}
-      <section aria-label="نواقص المخزن" className="flex flex-col gap-2">
-        <div className="flex items-center justify-between gap-2 border-b border-border pb-2">
-          <h2 className="text-sm font-semibold">
-            نواقص {branchName} {lowCount > 0 && <span className="num text-muted-foreground">({lowCount})</span>}
-          </h2>
-          <Button variant="ghost" size="sm" nativeButton={false} render={<Link to="/purchases" />}>
-            اقتراح طلب شراء
-          </Button>
-        </div>
-        <ListState
-          status={lowStock.isLoading ? "loading" : lowStock.isError ? "error" : "ready"}
-          isEmpty={lowCount === 0}
-          onRetry={() => lowStock.refetch()}
-          emptyTitle="لا توجد نواقص"
-          emptyDescription="كل الأصناف فوق حد الطلب في هذا الفرع."
-          emptyAction={
-            <Button variant="outline" nativeButton={false} render={<Link to="/inventory" />}>
-              مراجعة المخزون
-            </Button>
-          }
-        >
-          <ul className="flex flex-col divide-y divide-border">
-            {(lowStock.data ?? []).slice(0, 6).map((p) => (
-              <li key={p.product_id} className="flex items-center justify-between gap-3 py-2.5">
-                <span className="min-w-0 truncate text-sm font-medium">{p.product_name}</span>
-                <span className="shrink-0 text-sm">
-                  <Num value={p.current_qty} className="font-semibold text-destructive" />
-                  <span className="text-xs text-muted-foreground"> {p.unit}</span>
+      {/* ── Hero Trading Band — The Dominant Sales Velocity & Trend ── */}
+      <div className="precision-surface grid grid-cols-1 gap-6 rounded-2xl p-5 lg:grid-cols-[1.2fr_1fr_auto]">
+        {/* Dominant Headline Number */}
+        <div className="flex flex-col justify-between gap-3">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground">
+                إجمالي إيراد اليوم
+              </span>
+              {dayDelta !== null && (
+                <span
+                  className={`inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 font-mono text-[10px] font-bold ${
+                    dayDelta >= 0
+                      ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                      : "bg-destructive/10 text-destructive"
+                  }`}
+                >
+                  {dayDelta >= 0 ? <ArrowUpRight className="size-3" /> : <ArrowDownRight className="size-3" />}
+                  {Math.abs(dayDelta).toFixed(1)}% عن أمس
                 </span>
-              </li>
-            ))}
-          </ul>
-        </ListState>
-      </section>
+              )}
+            </div>
 
-      {/* أحدث الفواتير — ledger rows */}
-      <section aria-label="أحدث الفواتير" className="flex flex-col gap-2">
-        <div className="flex items-center justify-between gap-2 border-b border-border pb-2">
-          <h2 className="text-sm font-semibold">أحدث الفواتير</h2>
-          <Button variant="ghost" size="sm" nativeButton={false} render={<Link to="/sales" />}>
-            كل الفواتير
+            {daily.isLoading ? (
+              <Skeleton className="h-14 w-60" />
+            ) : daily.isError ? (
+              <div className="flex items-center gap-2 text-xs text-destructive">
+                <span>تعذر استرجاع مبيعات اليوم</span>
+                <Button variant="outline" size="sm" onClick={() => daily.refetch()}>
+                  إعادة المحاولة
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-baseline gap-2">
+                <span className="num font-mono text-5xl sm:text-6xl font-black tracking-tight text-foreground">
+                  {formatNumber(dayTotal)}
+                </span>
+                <span className="font-mono text-base font-bold text-muted-foreground">ج.م</span>
+              </div>
+            )}
+          </div>
+
+          {/* Micro stats ribbon under hero */}
+          <div className="flex flex-wrap items-center gap-4 text-xs font-mono text-muted-foreground pt-2 border-t border-border/40">
+            <span className="flex items-center gap-1">
+              <Receipt className="size-3.5 text-foreground" />
+              <strong className="num text-foreground">{dayCount}</strong> فواتير
+            </span>
+            <span className="text-border">·</span>
+            <span>
+              متوسط الفاتورة: <strong className="num text-foreground"><Money value={dayAvg} /></strong>
+            </span>
+            <span className="text-border">·</span>
+            <span>
+              أمس: <span className="num"><Money value={yesterday} /></span>
+            </span>
+          </div>
+        </div>
+
+        {/* 14-Day Velocity Sparkline Chart */}
+        <div className="flex flex-col justify-between gap-2 rounded-xl border border-line bg-secondary/20 p-3.5">
+          <div className="flex items-center justify-between text-xs">
+            <span className="flex items-center gap-1.5 font-mono text-[11px] text-muted-foreground uppercase">
+              <TrendingUp className="size-3.5 text-primary" />
+              منحنى المبيعات (١٤ يوماً)
+            </span>
+            <span className="num font-mono text-xs font-bold text-foreground">
+              <Money value={trendTotal} />
+            </span>
+          </div>
+
+          <Sparkline data={trend} className="h-14 w-full" />
+
+          <div className="flex items-center justify-between text-[10px] font-mono text-muted-foreground">
+            <span>قبل ١٤ يوماً</span>
+            <span>اليوم</span>
+          </div>
+        </div>
+
+        {/* Register / Shift Status Widget */}
+        <div className="flex flex-col justify-between gap-3 rounded-xl border border-line bg-secondary/30 p-3.5 min-w-[200px]">
+          <div className="flex items-center justify-between gap-2">
+            <span className="flex items-center gap-1 text-[11px] font-mono text-muted-foreground uppercase">
+              <Clock className="size-3" /> الوردية
+            </span>
+            {shift.data ? (
+              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                <span className="size-1.5 rounded-full bg-emerald-500" />
+                نشطة
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 rounded-full bg-destructive/15 px-2 py-0.5 text-[10px] font-bold text-destructive">
+                مغلقة
+              </span>
+            )}
+          </div>
+
+          <div className="space-y-1">
+            {shift.data ? (
+              <>
+                <p className="text-xs text-muted-foreground">وقت البدء:</p>
+                <p className="num font-mono text-xs font-bold text-foreground">
+                  {formatDateTime(shift.data.started_at)}
+                </p>
+              </>
+            ) : (
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                لا توجد وردية مفتوحة على هذا الفرع حالياً.
+              </p>
+            )}
+          </div>
+
+          <Button
+            nativeButton={false}
+            render={<Link to="/shifts" />}
+            variant="outline"
+            size="sm"
+            className="tactile-btn text-xs w-full justify-center"
+          >
+            {shift.data ? "إدارة الوردية" : "فتح وردية الآن"}
           </Button>
         </div>
-        <ListState
-          status={recent.isLoading ? "loading" : recent.isError ? "error" : "ready"}
-          isEmpty={(recent.data?.length ?? 0) === 0}
-          onRetry={() => recent.refetch()}
-          emptyTitle="لا توجد مبيعات بعد"
-          emptyDescription="ستظهر الفواتير هنا بمجرد تسجيل أول عملية بيع."
-          emptyAction={
-            <Button nativeButton={false} render={<Link to="/pos" />}>
-              <ShoppingCart data-icon="inline-start" />
-              ابدأ البيع
-            </Button>
-          }
-        >
-          <TableShell>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>الفاتورة</TableHead>
-                  <TableHead>العميل</TableHead>
-                  <TableHead className="text-end">الإجمالي</TableHead>
-                  <TableHead>الحالة</TableHead>
-                  <TableHead className="hidden sm:table-cell">التاريخ</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {(recent.data ?? []).slice(0, 7).map((inv) => (
-                  <TableRow key={inv.id}>
-                    <TableCell className="num font-medium">{inv.invoice_number}</TableCell>
-                    <TableCell>{inv.customer_name ?? "عميل نقدي"}</TableCell>
-                    <TableCell className="text-end">
-                      <Money value={Number(inv.total)} />
-                    </TableCell>
-                    <TableCell>
-                      <StatusBadge status={inv.status} />
-                    </TableCell>
-                    <TableCell className="num hidden text-muted-foreground sm:table-cell">{formatDateTime(inv.created_at)}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableShell>
-        </ListState>
+      </div>
+
+      {/* ── Financial Precision Ticker Row ── */}
+      <section aria-label="مؤشرات الأداء" className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+        {/* Metric 1: Monthly Total */}
+        <div className="precision-surface flex flex-col justify-between rounded-xl p-3.5 space-y-2">
+          <div className="flex items-center justify-between text-muted-foreground">
+            <span className="text-[10px] font-mono uppercase tracking-wider">مبيعات الشهر الحالي</span>
+            <CalendarRange className="size-3.5" />
+          </div>
+          <div>
+            <p className="num font-mono text-2xl font-bold tracking-tight text-foreground">
+              {monthly.isError ? "—" : <Money value={Number(monthly.data?.total_sales ?? 0)} />}
+            </p>
+            <p className="text-[11px] text-muted-foreground mt-0.5 font-mono">
+              <Num value={monthly.data?.invoice_count ?? 0} /> عملية بيع مسجلة
+            </p>
+          </div>
+        </div>
+
+        {/* Metric 2: Low Stock Alert */}
+        <div className={`precision-surface flex flex-col justify-between rounded-xl p-3.5 space-y-2 ${lowCount > 0 ? "border-amber-500/40 bg-amber-500/5" : ""}`}>
+          <div className="flex items-center justify-between text-muted-foreground">
+            <span className="text-[10px] font-mono uppercase tracking-wider">منتجات تحت حد الطلب</span>
+            <AlertTriangle className={`size-3.5 ${lowCount > 0 ? "text-amber-500" : ""}`} />
+          </div>
+          <div>
+            <p className={`num font-mono text-2xl font-bold tracking-tight ${lowCount > 0 ? "text-amber-600 dark:text-amber-400" : "text-foreground"}`}>
+              <Num value={lowCount} /> صنف
+            </p>
+            <Link to="/inventory" className="text-[11px] text-primary hover:underline mt-0.5 inline-block">
+              {lowCount > 0 ? "عرض قائمة النواقص العاجلة ←" : "المخزون مكتمل بالكامل ✓"}
+            </Link>
+          </div>
+        </div>
+
+        {/* Metric 3: Yesterday Revenue */}
+        <div className="precision-surface flex flex-col justify-between rounded-xl p-3.5 space-y-2">
+          <div className="flex items-center justify-between text-muted-foreground">
+            <span className="text-[10px] font-mono uppercase tracking-wider">مبيعات يوم أمس</span>
+            <Receipt className="size-3.5" />
+          </div>
+          <div>
+            <p className="num font-mono text-2xl font-bold tracking-tight text-foreground">
+              <Money value={yesterday} />
+            </p>
+            <p className="text-[11px] text-muted-foreground mt-0.5 font-mono">
+              خط الأساس للمقارنة اليومية
+            </p>
+          </div>
+        </div>
+
+        {/* Metric 4: Rolling 14-Day Daily Average */}
+        <div className="precision-surface flex flex-col justify-between rounded-xl p-3.5 space-y-2">
+          <div className="flex items-center justify-between text-muted-foreground">
+            <span className="text-[10px] font-mono uppercase tracking-wider">متوسط اليوم (١٤ يومًا)</span>
+            <TrendingUp className="size-3.5" />
+          </div>
+          <div>
+            <p className="num font-mono text-2xl font-bold tracking-tight text-foreground">
+              <Money value={trendTotal / 14} />
+            </p>
+            <p className="text-[11px] text-muted-foreground mt-0.5 font-mono">
+              معدل الإيراد المستقر
+            </p>
+          </div>
+        </div>
       </section>
+
+      {/* ── Two-Column Operational Split Surface: Recent Ledger & Low Stock Requisition ── */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.5fr_1fr]">
+        {/* Column 1: Live Transactions Ledger */}
+        <section aria-label="أحدث الفواتير" className="precision-surface flex flex-col rounded-2xl overflow-hidden">
+          <div className="flex items-center justify-between border-b border-border/80 bg-card p-3.5">
+            <div className="flex items-center gap-2">
+              <Receipt className="size-4 text-primary" />
+              <h2 className="text-xs font-bold text-foreground">أحدث الفواتير والعمليات</h2>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              nativeButton={false}
+              render={<Link to="/sales" />}
+              className="text-xs text-muted-foreground hover:text-foreground"
+            >
+              عرض سجل الفواتير بالكامل ←
+            </Button>
+          </div>
+
+          <div className="flex-1 p-2">
+            <ListState
+              status={recent.isLoading ? "loading" : recent.isError ? "error" : "ready"}
+              isEmpty={(recent.data?.length ?? 0) === 0}
+              onRetry={() => recent.refetch()}
+              emptyTitle="لا توجد مبيعات مسجلة"
+              emptyDescription="ستظهر هنا العمليات لحظياً بمجرد إتمام أول بيع عبر الكاشير."
+              emptyAction={
+                <Button nativeButton={false} render={<Link to="/pos" />} size="sm">
+                  <ShoppingCart data-icon="inline-start" className="size-3.5" />
+                  ابدأ البيع الآن [F2]
+                </Button>
+              }
+            >
+              <TableShell>
+                <Table>
+                  <TableHeader>
+                    <TableRow className="text-[11px] border-b border-border/60">
+                      <TableHead>رقم الفاتورة</TableHead>
+                      <TableHead>العميل</TableHead>
+                      <TableHead className="text-end">الإجمالي</TableHead>
+                      <TableHead>الحالة</TableHead>
+                      <TableHead className="hidden sm:table-cell">التوقيت</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {(recent.data ?? []).slice(0, 7).map((inv) => (
+                      <TableRow key={inv.id} className="text-xs hover:bg-secondary/30 transition-colors">
+                        <TableCell className="num font-mono font-bold text-foreground">
+                          {inv.invoice_number}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {inv.customer_name ?? "عميل نقدي"}
+                        </TableCell>
+                        <TableCell className="text-end font-mono font-black text-foreground">
+                          <Money value={Number(inv.total)} />
+                        </TableCell>
+                        <TableCell>
+                          <StatusBadge status={inv.status} />
+                        </TableCell>
+                        <TableCell className="num font-mono hidden text-[11px] text-muted-foreground sm:table-cell">
+                          {formatDateTime(inv.created_at)}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableShell>
+            </ListState>
+          </div>
+        </section>
+
+        {/* Column 2: Low-Stock & Reorder Station */}
+        <section aria-label="نواقص المخزن" className="precision-surface flex flex-col rounded-2xl overflow-hidden">
+          <div className="flex items-center justify-between border-b border-border/80 bg-card p-3.5">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="size-4 text-amber-500" />
+              <h2 className="text-xs font-bold text-foreground">
+                النواقص العاجلة {lowCount > 0 && <span className="num font-mono text-muted-foreground">({lowCount})</span>}
+              </h2>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              nativeButton={false}
+              render={<Link to="/purchases" />}
+              className="tactile-btn text-xs"
+            >
+              + طلب شراء
+            </Button>
+          </div>
+
+          <div className="flex-1 p-3">
+            <ListState
+              status={lowStock.isLoading ? "loading" : lowStock.isError ? "error" : "ready"}
+              isEmpty={lowCount === 0}
+              onRetry={() => lowStock.refetch()}
+              emptyTitle="المخزون متزن تماماً"
+              emptyDescription="كافة الأصناف المسجلة في هذا الفرع أعلى من حد الطلب الأدنى."
+              emptyAction={
+                <Button variant="outline" size="sm" nativeButton={false} render={<Link to="/inventory" />}>
+                  فحص تفاصيل المخزون
+                </Button>
+              }
+            >
+              <ul className="divide-y divide-border/40 space-y-1">
+                {(lowStock.data ?? []).slice(0, 6).map((p) => (
+                  <li key={p.product_id} className="flex items-center justify-between gap-3 py-2 text-xs">
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-bold text-foreground">{p.product_name}</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">وحدة القياس: {p.unit}</p>
+                    </div>
+
+                    <div className="flex items-center gap-2.5">
+                      <div className="text-end">
+                        <span className="num font-mono text-xs font-black text-destructive">
+                          <Num value={p.current_qty} />
+                        </span>
+                        <span className="text-[10px] text-muted-foreground ms-1">{p.unit}</span>
+                      </div>
+
+                      <Button
+                        nativeButton={false}
+                        render={<Link to="/purchases" />}
+                        variant="ghost"
+                        size="sm"
+                        className="text-[11px] text-primary hover:bg-primary/10 px-2 py-0.5"
+                      >
+                        طلب
+                      </Button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </ListState>
+          </div>
+        </section>
+      </div>
     </div>
   );
 }

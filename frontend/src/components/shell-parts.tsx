@@ -1,9 +1,13 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Receipt, Search, ShoppingCart } from "lucide-react";
+import { ArrowLeft, Boxes, Clock, Plus, Receipt, Search, ShoppingCart, Users } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/lib/api";
 import { useAuth } from "@/stores/auth";
 import { NAV_ITEMS } from "@/lib/nav";
 import { Dialog, DialogContent, DialogTitle } from "@/components/kit/dialog";
+import { Kbd } from "@/components/kit/kbd";
+import { sound } from "@/lib/sound";
 
 /* ── Ctrl+K global hotkey ─────────────────────────────────────── */
 export function useHotkeySearch(open: () => void) {
@@ -11,6 +15,7 @@ export function useHotkeySearch(open: () => void) {
     function onKey(e: KeyboardEvent) {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
+        sound.click();
         open();
       }
     }
@@ -38,78 +43,270 @@ export function TrialBanner() {
   );
 }
 
-/* ── Ctrl+K command palette — navigate + one-tap actions ──────── */
+interface SearchProduct {
+  id: string;
+  name: string;
+  code: string | null;
+  barcode: string | null;
+  retail_price: string;
+}
+
+interface SearchCustomer {
+  id: string;
+  name: string;
+  balance: string;
+}
+
+interface PaletteAction {
+  id: string;
+  label: string;
+  hint?: string;
+  kbd?: string;
+  group: "action" | "nav" | "product" | "customer";
+  icon: React.ReactNode;
+  run: () => void;
+}
+
+/* ── Precision Raycast/Linear Command Palette ──────────────────── */
 export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
   const { can } = useAuth();
   const nav = useNavigate();
   const [q, setQ] = useState("");
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  const actions = useMemo(() => {
-    const items: { label: string; hint: string; run: () => void; icon: React.ReactNode }[] = [
-      { label: "فاتورة جديدة", hint: "نقطة البيع", icon: <ShoppingCart className="size-4" />, run: () => nav("/pos") },
-      { label: "كل الفواتير", hint: "المبيعات", icon: <Receipt className="size-4" />, run: () => nav("/sales") },
+  // Live queries when user searches 2+ chars
+  const trimmed = q.trim();
+  const shouldSearchLive = trimmed.length >= 2;
+
+  const { data: searchProducts } = useQuery({
+    queryKey: ["cmd-products", trimmed],
+    queryFn: () => api.get<{ items: SearchProduct[] }>("/products", { search: trimmed, page_size: 5 }),
+    enabled: open && shouldSearchLive,
+    staleTime: 10_000,
+  });
+
+  const { data: searchCustomers } = useQuery({
+    queryKey: ["cmd-customers", trimmed],
+    queryFn: () => api.get<SearchCustomer[]>("/customers", { search: trimmed }),
+    enabled: open && shouldSearchLive,
+    staleTime: 10_000,
+  });
+
+  // Static actions and navigation
+  const staticItems = useMemo<PaletteAction[]>(() => {
+    const list: PaletteAction[] = [
+      {
+        id: "act-new-sale",
+        label: "فاتورة بيع جديدة",
+        hint: "نقطة البيع السريعة",
+        kbd: "F2",
+        group: "action",
+        icon: <ShoppingCart className="size-4 text-primary" />,
+        run: () => nav("/pos"),
+      },
+      {
+        id: "act-new-product",
+        label: "إضافة صنف جديد",
+        hint: "الكتالوج",
+        kbd: "N",
+        group: "action",
+        icon: <Plus className="size-4 text-emerald-500" />,
+        run: () => nav("/products"),
+      },
+      {
+        id: "act-new-shift",
+        label: "إدارة وردية الصندوق",
+        hint: "الورديات والخزائن",
+        kbd: "S",
+        group: "action",
+        icon: <Clock className="size-4 text-amber-500" />,
+        run: () => nav("/shifts"),
+      },
+      {
+        id: "act-sales-log",
+        label: "سجل الفواتير والمردودات",
+        hint: "المبيعات",
+        kbd: "V",
+        group: "action",
+        icon: <Receipt className="size-4 text-sky-500" />,
+        run: () => nav("/sales"),
+      },
     ];
+
     for (const n of NAV_ITEMS) {
       if (n.perm && !can(n.perm)) continue;
-      items.push({
-        label: n.label, hint: n.to === "/" ? "الرئيسية" : n.to.replace("/", ""),
-        icon: <n.icon className="size-4" />,
+      list.push({
+        id: `nav-${n.to}`,
+        label: n.label,
+        hint: n.to === "/" ? "صحيفة اليوم" : n.to.replace("/", ""),
+        group: "nav",
+        icon: <n.icon className="size-4 text-muted-foreground" />,
         run: () => nav(n.to === "/" ? "/" : n.to),
       });
     }
-    return items;
+    return list;
   }, [can, nav]);
 
-  const filtered = useMemo(() => {
-    const query = q.trim();
-    if (!query) return actions.slice(0, 9);
-    return actions.filter((a) => a.label.includes(query) || a.hint.includes(query)).slice(0, 9);
-  }, [actions, q]);
+  // Combine static and live search results
+  const allResults = useMemo<PaletteAction[]>(() => {
+    let items = staticItems;
+    if (trimmed) {
+      items = staticItems.filter((i) => i.label.includes(trimmed) || (i.hint && i.hint.includes(trimmed)));
+    }
+
+    const dynamicItems: PaletteAction[] = [];
+
+    // Add matching products
+    if (searchProducts?.items && searchProducts.items.length > 0) {
+      for (const p of searchProducts.items) {
+        dynamicItems.push({
+          id: `prod-${p.id}`,
+          label: p.name,
+          hint: `${p.retail_price} ج.م ${p.barcode ? `· ${p.barcode}` : ""}`,
+          group: "product",
+          icon: <Boxes className="size-4 text-indigo-400" />,
+          run: () => nav(`/products?search=${encodeURIComponent(p.name)}`),
+        });
+      }
+    }
+
+    // Add matching customers
+    if (Array.isArray(searchCustomers) && searchCustomers.length > 0) {
+      for (const c of searchCustomers.slice(0, 4)) {
+        dynamicItems.push({
+          id: `cust-${c.id}`,
+          label: c.name,
+          hint: `رصيد: ${c.balance} ج.م`,
+          group: "customer",
+          icon: <Users className="size-4 text-teal-400" />,
+          run: () => nav(`/customers`),
+        });
+      }
+    }
+
+    return [...dynamicItems, ...items].slice(0, 14);
+  }, [staticItems, trimmed, searchProducts, searchCustomers, nav]);
 
   useEffect(() => {
-    if (open) setQ("");
+    if (open) {
+      setQ("");
+      setSelectedIndex(0);
+      setTimeout(() => inputRef.current?.focus(), 40);
+    }
   }, [open]);
 
-  function pick(a: { run: () => void }) {
+  useEffect(() => {
+    setSelectedIndex(0);
+  }, [q]);
+
+  function executeItem(item: PaletteAction) {
+    sound.click();
     onOpenChange(false);
-    a.run();
+    item.run();
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent) {
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setSelectedIndex((idx) => (idx + 1) % Math.max(1, allResults.length));
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setSelectedIndex((idx) => (idx - 1 + allResults.length) % Math.max(1, allResults.length));
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      if (allResults[selectedIndex]) {
+        executeItem(allResults[selectedIndex]);
+      }
+    } else if (e.key === "Escape") {
+      onOpenChange(false);
+    }
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="top-[15%] translate-y-0 gap-0 p-0 sm:max-w-lg" showCloseButton={false}>
-        <DialogTitle className="sr-only">بحث وانتقال سريع</DialogTitle>
-        <div className="flex items-center gap-2 border-b px-4">
-          <Search className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+      <DialogContent
+        className="top-[12%] translate-y-0 gap-0 overflow-hidden border border-border/80 bg-card p-0 shadow-2xl sm:max-w-xl dark:border-white/10 dark:bg-card/95 dark:backdrop-blur-xl"
+        showCloseButton={false}
+      >
+        <DialogTitle className="sr-only">لوحة الأوامر السريعة</DialogTitle>
+
+        {/* Input Bar */}
+        <div className="flex h-14 items-center gap-3 border-b border-border/60 px-4">
+          <Search className="size-5 shrink-0 text-muted-foreground/70" aria-hidden />
           <input
-            autoFocus
+            ref={inputRef}
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && filtered[0]) pick(filtered[0]);
-            }}
-            placeholder="ابحث عن شاشة أو نفّذ إجراء…"
-            aria-label="بحث"
-            className="h-12 w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+            onKeyDown={handleKeyDown}
+            placeholder="اكتب أمرًا، ابحث عن صنف، عميل، أو شاشة…"
+            aria-label="لوحة الأوامر"
+            className="h-full w-full bg-transparent text-sm font-medium outline-none placeholder:text-muted-foreground/60"
           />
-        </div>
-        <ul className="max-h-80 overflow-y-auto p-2" role="listbox">
-          {filtered.length === 0 && (
-            <li className="px-3 py-6 text-center text-sm text-muted-foreground">لا نتائج لـ «{q}»</li>
+          {q && (
+            <button
+              onClick={() => setQ("")}
+              className="rounded px-1.5 py-0.5 text-xs text-muted-foreground hover:text-foreground"
+            >
+              مسح
+            </button>
           )}
-          {filtered.map((a) => (
-            <li key={a.label + a.hint}>
-              <button
-                onClick={() => pick(a)}
-                className="flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-sm transition hover:bg-accent"
-              >
-                <span className="text-muted-foreground">{a.icon}</span>
-                <span className="flex-1 text-start">{a.label}</span>
-                <span className="text-xs text-muted-foreground">{a.hint}</span>
-              </button>
-            </li>
-          ))}
-        </ul>
+          <Kbd className="hidden sm:inline-flex">ESC</Kbd>
+        </div>
+
+        {/* Results List */}
+        <div className="max-h-96 overflow-y-auto p-2" role="listbox">
+          {allResults.length === 0 ? (
+            <div className="py-10 text-center">
+              <p className="text-sm text-muted-foreground">لا توجد نتائج مطابقة لـ «{q}»</p>
+              <p className="mt-1 text-xs text-muted-foreground/60">جرّب البحث باسم الصنف، كود الباركود، أو الشاشة</p>
+            </div>
+          ) : (
+            <ul className="flex flex-col gap-0.5">
+              {allResults.map((item, idx) => {
+                const isSelected = idx === selectedIndex;
+                return (
+                  <li key={item.id}>
+                    <button
+                      onClick={() => executeItem(item)}
+                      onMouseEnter={() => setSelectedIndex(idx)}
+                      className={`flex w-full items-center gap-3 rounded-md px-3 py-2 text-start text-sm transition-colors ${
+                        isSelected
+                          ? "bg-accent text-accent-foreground font-medium shadow-xs"
+                          : "text-foreground/80 hover:bg-muted/50"
+                      }`}
+                    >
+                      <span className="shrink-0">{item.icon}</span>
+                      <span className="flex-1 truncate">{item.label}</span>
+                      {item.hint && (
+                        <span className="text-xs text-muted-foreground font-normal truncate max-w-[200px]">
+                          {item.hint}
+                        </span>
+                      )}
+                      {item.kbd && <Kbd>{item.kbd}</Kbd>}
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+
+        {/* Terminal Footer Legend */}
+        <div className="flex h-10 items-center justify-between border-t border-border/60 bg-muted/30 px-4 text-[11px] text-muted-foreground">
+          <div className="flex items-center gap-3 font-mono">
+            <span>
+              <Kbd className="me-1">↑↓</Kbd> للتنقل
+            </span>
+            <span>
+              <Kbd className="me-1">↵</Kbd> للاختيار
+            </span>
+            <span>
+              <Kbd className="me-1">ESC</Kbd> للإغلاق
+            </span>
+          </div>
+          <span className="font-semibold text-primary/80">ميزان · لوحة القيادة السريعة</span>
+        </div>
       </DialogContent>
     </Dialog>
   );
