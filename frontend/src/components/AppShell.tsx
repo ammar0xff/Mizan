@@ -42,6 +42,7 @@ import { useUiStore } from "@/stores/ui";
 import { sound } from "@/lib/sound";
 import { Kbd } from "@/components/kit/kbd";
 import { AppearanceSettingsModal } from "@/components/AppearanceSettingsModal";
+import { useTenantNav } from "@/lib/tenant";
 
 interface Warehouse {
   id: string;
@@ -63,9 +64,9 @@ export function useBranch() {
 
 /* ── 1. Classic Full Sidebar (Tree View) ── */
 function AppSidebar({ onNavigate }: { onNavigate?: () => void }) {
-  const pathname = useLocation().pathname;
   const { can, tenant } = useAuth();
   const { hasModule, activePreset, presets } = useModulesStore();
+  const { tenantTo, isPathActive } = useTenantNav();
   const currentPreset = presets.find((p) => p.id === activePreset);
   const tenantTrialEnds = tenant?.trial_ends_at
     ? new Intl.DateTimeFormat("ar-EG-u-nu-latn", { day: "numeric", month: "long" }).format(new Date(tenant.trial_ends_at))
@@ -77,34 +78,38 @@ function AppSidebar({ onNavigate }: { onNavigate?: () => void }) {
 
   return (
     <div className="flex h-full flex-col bg-sidebar text-sidebar-foreground border-e border-sidebar-border">
-      <div className="flex h-16 items-center gap-3 border-b border-sidebar-border px-5">
+      <Link
+        to={tenantTo("/")}
+        onClick={onNavigate}
+        className="flex h-16 items-center gap-3 border-b border-sidebar-border px-5 transition hover:bg-sidebar-accent/50"
+      >
         <span className="flex size-9 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground font-bold">
           <Scale className="size-5" aria-hidden />
         </span>
         <div className="flex flex-col leading-tight">
           <div className="flex items-center gap-1.5">
-            <span className="font-bold">ميزان</span>
+            <span className="font-bold">{tenant?.name ?? "ميزان"}</span>
             {currentPreset && (
               <span className="rounded bg-sidebar-primary/20 px-1.5 py-0.5 text-[9px] font-bold text-sidebar-primary">
                 {currentPreset.name.split(" ")[0]}
               </span>
             )}
           </div>
-          <span className="truncate text-xs text-sidebar-foreground/60">{tenant?.name ?? "مساحة العمل"}</span>
+          <span className="truncate text-xs text-sidebar-foreground/60">{tenant?.slug ? `/${tenant.slug}` : "مساحة العمل"}</span>
         </div>
-      </div>
+      </Link>
       <nav aria-label="القائمة الرئيسية" className="flex-1 overflow-y-auto px-3 py-4">
         <div className="flex flex-col gap-5">
           {groups.map((group) => (
             <div key={group.id} className="flex flex-col gap-1">
               <p className="px-3 pb-1 text-[11px] font-medium text-sidebar-foreground/50">{group.label}</p>
               {group.items.map((item) => {
-                const active = item.to === "/" ? pathname === "/" : pathname === item.to || pathname.startsWith(`${item.to}/`);
+                const active = isPathActive(item.to);
                 const Icon = item.icon;
                 return (
                   <Link
                     key={item.to}
-                    to={item.to}
+                    to={tenantTo(item.to)}
                     onClick={onNavigate}
                     aria-current={active ? "page" : undefined}
                     className={cn(
@@ -126,11 +131,11 @@ function AppSidebar({ onNavigate }: { onNavigate?: () => void }) {
         <div className="mb-2 flex items-center justify-between gap-1">
           {can("settings") && (
             <Link
-              to="/modules"
+              to={tenantTo("/modules")}
               onClick={onNavigate}
               className={cn(
                 "flex flex-1 items-center justify-center gap-1 rounded-md py-1.5 text-[11px] font-medium transition hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-                pathname.startsWith("/modules") ? "bg-sidebar-accent text-sidebar-accent-foreground font-semibold" : "text-sidebar-foreground/70"
+                isPathActive("/modules") ? "bg-sidebar-accent text-sidebar-accent-foreground font-semibold" : "text-sidebar-foreground/70"
               )}
               title="سوق الوحدات والأنشطة"
             >
@@ -141,11 +146,11 @@ function AppSidebar({ onNavigate }: { onNavigate?: () => void }) {
 
           {can("settings") && (
             <Link
-              to="/settings"
+              to={tenantTo("/settings")}
               onClick={onNavigate}
               className={cn(
                 "flex flex-1 items-center justify-center gap-1 rounded-md py-1.5 text-[11px] font-medium transition hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-                pathname.startsWith("/settings") ? "bg-sidebar-accent text-sidebar-accent-foreground font-semibold" : "text-sidebar-foreground/70"
+                isPathActive("/settings") ? "bg-sidebar-accent text-sidebar-accent-foreground font-semibold" : "text-sidebar-foreground/70"
               )}
               title="إعدادات المتجر والنظام"
             >
@@ -156,11 +161,11 @@ function AppSidebar({ onNavigate }: { onNavigate?: () => void }) {
 
           {can("users") && (
             <Link
-              to="/users"
+              to={tenantTo("/users")}
               onClick={onNavigate}
               className={cn(
                 "flex flex-1 items-center justify-center gap-1 rounded-md py-1.5 text-[11px] font-medium transition hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-                pathname.startsWith("/users") ? "bg-sidebar-accent text-sidebar-accent-foreground font-semibold" : "text-sidebar-foreground/70"
+                isPathActive("/users") ? "bg-sidebar-accent text-sidebar-accent-foreground font-semibold" : "text-sidebar-foreground/70"
               )}
               title="المستخدمون والصلاحيات"
             >
@@ -188,9 +193,9 @@ function AppSidebar({ onNavigate }: { onNavigate?: () => void }) {
 
 /* ── 2. Compact Icon Rail (High-Density Screen Real Estate) ── */
 function AppRail({ onNavigate }: { onNavigate?: () => void }) {
-  const pathname = useLocation().pathname;
   const { can } = useAuth();
   const { hasModule } = useModulesStore();
+  const { tenantTo, isPathActive } = useTenantNav();
   const setAppearanceModalOpen = useUiStore((s) => s.setAppearanceModalOpen);
 
   const visible = NAV_ITEMS.filter((n) => (!n.perm || can(n.perm)) && (!n.module || hasModule(n.module)));
@@ -199,7 +204,7 @@ function AppRail({ onNavigate }: { onNavigate?: () => void }) {
     <div className="flex h-full w-16 flex-col items-center bg-sidebar text-sidebar-foreground border-e border-sidebar-border py-3">
       {/* Brand Icon */}
       <Link
-        to="/"
+        to={tenantTo("/")}
         className="mb-4 flex size-10 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground font-bold shadow-xs transition hover:scale-105"
         title="ميزان ERP"
       >
@@ -209,12 +214,12 @@ function AppRail({ onNavigate }: { onNavigate?: () => void }) {
       {/* Nav Icons */}
       <nav className="flex flex-1 flex-col items-center gap-1.5 overflow-y-auto px-2">
         {visible.map((item) => {
-          const active = item.to === "/" ? pathname === "/" : pathname === item.to || pathname.startsWith(`${item.to}/`);
+          const active = isPathActive(item.to);
           const Icon = item.icon;
           return (
             <Link
               key={item.to}
-              to={item.to}
+              to={tenantTo(item.to)}
               onClick={onNavigate}
               title={item.label}
               className={cn(
@@ -246,9 +251,9 @@ function AppRail({ onNavigate }: { onNavigate?: () => void }) {
 
 /* ── 3. Horizontal Top Navigation Bar (ERP Menu Bar) ── */
 function AppTopNav() {
-  const pathname = useLocation().pathname;
   const { can } = useAuth();
   const { hasModule } = useModulesStore();
+  const { tenantTo, isPathActive } = useTenantNav();
 
   const visible = NAV_ITEMS.filter((n) => (!n.perm || can(n.perm)) && (!n.module || hasModule(n.module)));
   const groups = (Object.keys(NAV_GROUPS) as NavItem["group"][])
@@ -258,19 +263,17 @@ function AppTopNav() {
   return (
     <div className="no-print hidden lg:flex items-center gap-1 border-b border-border/80 bg-card px-6 py-1.5 text-xs">
       <Link
-        to="/"
+        to={tenantTo("/")}
         className={cn(
           "px-2.5 py-1 rounded font-medium transition hover:bg-muted",
-          pathname === "/" ? "bg-primary text-primary-foreground font-semibold" : "text-foreground"
+          isPathActive("/") ? "bg-primary text-primary-foreground font-semibold" : "text-foreground"
         )}
       >
         لوحة التحكم
       </Link>
 
       {groups.map((group) => {
-        const hasActiveItem = group.items.some((item) =>
-          item.to === "/" ? pathname === "/" : pathname === item.to || pathname.startsWith(`${item.to}/`)
-        );
+        const hasActiveItem = group.items.some((item) => isPathActive(item.to));
         return (
           <DropdownMenu key={group.id}>
             <DropdownMenuTrigger
@@ -290,11 +293,10 @@ function AppTopNav() {
               <DropdownMenuGroup>
                 <DropdownMenuLabel>{group.label}</DropdownMenuLabel>
                 {group.items.map((item) => {
-                  const active =
-                    item.to === "/" ? pathname === "/" : pathname === item.to || pathname.startsWith(`${item.to}/`);
+                  const active = isPathActive(item.to);
                   const Icon = item.icon;
                   return (
-                    <DropdownMenuItem key={item.to} render={<Link to={item.to} />}>
+                    <DropdownMenuItem key={item.to} render={<Link to={tenantTo(item.to)} />}>
                       <Icon className={cn("size-4 me-2", active && "text-primary")} />
                       <span className={cn(active && "font-semibold text-primary")}>{item.label}</span>
                     </DropdownMenuItem>
@@ -323,18 +325,20 @@ function AppTopbar({ onOpenMenu, onOpenSearch }: { onOpenMenu: () => void; onOpe
     refetchInterval: 60_000,
   });
 
+  const { tenantTo } = useTenantNav();
+
   // Global F2 shortcut to jump to POS from any screen
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
-      if (e.key === "F2" && window.location.pathname !== "/pos") {
+      if (e.key === "F2" && !window.location.pathname.endsWith("/pos")) {
         e.preventDefault();
         sound.click();
-        navigate("/pos");
+        navigate(tenantTo("/pos"));
       }
     }
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [navigate]);
+  }, [navigate, tenantTo]);
 
   return (
     <header className="no-print sticky top-0 z-30 flex h-14 items-center gap-2 border-b border-border/80 bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/80 md:px-6 dark:border-white/10">
@@ -370,7 +374,7 @@ function AppTopbar({ onOpenMenu, onOpenSearch }: { onOpenMenu: () => void; onOpe
       </DropdownMenu>
 
       {/* Active Shift Indicator */}
-      <Link to="/shifts" className="hidden sm:block">
+      <Link to={tenantTo("/shifts")} className="hidden sm:block">
         {shift.data ? (
           <Badge variant="success" className="h-6 gap-1.5 px-2 text-[11px] font-semibold">
             <span className="size-1.5 animate-pulse rounded-full bg-emerald-500" aria-hidden />
@@ -387,7 +391,7 @@ function AppTopbar({ onOpenMenu, onOpenSearch }: { onOpenMenu: () => void; onOpe
       <div className="ms-auto flex items-center gap-1.5">
         {/* Quick F2 POS Jump */}
         <Link
-          to="/pos"
+          to={tenantTo("/pos")}
           onClick={() => sound.click()}
           className="hidden md:inline-flex items-center gap-1.5 rounded-md border border-primary/30 bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary transition hover:bg-primary/20"
         >
@@ -465,7 +469,7 @@ function AppTopbar({ onOpenMenu, onOpenSearch }: { onOpenMenu: () => void; onOpe
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuGroup>
-              <DropdownMenuItem onClick={() => navigate("/settings")}>
+              <DropdownMenuItem onClick={() => navigate(tenantTo("/settings"))}>
                 <UserRound className="size-4" />
                 الإعدادات
               </DropdownMenuItem>
@@ -478,7 +482,7 @@ function AppTopbar({ onOpenMenu, onOpenSearch }: { onOpenMenu: () => void; onOpe
                 onClick={() => {
                   sound.click();
                   logout();
-                  navigate("/login", { replace: true });
+                  navigate(tenantTo("/login"), { replace: true });
                 }}
               >
                 <LogOut className="size-4" />

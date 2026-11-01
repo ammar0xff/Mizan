@@ -6,12 +6,26 @@ from app.core.security import create_access_token, hash_password, verify_passwor
 from app.models.user import User
 
 
-async def authenticate(db: AsyncSession, username: str, password: str) -> User:
+async def authenticate(db: AsyncSession, username: str, password: str, tenant_slug: str | None = None) -> User:
     from sqlalchemy import text
     await db.execute(text("SELECT set_config('app.bypass', 'on', true)"))
-    result = await db.execute(select(User).where(User.username == username, User.is_active))
-    user = result.scalar_one_or_none()
-    if not user or not verify_password(password, user.password_hash):
+
+    query = select(User).where(User.username == username, User.is_active)
+    if tenant_slug:
+        from app.models.tenant import Tenant
+        tenant = (await db.execute(select(Tenant).where(Tenant.slug == tenant_slug))).scalar_one_or_none()
+        if tenant:
+            query = query.where(User.tenant_id == tenant.id)
+
+    result = await db.execute(query)
+    users = result.scalars().all()
+    user = None
+    for u in users:
+        if verify_password(password, u.password_hash):
+            user = u
+            break
+
+    if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
     return user
 

@@ -10,6 +10,7 @@ export interface User {
   permissions: string[];
   is_manager: boolean;
   is_superadmin?: boolean;
+  tenant_id?: string | null;
   default_warehouse_id: string | null;
 }
 

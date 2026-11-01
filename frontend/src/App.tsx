@@ -20,7 +20,7 @@ const ModulesPage = lazy(() => import("@/features/modules/ModulesPage"));
 const RestaurantTablesPage = lazy(() => import("@/features/restaurant/RestaurantTablesPage"));
 const SchoolStudentsPage = lazy(() => import("@/features/school/SchoolStudentsPage"));
 const AdmoonDashboard = lazy(() => import("@/features/admoon/AdmoonDashboard"));
-const TenantResolverPage = lazy(() => import("@/features/marketing/TenantResolverPage"));
+const TenantScopeLayout = lazy(() => import("@/features/marketing/TenantScopeLayout"));
 import { Link, Navigate, Route, Routes } from "react-router-dom";
 import LandingPage from "@/features/marketing/LandingPage";
 import PricingPage from "@/features/marketing/PricingPage";
@@ -30,6 +30,7 @@ import { Lock } from "lucide-react";
 import { useAuth } from "@/stores/auth";
 import { useModulesStore } from "@/stores/modules";
 import { NAV_ITEMS } from "@/lib/nav";
+import { useTenantNav } from "@/lib/tenant";
 import { Button } from "@/components/kit/button";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/kit/empty";
 import Shell from "@/components/AppShell";
@@ -42,7 +43,9 @@ function Page({ children }: { children: React.ReactNode }) {
 function Guard({ perm, module, children }: { perm: string; module?: string; children: React.ReactNode }) {
   const { token, user, can } = useAuth();
   const hasModule = useModulesStore((s) => s.hasModule);
-  if (!token || !user) return <Navigate to="/login" replace />;
+  const { tenantTo } = useTenantNav();
+
+  if (!token || !user) return <Navigate to={tenantTo("/login")} replace />;
   if (module && !hasModule(module)) {
     return (
       <Empty className="mx-auto mt-16 max-w-md border border-dashed">
@@ -56,7 +59,7 @@ function Guard({ perm, module, children }: { perm: string; module?: string; chil
           </EmptyDescription>
         </EmptyHeader>
         <EmptyContent>
-          <Button nativeButton={false} render={<Link to="/modules" />}>
+          <Button nativeButton={false} render={<Link to={tenantTo("/modules")} />}>
             الانتقال إلى مركز الوحدات والتطبيقات
           </Button>
         </EmptyContent>
@@ -78,7 +81,7 @@ function Guard({ perm, module, children }: { perm: string; module?: string; chil
         </EmptyHeader>
         {fallback && (
           <EmptyContent>
-            <Button nativeButton={false} render={<Link to={fallback.to} />}>
+            <Button nativeButton={false} render={<Link to={tenantTo(fallback.to)} />}>
               الانتقال إلى {fallback.label}
             </Button>
           </EmptyContent>
@@ -89,28 +92,71 @@ function Guard({ perm, module, children }: { perm: string; module?: string; chil
   return <Page>{children}</Page>;
 }
 
+/**
+ * Reusable full suite of ERP modules, pages, and operational screens.
+ * These are scoped inside the tenant root layout when a tenant prefix is present.
+ */
+function renderErpChildRoutes() {
+  return (
+    <>
+      <Route index element={<Guard perm=""><DashboardPage /></Guard>} />
+      <Route path="pos" element={<Guard perm="pos"><PosPage /></Guard>} />
+      <Route path="products" element={<Guard perm="inventory"><ProductsPage /></Guard>} />
+      <Route path="sales" element={<Guard perm="sales"><SalesPage /></Guard>} />
+      <Route path="inventory" element={<Guard perm="inventory"><InventoryPage /></Guard>} />
+      <Route path="operations" element={<Guard perm="operations"><OperationsPage /></Guard>} />
+      <Route path="purchases" element={<Guard perm="purchases"><PurchasesPage /></Guard>} />
+      <Route path="customers" element={<Guard perm="customers"><CustomersPage /></Guard>} />
+      <Route path="suppliers" element={<Guard perm="customers"><SuppliersPage /></Guard>} />
+      <Route path="finance" element={<Guard perm="finance"><FinancePage /></Guard>} />
+      <Route path="hr" element={<Guard perm="payroll"><HrPage /></Guard>} />
+      <Route path="hr/payroll" element={<Guard perm="payroll"><PayrollPage /></Guard>} />
+      <Route path="shifts" element={<Guard perm="shifts"><ShiftsPage /></Guard>} />
+      <Route path="archive" element={<Guard perm="archive"><ArchivePage /></Guard>} />
+      <Route path="reports" element={<Guard perm="reports"><ReportsPage /></Guard>} />
+      <Route path="users" element={<Guard perm="users"><UsersPage /></Guard>} />
+      <Route path="settings" element={<Guard perm="settings"><SettingsPage /></Guard>} />
+      <Route path="modules" element={<Guard perm=""><ModulesPage /></Guard>} />
+      <Route path="restaurant/tables" element={<Guard perm="" module="restaurant"><RestaurantTablesPage /></Guard>} />
+      <Route path="restaurant/kitchen" element={<Guard perm="" module="restaurant"><RestaurantTablesPage /></Guard>} />
+      <Route path="school/students" element={<Guard perm="" module="school"><SchoolStudentsPage /></Guard>} />
+      <Route path="login" element={<LoginPage />} />
+    </>
+  );
+}
+
 export default function App() {
   const token = useAuth((s) => s.token);
   const user = useAuth((s) => s.user);
+
   return (
     <Routes>
-      {/* Flip away from /login only when the FULL session exists (token + user).
-          token alone caused a redirect ping-pong with Guard (which requires both)
-          while /auth/me was still in flight — visible as navigation throttling. */}
+      {/* SaaS Owner & Platform Control Plane */}
+      <Route path="/admoon" element={<Page><AdmoonDashboard /></Page>} />
+      <Route path="/pricing" element={<PricingPage />} />
+      <Route path="/signup" element={token && user ? <Navigate to="/" replace /> : <SignupPage />} />
+      <Route path="/onboarding" element={<OnboardingWizard />} />
       <Route path="/login" element={token && user ? <Navigate to="/" replace /> : <LoginPage />} />
 
-      {/* Public SaaS surfaces — the landing doubles as the app root for signed-in users */}
+      {/* Pattern 1: Canonical Tenant Root at /c/:tenantSlug/* */}
+      <Route path="/c/:tenantSlug" element={<Page><TenantScopeLayout /></Page>}>
+        {renderErpChildRoutes()}
+      </Route>
+
+      {/* Pattern 2: Direct Tenant Root at /:tenantSlug/* (e.g. /monset-gym/pos) */}
+      <Route path="/:tenantSlug" element={<Page><TenantScopeLayout /></Page>}>
+        {renderErpChildRoutes()}
+      </Route>
+
+      {/* Fallback Root for Standalone Desktop / Subdomain deployments */}
       <Route
         path="/"
         element={token && user ? <Guard perm=""><Shell /></Guard> : <LandingPage />}
       >
         <Route index element={<Page><DashboardPage /></Page>} />
       </Route>
-      <Route path="/pricing" element={<PricingPage />} />
-      <Route path="/signup" element={token && user ? <Navigate to="/" replace /> : <SignupPage />} />
-      <Route path="/onboarding" element={<OnboardingWizard />} />
-      <Route path="/admoon" element={<Page><AdmoonDashboard /></Page>} />
-      <Route path="/c/:tenantSlug" element={<Page><TenantResolverPage /></Page>} />
+
+      {/* Direct top-level routes when authenticated without slug (e.g. desktop offline .exe) */}
       <Route
         element={
           <Guard perm="">
@@ -118,28 +164,10 @@ export default function App() {
           </Guard>
         }
       >
-        <Route path="/pos" element={<Guard perm="pos"><PosPage /></Guard>} />
-        <Route path="/products" element={<Guard perm="inventory"><ProductsPage /></Guard>} />
-        <Route path="/sales" element={<Guard perm="sales"><SalesPage /></Guard>} />
-        <Route path="/inventory" element={<Guard perm="inventory"><InventoryPage /></Guard>} />
-        <Route path="/operations" element={<Guard perm="operations"><OperationsPage /></Guard>} />
-        <Route path="/purchases" element={<Guard perm="purchases"><PurchasesPage /></Guard>} />
-        <Route path="/customers" element={<Guard perm="customers"><CustomersPage /></Guard>} />
-        <Route path="/suppliers" element={<Guard perm="customers"><SuppliersPage /></Guard>} />
-        <Route path="/finance" element={<Guard perm="finance"><FinancePage /></Guard>} />
-        <Route path="/hr" element={<Guard perm="payroll"><HrPage /></Guard>} />
-        <Route path="/hr/payroll" element={<Guard perm="payroll"><PayrollPage /></Guard>} />
-        <Route path="/shifts" element={<Guard perm="shifts"><ShiftsPage /></Guard>} />
-        <Route path="/archive" element={<Guard perm="archive"><ArchivePage /></Guard>} />
-        <Route path="/reports" element={<Guard perm="reports"><ReportsPage /></Guard>} />
-        <Route path="/users" element={<Guard perm="users"><UsersPage /></Guard>} />
-        <Route path="/settings" element={<Guard perm="settings"><SettingsPage /></Guard>} />
-        <Route path="/modules" element={<Guard perm=""><ModulesPage /></Guard>} />
-        <Route path="/restaurant/tables" element={<Guard perm="" module="restaurant"><RestaurantTablesPage /></Guard>} />
-        <Route path="/restaurant/kitchen" element={<Guard perm="" module="restaurant"><RestaurantTablesPage /></Guard>} />
-        <Route path="/school/students" element={<Guard perm="" module="school"><SchoolStudentsPage /></Guard>} />
-        <Route path="*" element={<Navigate to="/" replace />} />
+        {renderErpChildRoutes()}
       </Route>
+
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }

@@ -23,7 +23,7 @@ reauth_limiter = RateLimiter(max_requests=5, window_seconds=60)
 
 @router.post("/login")
 async def login(data: LoginRequest, request: Request, db: AsyncSession = Depends(get_db), _=Depends(login_limiter)):
-    user = await auth_service.authenticate(db, data.username, data.password)
+    user = await auth_service.authenticate(db, data.username, data.password, tenant_slug=data.tenant_slug)
     token = auth_service.issue_token(user)
     body = TokenResponse(
         access_token=token["access_token"],
@@ -54,16 +54,41 @@ async def get_roles(_=Depends(get_current_user)):
 
 @router.get("/me")
 async def me(current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    from app.models.tenant import Tenant
     user = await db.merge(current_user)
     await db.refresh(user)
+
+    tenant_info = None
+    if user.tenant_id:
+        t = await db.get(Tenant, user.tenant_id)
+        if t:
+            tenant_info = {
+                "id": str(t.id),
+                "name": t.name,
+                "slug": t.slug,
+                "custom_domain": t.custom_domain,
+                "sector": t.sector,
+                "business_type": t.business_type,
+                "palette": t.palette or {"name": "neutral", "hue": 0},
+                "active_modules": t.active_modules or ["pos", "inventory"],
+                "deployment_mode": t.deployment_mode,
+                "tech_stack": t.tech_stack or {},
+                "limits": t.limits or {},
+                "plan": t.plan,
+                "trial_ends_at": t.trial_ends_at.isoformat() if t.trial_ends_at else None,
+            }
+
     return {
         "id": str(user.id),
         "username": user.username,
         "full_name": user.full_name,
         "role": user.role,
+        "tenant_id": str(user.tenant_id) if user.tenant_id else None,
         "permissions": user.permissions or [],
         "is_manager": bool(user.is_manager) if user.is_manager is not None else False,
+        "is_superadmin": bool(user.is_superadmin),
         "default_warehouse_id": str(user.default_warehouse_id) if user.default_warehouse_id else None,
+        "tenant": tenant_info,
     }
 
 

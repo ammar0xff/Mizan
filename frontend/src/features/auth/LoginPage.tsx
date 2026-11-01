@@ -25,10 +25,11 @@ import {
 import { api } from "@/lib/api";
 import { Button, ErrorBox, Input, Spinner } from "@/components/ui";
 import { Stagger, StaggerItem } from "@/components/motion";
-import { useAuth, type User } from "@/stores/auth";
+import { useAuth, type User, type TenantInfo } from "@/stores/auth";
 import { useUiStore } from "@/stores/ui";
 import { AppearanceSettingsModal } from "@/components/AppearanceSettingsModal";
 import { sound } from "@/lib/sound";
+import { useLocation } from "react-router-dom";
 
 const auth = () => useAuth.getState();
 
@@ -47,13 +48,24 @@ const BUSINESS_PILLS = [
   { label: "شركات ومقاولات وخدمات", icon: Briefcase },
 ];
 
-export default function LoginPage() {
+export interface LoginPageProps {
+  tenant?: TenantInfo | null;
+  tenantSlug?: string;
+  onSuccess?: () => void;
+}
+
+export default function LoginPage(props: LoginPageProps = {}) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [show, setShow] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const authTenant = useAuth((s) => s.tenant);
+  const currentTenant = props.tenant || authTenant;
+  const targetSlug = props.tenantSlug || currentTenant?.slug;
 
   const { appearanceModalOpen, setAppearanceModalOpen } = useUiStore();
 
@@ -63,17 +75,29 @@ export default function LoginPage() {
     setError(null);
     try {
       sound.click();
-      const r = await api.post<LoginResponse>("/auth/login", { username, password });
+      const r = await api.post<LoginResponse>("/auth/login", {
+        username,
+        password,
+        tenant_slug: targetSlug || undefined,
+      });
       auth().setToken(r.access_token);
       try {
-        const me = await api.get<User>("/auth/me");
+        const me = await api.get<User & { tenant?: TenantInfo }>("/auth/me");
         auth().setUser(me);
+        if (me.tenant) {
+          auth().setTenant(me.tenant);
+        }
       } catch (meErr) {
         auth().logout();
         throw meErr;
       }
       sound.success();
-      navigate("/", { replace: true });
+      if (props.onSuccess) {
+        props.onSuccess();
+      } else {
+        const prefix = targetSlug ? (location.pathname.startsWith("/c/") ? `/c/${targetSlug}` : `/${targetSlug}`) : "/";
+        navigate(prefix, { replace: true });
+      }
     } catch (err) {
       sound.error();
       setError(err instanceof Error ? err.message : "تعذر تسجيل الدخول");
@@ -196,9 +220,20 @@ export default function LoginPage() {
 
             <div className="rounded-2xl border border-border bg-card p-6 sm:p-8 shadow-sm">
               <div className="mb-6 text-start">
-                <h1 className="text-xl font-bold text-foreground">تسجيل الدخول</h1>
+                <div className="flex items-center justify-between gap-2 mb-1.5">
+                  <h1 className="text-xl font-bold text-foreground">
+                    {currentTenant?.name ? currentTenant.name : "تسجيل الدخول"}
+                  </h1>
+                  {targetSlug && (
+                    <span className="rounded bg-primary/10 border border-primary/20 px-2 py-0.5 text-[10px] font-mono font-bold text-primary">
+                      /{targetSlug}
+                    </span>
+                  )}
+                </div>
                 <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
-                  أدخل بيانات حسابك للوصول إلى لوحة التحكم والفرع
+                  {currentTenant?.name
+                    ? `بيئة عمل المنشأة المخصصة (${currentTenant.business_type || "نظام موحد"}) — يرجى تسجيل الدخول`
+                    : "أدخل بيانات حسابك للوصول إلى لوحة التحكم والفرع"}
                 </p>
               </div>
 
