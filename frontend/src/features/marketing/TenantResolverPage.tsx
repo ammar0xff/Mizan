@@ -52,7 +52,7 @@ export default function TenantResolverPage() {
       } catch (err) {
         setError(
           err instanceof ApiError && err.status === 404
-            ? `المنشأة ذات الرابط "${tenantSlug}" غير مسجلة في منظومة ميزان.`
+            ? `المنشأة ذات الرابط "${tenantSlug}" غير مسجلة في منصة Vendora ERP.`
             : "تعذر التحقق من بيانات المنشأة — حاول مجدداً"
         );
       } finally {

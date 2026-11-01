@@ -30,18 +30,18 @@ signup_limiter = RateLimiter(max_requests=5, window_seconds=3600)
 TRIAL_DAYS = 14
 
 PLANS = [
-    {"id": "basic", "name": "أساسي", "price_egp": 499,
-     "tagline": "ابدأ صح — فرع واحد جاهز للبيع",
-     "features": ["فرع واحد · 3 مستخدمين", "نقطة بيع + مخزون + مبيعات", "عملاء وموردون", "تقارير أساسية"]},
-    {"id": "pro", "name": "احترافي", "price_egp": 999, "popular": True,
-     "tagline": "للمحلات اللي بتكبر — كل الميزات",
-     "features": ["حتى 3 فروع · 15 مستخدمًا", "كل ميزات أساسي", "مشتريات وذمم وخزائن", "تقارير متقدمة + تصدير"]},
-    {"id": "enterprise", "name": "مؤسسي", "price_egp": None,
-     "tagline": "سلاسل وفروع كثيرة",
-     "features": ["فروع ومستخدمون بلا حدود", "صلاحيات متقدمة", "أولوية دعم", "تهيئة وتدريب فريق العمل"]},
+    {"id": "starter", "name": "باقة البداية (Starter)", "price_egp": 450,
+     "tagline": "للمتاجر والمنشآت الناشئة — فرع واحد متكامل",
+     "features": ["فرع واحد · حتى 5 مستخدمين", "نقطة بيع + مخزون + مبيعات", "طباعة إيصالات حرارية 80mm/58mm", "شاشات مطبخ KDS أو ماسح باركود"]},
+    {"id": "pro", "name": "باقة المحترفين (Pro)", "price_egp": 850, "popular": True,
+     "tagline": "الأكثر طلباً — صالات الجيم، المطاعم، والسلاسل",
+     "features": ["حتى 3 فروع · 15 مستخدمًا", "كافة كوليكشنات الأنشطة (نوادي، مطاعم، مدارس)", "قاعدة بيانات سحابية مستقلة (Neon Postgres)", "رواتب وموظفون HR ونسخ احتياطي يومي"]},
+    {"id": "enterprise", "name": "باقة المؤسسات (Enterprise)", "price_egp": 1950,
+     "tagline": "لسلاسل الأعمال الكبرى والمشاريع متعددة الفروع",
+     "features": ["فروع ومستخدمون بلا حدود", "خادم VPS مخصص مع عزل أمني فائق", "ترخيص نسخة سطح مكتب أوفلاين (.exe)", "دومين مخصص وتخزين سحابي غير محدود"]},
 ]
 
-SECTORS = ["retail", "restaurant", "school", "services", "healthcare", "plumbing", "electrical", "tiles", "paint"]
+SECTORS = ["gym", "restaurant", "retail", "school", "services", "healthcare", "plumbing", "electrical", "tiles", "paint"]
 SCALES = ["small", "medium", "large"]
 
 PALETTE_HUES = {

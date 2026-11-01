@@ -29,7 +29,9 @@ export default function OnboardingWizard() {
   const nav = useNavigate();
   const draft: OwnerDraft | null = (() => {
     try {
-      return JSON.parse(sessionStorage.getItem("mizan.owner") ?? "null");
+      return JSON.parse(
+        sessionStorage.getItem("vendora.owner") ?? sessionStorage.getItem("mizan.owner") ?? "null"
+      );
     } catch {
       return null;
     }
@@ -101,10 +103,13 @@ export default function OnboardingWizard() {
     <div className="grid min-h-svh place-items-center bg-background p-4 text-foreground">
       <div className="w-full max-w-xl">
         <Link to="/" className="mb-6 flex items-center justify-center gap-2.5">
-          <span className="grid size-10 place-items-center rounded-xl bg-primary text-primary-foreground font-bold shadow-xs">
-            <Scale className="size-5" />
+          <span className="grid size-10 place-items-center rounded-xl bg-primary text-primary-foreground font-black shadow-xs">
+            V
           </span>
-          <span className="text-2xl font-black tracking-tight">ميزان</span>
+          <div className="flex flex-col">
+            <span className="text-xl font-bold tracking-tight">Vendora ERP</span>
+            <span className="text-[10px] text-muted-foreground font-medium">المنظومة السحابية المتكاملة</span>
+          </div>
         </Link>
 
         <div className="rounded-2xl border border-border bg-card p-6 sm:p-8 shadow-sm">
