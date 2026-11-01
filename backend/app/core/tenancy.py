@@ -28,7 +28,7 @@ class TenantScoped:
     def tenant_id(cls) -> Mapped[uuid.UUID]:
         return mapped_column(
             UUID(as_uuid=True),
-            ForeignKey("tenants.id", ondelete="RESTRICT"),
+            ForeignKey("tenants.id", ondelete="CASCADE"),
             nullable=False,
             index=True,
         )
