@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>ملصق باركود 38x25mm</title>
+  <style>
+    @page { size: 38mm 25mm; margin: 1mm; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { width: 36mm; height: 23mm; margin: 0 auto; font-family: 'Segoe UI', Tahoma, sans-serif; font-size: 8px; color: #000; text-align: center; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; }
+    .store { font-size: 7px; font-weight: 700; white-space: nowrap; overflow: hidden; }
+    .name { font-size: 8px; font-weight: 800; white-space: nowrap; overflow: hidden; }
+    .price { font-size: 11px; font-weight: 900; font-family: 'Courier New', monospace; direction: ltr; }
+    .bars { font-family: monospace; font-size: 11px; letter-spacing: 2px; }
+    .code { font-size: 8px; font-family: 'Courier New', monospace; direction: ltr; }
+  </style>
+</head>
+<body>
+  <div class="store">{{ company_name }}</div>
+  <div class="name">{{ product_name }}</div>
+  <div class="price">{{ price }} {{ currency }}</div>
+  <div class="bars">|||| | |||||| ||</div>
+  <div class="code">{{ barcode }}</div>
+</body>
+</html>

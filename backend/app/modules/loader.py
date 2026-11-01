@@ -122,6 +122,17 @@ class ModuleRegistry:
         self._discovered = True
         return self._manifests
 
+    def get_categories(self) -> list[dict[str, Any]]:
+        """Load and return category definitions from categories.json in the modules directory."""
+        categories_file = self.modules_dir / "categories.json"
+        if categories_file.exists():
+            try:
+                data = json.loads(categories_file.read_text(encoding="utf-8"))
+                return data.get("categories", [])
+            except Exception as err:
+                logger.error("Failed to load categories.json: %s", err)
+        return []
+
     def get_manifest(self, module_id: str) -> ModuleManifest | None:
         if not self._discovered:
             self.discover_modules()

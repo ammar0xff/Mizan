@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>تذكرة دخول الصالة الرياضية - {{ pass_number }}</title>
+  <style>
+    @page { size: 80mm auto; margin: 2mm; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { width: 76mm; margin: 0 auto; font-family: 'Segoe UI', Tahoma, sans-serif; font-size: 11px; color: #000; line-height: 1.3; }
+    .center { text-align: center; }
+    .num { font-family: 'Courier New', monospace; font-weight: 700; direction: ltr; }
+    .title { font-size: 16px; font-weight: 900; }
+    .divider { border-bottom: 2px dashed #000; margin: 6px 0; }
+    .pass-type { font-size: 15px; font-weight: 900; border: 2px solid #000; padding: 6px; text-align: center; margin: 6px 0; }
+    .barcode-box { margin: 10px auto; text-align: center; font-family: monospace; letter-spacing: 3px; font-size: 14px; border: 1px solid #000; padding: 8px; }
+  </style>
+</head>
+<body>
+  <div class="center">
+    <div class="title">{{ company_name }}</div>
+    <div style="font-size: 10px;">نظام إدارة الدخول والاشتراكات الرياضية</div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="pass-type">
+    {{ pass_type_name }}
+  </div>
+
+  <div style="display: flex; justify-content: space-between; margin-bottom: 3px;">
+    <span>اسم العضو / الزائر:</span>
+    <strong>{{ member_name }}</strong>
+  </div>
+  <div style="display: flex; justify-content: space-between; margin-bottom: 3px;">
+    <span>رقم التذكرة:</span>
+    <span class="num">#{{ pass_number }}</span>
+  </div>
+  <div style="display: flex; justify-content: space-between; margin-bottom: 3px;">
+    <span>وقت الدخول:</span>
+    <span class="num">{{ checkin_time }}</span>
+  </div>
+  <div style="display: flex; justify-content: space-between; margin-bottom: 3px;">
+    <span>صالح حتى:</span>
+    <span class="num bold">{{ valid_until }}</span>
+  </div>
+  <div style="display: flex; justify-content: space-between; margin-bottom: 3px;">
+    <span>رقم الخزانة المخصصة:</span>
+    <strong>{{ locker_number }}</strong>
+  </div>
+
+  <div class="barcode-box">
+    |||| | |||||| || |||||| |<br>
+    <span class="num">{{ pass_barcode }}</span>
+  </div>
+
+  <div class="center" style="font-size: 9px;">
+    يرجى إبراز هذه التذكرة عند بوابة الدخول أو مسحها ضوئياً لدى الحارس
+  </div>
+</body>
+</html>

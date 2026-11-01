@@ -1,0 +1,68 @@
+{
+  "version": "1.0.0",
+  "categories": [
+    {
+      "id": "pos_collections",
+      "name": "مجموعات نقاط البيع المتخصصة",
+      "name_en": "Specialized POS Collections",
+      "icon": "ShoppingCart",
+      "description": "حلول نقاط البيع المخصصة حسب طبيعة النشاط التجاري (نوادي، مطاعم، تجزئة، خدمات)",
+      "order": 1,
+      "allowed_business_types": ["gym", "restaurant", "retail", "supermarket", "services"]
+    },
+    {
+      "id": "vertical_sectors",
+      "name": "القطاعات المتخصصة",
+      "name_en": "Vertical Industry Modules",
+      "icon": "Building2",
+      "description": "أنظمة إدارة المنشآت الرأسية (نوادي رياضية، مطاعم وصالات، مدارس وأكاديميات، مراكز طبية)",
+      "order": 2,
+      "allowed_business_types": ["gym", "restaurant", "school", "clinic", "services"]
+    },
+    {
+      "id": "core_operations",
+      "name": "العمليات والمخزون",
+      "name_en": "Core Operations & Inventory",
+      "icon": "Boxes",
+      "description": "إدارة المستودعات، الجرد الدوري، تحويلات الفروع، وأوامر الشراء والتوريد",
+      "order": 3,
+      "allowed_business_types": ["*"]
+    },
+    {
+      "id": "financial_management",
+      "name": "المالية والخزائن",
+      "name_en": "Financial Management",
+      "icon": "DollarSign",
+      "description": "الخزائن النقدية، الحسابات البنكية، مسيرات المصروفات، ودفاتر الأستاذ",
+      "order": 4,
+      "allowed_business_types": ["*"]
+    },
+    {
+      "id": "human_capital",
+      "name": "الموارد البشرية والورديات",
+      "name_en": "Human Capital & Shifts",
+      "icon": "Users",
+      "description": "شؤون الموظفين، الحضور والانصراف البيومتري، الورديات، ومسيرات الرواتب",
+      "order": 5,
+      "allowed_business_types": ["*"]
+    },
+    {
+      "id": "customer_experience",
+      "name": "تجربة العملاء والواجهات",
+      "name_en": "Customer Experience & Fronts",
+      "icon": "Monitor",
+      "description": "شاشات المطابخ KDS، المتجر الإلكتروني، برامج الولاء والاشتراكات",
+      "order": 6,
+      "allowed_business_types": ["restaurant", "cafe", "retail", "gym"]
+    },
+    {
+      "id": "governance_archival",
+      "name": "الأرشفة والحوكمة",
+      "name_en": "Governance & Archiving",
+      "icon": "Archive",
+      "description": "الأرشيف الإلكتروني، حفظ الوثائق والعقود، وسجلات التدقيق الصارمة",
+      "order": 7,
+      "allowed_business_types": ["*"]
+    }
+  ]
+}

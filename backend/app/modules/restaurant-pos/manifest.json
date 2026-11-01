@@ -1,0 +1,42 @@
+{
+  "id": "restaurant-pos",
+  "name": "كاشير ونقطة بيع المطاعم والصالة (Restaurant POS)",
+  "name_en": "Restaurant & Cafe Point of Sale",
+  "category": "pos_collections",
+  "target_business_types": ["restaurant", "cafe", "fastfood", "bakery"],
+  "version": "1.0.0",
+  "icon": "UtensilsCrossed",
+  "description": "نقطة بيع للمطاعم والكافيهات: اختيار الطاولات، ترحيل طلبات المطبخ، تعديلات الأصناف (Modifiers)، فصل الشيكات، وإكراميات الخدمة.",
+  "dependencies": ["core", "inventory", "restaurant"],
+  "is_core": false,
+  "settings_schema": [
+    {
+      "key": "table_selection_required",
+      "label": "إلزام اختيار رقم الطاولة للطلبات الداخلية",
+      "type": "boolean",
+      "default": true,
+      "description": "منع فتح شيك صالة دون ربطه بطاولة نشطة على الخريطة التفاعلية."
+    },
+    {
+      "key": "auto_route_to_kds",
+      "label": "توجيه بنود الطلب فوراً لشاشات المطبخ (KDS)",
+      "type": "boolean",
+      "default": true,
+      "description": "إرسال البنود الساخنة للطهي والبارد للبار بمجرد حفظ الطلب."
+    },
+    {
+      "key": "allow_split_bill",
+      "label": "السماح بفصل الفاتورة على عدة مدفوعات",
+      "type": "boolean",
+      "default": true,
+      "description": "تمكين الكاشير من تقسيم حساب الطاولة بين الضيوف بالتساوي أو بالبنود."
+    },
+    {
+      "key": "service_charge_percent",
+      "label": "نسبة خدمة الصالة التلقائية (%)",
+      "type": "number",
+      "default": 12,
+      "description": "إضافة نسبة خدمة اختيارية تلقائياً لفواتير الصالة والمجموعات."
+    }
+  ]
+}

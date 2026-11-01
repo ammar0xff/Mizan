@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>فاتورة ضريبية - {{ invoice_number }}</title>
+  <style>
+    @page { size: A4 portrait; margin: 12mm; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Tahoma, Arial, sans-serif; font-size: 13px; color: #111; line-height: 1.4; }
+    .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #2563eb; padding-bottom: 12px; margin-bottom: 16px; }
+    .company-title { font-size: 20px; font-weight: 800; color: #1e3a8a; }
+    .company-sub { font-size: 11px; color: #64748b; margin-top: 2px; }
+    .invoice-badge { text-align: left; direction: ltr; }
+    .invoice-title { font-size: 18px; font-weight: 800; color: #0f172a; }
+    .invoice-meta { font-size: 12px; color: #475569; margin-top: 4px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+    .card { border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px 12px; background: #f8fafc; }
+    .card-title { font-weight: 700; font-size: 12px; color: #334155; margin-bottom: 6px; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px; }
+    .card-row { display: flex; justify-content: space-between; margin-bottom: 3px; font-size: 12px; }
+    .items-table { width: 100%; border-collapse: collapse; margin-bottom: 16px; font-size: 12px; }
+    .items-table th { background: #f1f5f9; color: #1e293b; border: 1px solid #cbd5e1; padding: 8px 10px; font-weight: 700; text-align: right; }
+    .items-table td { border: 1px solid #e2e8f0; padding: 7px 10px; text-align: right; }
+    .items-table tr:nth-child(even) { background: #fafafa; }
+    .num { font-family: 'Courier New', monospace; font-weight: 600; text-align: left; direction: ltr; }
+    .totals-box { width: 320px; margin-right: auto; border: 1px solid #cbd5e1; border-radius: 6px; overflow: hidden; }
+    .total-row { display: flex; justify-content: space-between; padding: 6px 12px; border-bottom: 1px solid #e2e8f0; }
+    .total-grand { background: #eff6ff; font-weight: 800; font-size: 14px; color: #1d4ed8; border-bottom: none; }
+    .footer { margin-top: 30px; text-align: center; font-size: 11px; color: #94a3b8; border-top: 1px dashed #cbd5e1; padding-top: 10px; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div>
+      <div class="company-title">{{ company_name }}</div>
+      <div class="company-sub">{{ company_sector }} | هاتف: {{ company_phone }} | س.ت: {{ tax_id }}</div>
+      <div class="company-sub">{{ company_address }}</div>
+    </div>
+    <div class="invoice-badge">
+      <div class="invoice-title">فاتورة ضريبية مبسطة</div>
+      <div class="invoice-meta">رقم الفاتورة: <span class="num">{{ invoice_number }}</span></div>
+      <div class="invoice-meta">التاريخ: <span class="num">{{ invoice_date }}</span></div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">بيانات العميل</div>
+      <div class="card-row"><span>الاسم:</span> <strong>{{ customer_name }}</strong></div>
+      <div class="card-row"><span>رقم الهاتف:</span> <span class="num">{{ customer_phone }}</span></div>
+      <div class="card-row"><span>الرقم الضريبي:</span> <span class="num">{{ customer_tax_id }}</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title">تفاصيل العملية والوردية</div>
+      <div class="card-row"><span>الفرع / المستودع:</span> <strong>{{ branch_name }}</strong></div>
+      <div class="card-row"><span>الكاشير / الموظف:</span> <span>{{ cashier_name }}</span></div>
+      <div class="card-row"><span>طريقة السداد:</span> <strong>{{ payment_method }}</strong></div>
+    </div>
+  </div>
+
+  <table class="items-table">
+    <thead>
+      <tr>
+        <th style="width: 35px; text-align: center;">#</th>
+        <th>الصنف / البيان</th>
+        <th style="width: 70px; text-align: center;">الكمية</th>
+        <th style="width: 90px;">السعر الإفرادي</th>
+        <th style="width: 70px;">الخصم</th>
+        <th style="width: 100px;">الإجمالي</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Items dynamically populated -->
+      <tr>
+        <td style="text-align: center;">1</td>
+        <td>{{ item_1_name }}</td>
+        <td style="text-align: center;" class="num">{{ item_1_qty }}</td>
+        <td class="num">{{ item_1_price }} {{ currency }}</td>
+        <td class="num">{{ item_1_discount }} {{ currency }}</td>
+        <td class="num">{{ item_1_total }} {{ currency }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="totals-box">
+    <div class="total-row"><span>المجموع الفرعي:</span> <span class="num">{{ subtotal }} {{ currency }}</span></div>
+    <div class="total-row"><span>إجمالي الخصم:</span> <span class="num">{{ total_discount }} {{ currency }}</span></div>
+    <div class="total-row"><span>ضريبة القيمة المضافة (14%):</span> <span class="num">{{ tax_amount }} {{ currency }}</span></div>
+    <div class="total-row total-grand"><span>الصافي المستحق:</span> <span class="num">{{ grand_total }} {{ currency }}</span></div>
+  </div>
+
+  <div class="footer">
+    شكراً لتعاملكم معنا • تُعتبر هذه الفاتورة سند استلام نظامي للبضاعة المبينة أعلاه • صادر عبر منصة Vendora ERP
+  </div>
+</body>
+</html>

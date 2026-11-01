@@ -1,0 +1,42 @@
+{
+  "id": "retail-pos",
+  "name": "كاشير التجزئة والسوبرماركت السريع (Retail POS)",
+  "name_en": "Retail & Supermarket Fast-Scan POS",
+  "category": "pos_collections",
+  "target_business_types": ["retail", "supermarket", "clothing", "electronics", "pharmacy"],
+  "version": "1.0.0",
+  "icon": "Barcode",
+  "description": "نقطة بيع فائقة السرعة للمتاجر والهايبرماركت: مسح سريع للباركود، دعم الموازين الإلكترونية للوزن، واختصارات لوحة المفاتيح والورديات المتزامنة.",
+  "dependencies": ["core", "inventory"],
+  "is_core": false,
+  "settings_schema": [
+    {
+      "key": "barcode_auto_add_single",
+      "label": "إضافة الصنف مباشرة عند مسح الباركود",
+      "type": "boolean",
+      "default": true,
+      "description": "زيادة الكمية تلقائياً بمقدار 1 عند كل قراءة باركود دون الحاجة للنقر."
+    },
+    {
+      "key": "enable_scale_barcode_prefix",
+      "label": "قراءة باركود الوزن الإجمالي (EAN-13 Weighing Scale)",
+      "type": "boolean",
+      "default": true,
+      "description": "فك تشفير بادئات الموازين الإلكترونية (مثل 20-29) لاستخراج الوزن والسعر تلقائياً."
+    },
+    {
+      "key": "cash_drawer_kick_on_payment",
+      "label": "فتح درج النقدية تلقائياً عند إنهاء الفاتورة",
+      "type": "boolean",
+      "default": true,
+      "description": "إرسال نبضة فتح الدرج (ESC/POS pin 2/5) عبر طابعة الإيصالات."
+    },
+    {
+      "key": "allow_negative_stock_sale",
+      "label": "السماح بالبيع بالسالب عند نفاد الكمية",
+      "type": "boolean",
+      "default": false,
+      "description": "عدم إيقاف حركة البيع عند وصول الرصيد لصفر مع تسجيل حركة بالسالب للتسوية لاحقاً."
+    }
+  ]
+}

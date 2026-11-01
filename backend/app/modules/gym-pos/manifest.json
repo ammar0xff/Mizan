@@ -1,0 +1,42 @@
+{
+  "id": "gym-pos",
+  "name": "كاشير ونقطة بيع النوادي الرياضية (Gym POS)",
+  "name_en": "Gym & Fitness Point of Sale",
+  "category": "pos_collections",
+  "target_business_types": ["gym", "sports_club", "crossfit"],
+  "version": "1.0.0",
+  "icon": "Dumbbell",
+  "description": "نقطة بيع مخصصة لمكاتب الاستقبال في النوادي الرياضية: تجديد الاشتراكات، بيع التذاكر اليومية، حجز الخزائن، وبيع المكملات الغذائية والمشروبات الرياضية.",
+  "dependencies": ["core", "inventory"],
+  "is_core": false,
+  "settings_schema": [
+    {
+      "key": "enable_member_quick_lookup",
+      "label": "البحث الفوري برقم العضوية أو الهاتف",
+      "type": "boolean",
+      "default": true,
+      "description": "التعرف على المشترك وعرض باقته وتاريخ انتهاء اشتراكه فور مسح الباركود."
+    },
+    {
+      "key": "allow_day_pass_issuance",
+      "label": "إصدار تذاكر الدخول اليومي (Day Pass)",
+      "type": "boolean",
+      "default": true,
+      "description": "إصدار تذكرة دخول فردية مطبوعة بباركود مؤقت صالح لليوم الحالي فقط."
+    },
+    {
+      "key": "prompt_trainer_commission",
+      "label": "احتساب عمولة المدرب عند بيع الباقات",
+      "type": "boolean",
+      "default": true,
+      "description": "مطالبة الكاشير بتحديد الكابتن / المدرب لاحتساب نسبته تلقائياً في مسير الرواتب."
+    },
+    {
+      "key": "enable_shake_bar_mode",
+      "label": "تفعيل ركن المشروبات والمكملات (Shake Bar)",
+      "type": "boolean",
+      "default": true,
+      "description": "إظهار أزرار سريعة للأصناف الأكثر مبيعاً كالبروتين شيك والمياه والمناشف."
+    }
+  ]
+}

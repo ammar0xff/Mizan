@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>أمر شراء وتوريد - {{ po_number }}</title>
+  <style>
+    @page { size: A4 portrait; margin: 12mm; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Tahoma, Arial, sans-serif; font-size: 13px; color: #111; line-height: 1.4; }
+    .header { display: flex; justify-content: space-between; border-bottom: 2px solid #047857; padding-bottom: 12px; margin-bottom: 16px; }
+    .title { font-size: 20px; font-weight: 800; color: #065f46; }
+    .sub { font-size: 11px; color: #64748b; margin-top: 2px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+    .card { border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px 12px; background: #f8fafc; }
+    .card-title { font-weight: 700; font-size: 12px; color: #334155; margin-bottom: 6px; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 16px; font-size: 12px; }
+    th { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; padding: 8px 10px; font-weight: 700; text-align: right; }
+    td { border: 1px solid #e2e8f0; padding: 7px 10px; }
+    .num { font-family: 'Courier New', monospace; font-weight: 600; text-align: left; direction: ltr; }
+    .footer { margin-top: 30px; text-align: center; font-size: 11px; color: #94a3b8; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div>
+      <div class="title">{{ company_name }}</div>
+      <div class="sub">أمر شراء وتوريد رسمي للموردين | {{ company_phone }}</div>
+    </div>
+    <div style="text-align: left; direction: ltr;">
+      <div style="font-size: 18px; font-weight: 800; color: #065f46;">PURCHASE ORDER</div>
+      <div class="num" style="font-size: 13px; font-weight: 700;">#{{ po_number }}</div>
+      <div class="num" style="font-size: 11px; color: #64748b;">{{ po_date }}</div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">بيانات المورد المعتمد</div>
+      <div>اسم المورد: <strong>{{ supplier_name }}</strong></div>
+      <div>هاتف المورد: <span class="num">{{ supplier_phone }}</span></div>
+      <div>الرقم الضريبي: <span class="num">{{ supplier_tax_id }}</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title">موقع الاستلام وشروط التوريد</div>
+      <div>مستودع الاستلام: <strong>{{ warehouse_name }}</strong></div>
+      <div>تاريخ التسليم المتوقع: <span class="num">{{ delivery_date }}</span></div>
+      <div>شروط الدفع: <strong>{{ payment_terms }}</strong></div>
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 35px; text-align: center;">#</th>
+        <th>كود الصنف / الباركود</th>
+        <th>اسم الصنف والمواصفات</th>
+        <th style="width: 80px; text-align: center;">الكمية المطلوبة</th>
+        <th style="width: 100px;">سعر التوريد المتفق</th>
+        <th style="width: 110px;">الإجمالي المتوقع</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="text-align: center;">1</td>
+        <td class="num">{{ item_1_code }}</td>
+        <td><strong>{{ item_1_name }}</strong></td>
+        <td style="text-align: center;" class="num">{{ item_1_qty }}</td>
+        <td class="num">{{ item_1_cost }} {{ currency }}</td>
+        <td class="num">{{ item_1_total }} {{ currency }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div style="width: 280px; margin-right: auto; border: 1px solid #cbd5e1; border-radius: 6px; padding: 10px 14px; background: #f8fafc;">
+    <div style="display: flex; justify-content: space-between; font-weight: 800; font-size: 14px; color: #065f46;">
+      <span>إجمالي أمر الشراء:</span>
+      <span class="num">{{ grand_total }} {{ currency }}</span>
+    </div>
+  </div>
+
+  <div class="footer">
+    تم إصدار هذا الأمر تلقائياً بواسطة نظام إدارة المشتريات والمخازن • Vendora Modular ERP
+  </div>
+</body>
+</html>

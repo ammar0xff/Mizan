@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>إيصال نقطة بيع حراري 80mm</title>
+  <style>
+    @page { size: 80mm auto; margin: 2mm; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { width: 76mm; margin: 0 auto; font-family: 'Segoe UI', Tahoma, Arial, sans-serif; font-size: 11px; color: #000; line-height: 1.3; }
+    .center { text-align: center; }
+    .bold { font-weight: 700; }
+    .num { font-family: 'Courier New', monospace; font-weight: 600; text-align: left; direction: ltr; }
+    .store-name { font-size: 16px; font-weight: 900; margin-bottom: 2px; }
+    .store-sub { font-size: 10px; margin-bottom: 6px; }
+    .divider { border-bottom: 1px dashed #000; margin: 6px 0; }
+    .divider-double { border-bottom: 2px solid #000; margin: 6px 0; }
+    .meta-row { display: flex; justify-content: space-between; font-size: 10px; margin-bottom: 2px; }
+    .items-table { width: 100%; border-collapse: collapse; margin: 6px 0; font-size: 10px; }
+    .items-table th { border-bottom: 1px solid #000; padding: 3px 0; text-align: right; }
+    .items-table td { padding: 3px 0; }
+    .totals-row { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 3px; }
+    .grand-total { font-size: 14px; font-weight: 900; margin: 4px 0; }
+    .qr-placeholder { margin: 8px auto; width: 100px; height: 100px; border: 1px solid #000; display: flex; align-items: center; justify-content: center; font-size: 9px; font-family: monospace; }
+    .footer { font-size: 9px; text-align: center; margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <div class="center">
+    <div class="store-name">{{ company_name }}</div>
+    <div class="store-sub">{{ company_sector }} | هاتف: {{ company_phone }}</div>
+    <div class="store-sub">الرقم الضريبي: <span class="num">{{ tax_id }}</span></div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="meta-row"><span>رقم الفاتورة:</span> <span class="num bold">#{{ receipt_number }}</span></div>
+  <div class="meta-row"><span>التاريخ والوقت:</span> <span class="num">{{ print_datetime }}</span></div>
+  <div class="meta-row"><span>الكاشير:</span> <span>{{ cashier_name }}</span></div>
+  <div class="meta-row"><span>العميل:</span> <strong>{{ customer_name }}</strong></div>
+
+  <div class="divider"></div>
+
+  <table class="items-table">
+    <thead>
+      <tr>
+        <th>الصنف</th>
+        <th style="width: 25px; text-align: center;">الكمية</th>
+        <th style="width: 45px; text-align: left;">السعر</th>
+        <th style="width: 50px; text-align: left;">الإجمالي</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>{{ item_1_name }}</td>
+        <td style="text-align: center;" class="num">{{ item_1_qty }}</td>
+        <td class="num">{{ item_1_price }}</td>
+        <td class="num bold">{{ item_1_total }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="divider"></div>
+
+  <div class="totals-row"><span>المجموع:</span> <span class="num">{{ subtotal }} {{ currency }}</span></div>
+  <div class="totals-row"><span>الخصم:</span> <span class="num">{{ discount }} {{ currency }}</span></div>
+  <div class="totals-row"><span>ضريبة القيمة المضافة (14%):</span> <span class="num">{{ tax_amount }} {{ currency }}</span></div>
+  <div class="divider-double"></div>
+  <div class="totals-row grand-total"><span>الصافي المطلوب:</span> <span class="num">{{ grand_total }} {{ currency }}</span></div>
+  <div class="totals-row"><span>طريقة الدفع:</span> <strong>{{ payment_method }}</strong></div>
+  <div class="totals-row"><span>المبلغ المستلم:</span> <span class="num">{{ amount_paid }} {{ currency }}</span></div>
+  <div class="totals-row"><span>الباقي:</span> <span class="num bold">{{ amount_change }} {{ currency }}</span></div>
+
+  <div class="divider"></div>
+
+  <div class="qr-placeholder">
+    [ QR CODE ZATCA/ETA ]
+  </div>
+
+  <div class="footer">
+    شكراً لزيارتكم • البضاعة المباعة ترد وتستبدل خلال 14 يوماً بالفاتورة<br>
+    صادر عبر Vendora POS Engine
+  </div>
+</body>
+</html>

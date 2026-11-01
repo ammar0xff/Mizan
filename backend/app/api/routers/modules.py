@@ -57,13 +57,23 @@ async def list_modules(
         catalog_list.append(d)
 
     presets_list = [asdict(p) for p in BUSINESS_PRESETS.values()]
+    categories = registry.get_categories()
 
     return {
         "active_preset": active_preset,
         "active_modules": active_mods,
         "catalog": catalog_list,
         "presets": presets_list,
+        "categories": categories,
     }
+
+
+@router.get("/categories")
+async def get_module_categories(
+    _=Depends(get_current_user),
+):
+    """Return categorized configuration of all modular ERP suites and specialized collections."""
+    return {"categories": registry.get_categories()}
 
 
 @router.get("/{module_id}/settings")
