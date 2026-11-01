@@ -1,4 +1,6 @@
-# Vendora Frontend Design System
+# ميزان (Mizan) Frontend Design System
+
+Product: multi-tenant SaaS for Egyptian building-materials merchants. App: `mizan-app-liart.vercel.app`.
 
 Canon for all UI work. Every visual value traces to a token here. No rogue values.
 
@@ -6,7 +8,7 @@ Source of truth: `src/styles.css` (oklch tokens, light + dark). Component librar
 
 ## Color
 
-Steel-blue on near-white; constant dark-navy sidebar in both themes.
+Water-blue brand on near-white; the brand **hue is tenant-assignable** (onboarding wizard writes `--brand-hue`, presets: water 250 / emerald 155 / copper 55 / midnight 230). Deep brand-blue rail, constant in both themes.
 
 | Role | Light | Dark |
 |---|---|---|
@@ -19,7 +21,7 @@ Steel-blue on near-white; constant dark-navy sidebar in both themes.
 | warning | `oklch(0.55 0.13 65)` *(AA ≥4.5 on white)* | `oklch(0.75 0.13 75)` |
 | destructive | `oklch(0.55 0.2 27)` | `oklch(0.68 0.19 25)` |
 | sidebar | `oklch(0.25 0.035 230)` | `oklch(0.145 0.013 235)` |
-| chart 1–5 | navy / gold / teal / indigo / slate | same |
+| chart 1–5 | brand / gold / teal / magenta / sky | same |
 
 Rules: color marks state and one primary action per screen — never decoration. All contrast pairs ≥ 4.5:1 (verified). `vk-*` vars in `styles.css` are aliases for the legacy kit only.
 
@@ -65,7 +67,7 @@ The app composes like a trading-house daily sheet, not a SaaS admin template. Th
 
 ## Methodology — docs/ui-ux-kit (binding)
 
-`docs/ui-ux-kit/` is the governing methodology (user-provided kit v2): page contracts before UI (`prompts/page-contract.md`, concise contract comment at the top of each page TSX), repair order contract → structure → tokens/components → states/responsive → polish, preflight gate (`checks/preflight-checklist.md`), and AI-tell scoring (`checks/ai-tell-score.md`, target 0). Its token scaffold is superseded by this file's established steel-blue palette (the kit itself mandates starting from the existing system). Adopted from the kit:
+`docs/ui-ux-kit/` is the governing methodology (user-provided kit v2): page contracts before UI (`prompts/page-contract.md`, concise contract comment at the top of each page TSX), repair order contract → structure → tokens/components → states/responsive → polish, preflight gate (`checks/preflight-checklist.md`), and AI-tell scoring (`checks/ai-tell-score.md`, target 0). Its token scaffold is superseded by this file's established brand-hue palette (the kit itself mandates starting from the existing system). Adopted from the kit:
 
 - Motion constants: spring `stiffness 300 / damping 30` (`components/motion.tsx`), stagger 0.04s, reveal ≤ 0.6s, hover/press ≤ 0.25s — centralized, no per-component timing.
 - No inline `style` props in feature code (brand-art pattern lives in `styles.css` classes; kit chart CSS-var injection is the one sanctioned exception).

@@ -1,210 +1,129 @@
-# Vendora
+# ميزان — Mizan
 
 [![CI/CD](https://github.com/ammar0xff/Vendora/actions/workflows/build.yml/badge.svg)](https://github.com/ammar0xff/Vendora/actions/workflows/build.yml)
 
-Multi-branch ERP backend for a plumbing and building-supplies business: point of sale, inventory, sales and quotations,
-purchasing, accounting, HR/payroll, and per-branch shift management.
+**Multi-tenant SaaS** for Egyptian building-materials and hardware merchants: point of sale,
+inventory, invoicing, purchasing, customers & suppliers, treasuries, reports, and payroll —
+Arabic-first, RTL, built for صالة العرض and the back office alike.
 
-> نظام إدارة متجر سباكة ومواد بناء متعدد الفروع
+> نظام إدارة كامل لنُهُد المواد والبناء — نقطة بيع، مخزون، فواتير، مشتريات، خزائن، وتقارير.
+> سجّل، أجب على ٣ أسئلة، وهتلاقي نظامك شغّال ببيانات تجريبية على قطاعتك — مجانًا ١٤ يوم.
 
-**This repository is currently backend-only.** The previous React frontend (web + Capacitor + Tauri) was removed while
-the production refactoring plan ([docs/REFACTOR_PLAN.md](docs/REFACTOR_PLAN.md)) is executed; its history is preserved
-in git and a rebuild is planned as Phase 7. Everything below describes the FastAPI backend and its live e2e suite.
+| Surface | URL |
+|---|---|
+| **App (canonical)** | https://mizan-app-liart.vercel.app |
+| **API** | https://vendora-backend-six.vercel.app/api |
+| **API docs (OpenAPI)** | https://vendora-backend-six.vercel.app/api/docs |
+| **Public storefront (tenant #1)** | https://vendora-backend-six.vercel.app/api/storefront |
+| Legacy mirror | https://ammar0xff.github.io/Vendora |
+
+The founding workspace (tenant #1) is **الشركة المصرية الألمانية للأدوات الصحية** — admin:
+`ammar` / `changeme`. New merchants self-serve through `/signup` → a 3-step onboarding
+wizard (business activity, company & scale, brand palette + optional features) → a workspace
+pre-seeded with demo data tailored to their sector → a 14-day trial.
 
 ---
 
-## Features
-
-| Area | Capabilities |
-|------|--------------|
-| **POS** | Multiple barcodes per product, discounts, credit sales, partial/full returns, split payments |
-| **Sales & quotations** | Profit tracking, custom pricing, quotation-to-invoice conversion with drawer or safe destination |
-| **Inventory** | O(1) balance reads from the maintained `stock_balances` table, per-warehouse isolation, inter-warehouse transfers, stocktaking, adjustments, reorder suggestions |
-| **Purchasing** | Supplier invoices, purchase orders with receiving, price history per product, supplier price comparison |
-| **Customers & suppliers** | Ledgers, balances and debts, per-invoice payments, credit limits, collections, aging reports |
-| **Finance & accounting** | Profit & loss with expenses, general ledger, safes, customer wallets, cash flow, accounting periods with monthly closing |
-| **HR & payroll** | Attendance (CSV import, ZK fingerprint device sync), payroll engine, approval workflow (draft → review → approve → pay), HTML payslips |
-| **Shifts** | Per-branch shifts with opening/closing cash balances, manager sign-off, custodian (عهدة) handover, revenue delivery |
-| **Archive & printing** | Every document archived automatically; HTML print templates for sales, purchases, inventory, shifts, dispatch, HR reports |
-| **Multi-branch isolation** | Each branch sees only its own data; managers and admins see everything |
-| **Permissions** | Role-based access plus per-feature permissions for every module |
-
-## Tech stack
+## Stack
 
 | Layer | Technology |
-|-------|-----------|
-| API | Python 3.12 (Docker image) / 3.13 (CI) - FastAPI - SQLAlchemy 2.0 (async) - Pydantic v2 |
-| Database | PostgreSQL 16 |
-| Infra | Docker Compose (db + backend) - Vercel deployment option (`backend/vercel.json`, `/api` rewrite) |
-| Quality | Ruff - live-API e2e suite (pytest + httpx, 107 tests) - GitHub Actions CI |
+|---|---|
+| Backend | FastAPI · SQLAlchemy 2.0 async · asyncpg · PostgreSQL 16+ (Neon) |
+| Tenancy | `TenantScoped` mixin on 50 tables · ORM query filter · **PostgreSQL Row-Level Security** |
+| Auth | JWT (httpOnly cookie **or** Bearer) · CSRF double-submit · scoped print tokens |
+| Frontend | React 19 · TypeScript strict · Vite · Tailwind CSS v4 · shadcn/ui v4 kit (@base-ui/react) · Motion · TanStack Query · Zustand · recharts · sonner |
+| Locale | Arabic RTL · IBM Plex Sans Arabic · `ar-EG-u-nu-latn` (Western digits, `.num` class) |
+| Deploys | Backend: Vercel (Git integration) · Frontend: Vercel (CLI) · DB: Neon |
 
-## Getting started
+## Repository map
 
-Requirements: Docker with the Compose plugin.
+```
+backend/
+  app/api/routers/     28 routers (auth, products, stock, sales, shifts, purchases,
+                       parties, finance, hr, payroll, periods, reports, platform, …)
+  app/core/            config, security, tenancy (mixin + query filter + GUC binding)
+  app/models/          52 SQLAlchemy models — 50 tenant-scoped
+  app/services/        business logic incl. demo_seed (sector-tailored workspaces)
+  migrations/          SQL fragments used by tracked migrations
+  main.py              app factory, create_all, middleware
+frontend/
+  src/features/        17 app modules + marketing (landing, pricing, signup, onboarding)
+  src/components/kit/  shadcn/ui v4 components (owned, editable)
+  src/components/app/  PageHeader, StatCard, KpiTile, ListState, TableShell …
+  src/components/      AppShell (navy rail + topbar), shell-parts (Ctrl+K palette, banner)
+  DESIGN_SYSTEM.md     visual canon — tokens, type scale, patterns
+e2e/                   107-test live API suite (httpx + pytest)
+scripts/               migrate.py (tracked SQL migrations), remediate_remote.py, setup.py
+docs/ui-ux-kit/        UI/UX methodology (user-provided canon — do not edit)
+```
+
+## Local development
 
 ```bash
-git clone https://github.com/ammar0xff/Vendora.git
-cd Vendora
+# stack: postgres :5433 · backend :8000
+docker compose up -d
+python3 scripts/migrate.py            # tracked migrations (v0–v32), idempotent
 
-docker compose up -d --build    # db (host :5433) + backend (host :8000)
-python scripts/migrate.py       # apply tracked SQL migrations (idempotent)
+# backend (venv is uv-managed — no pip)
+cd backend && .venv/bin/uvicorn main:app --port 8010   # or the :8000 container
 
-curl http://localhost:8000/health
-open http://localhost:8000/docs # interactive OpenAPI docs
+# frontend
+cd frontend && npm install && npm run dev              # :5173, /api proxied
+
+# tests
+cd frontend && npm test                # 9 vitest unit tests
+cd e2e && .venv/bin/pytest -q \
+  E2E_API_BASE=http://localhost:8000 \
+  E2E_DATABASE_URL=postgresql://postgres:postgres@localhost:5433/inventory_db
+  # ^ the two vars must point at the same server (conftest guards this)
 ```
 
-On first boot PostgreSQL runs `data/sql/init_data.sql`, which seeds the default users, roles, and categories.
+First admin on any fresh volume: `ammar` / `changeme`. `scripts/migrate.py` provisions the
+`tenants` foundation and binds `app.tenant_id` / `app.bypass` into every psql session before
+running the 35 tracked migrations statement-by-statement.
 
-### Default login
+## Multi-tenancy in one paragraph
 
-| Username | Password | Role |
-|----------|----------|------|
-| `ammar` | `changeme` | Admin |
-| `nada` | `changeme` | Accountant (full permissions, `is_manager`) |
+Every business row carries `tenant_id` (`TenantScoped` mixin). Reads/writes are filtered by
+an ORM global criterion driven by a request-scoped ContextVar; inserts are stamped in
+`before_flush`; **and** PostgreSQL RLS (ENABLE + FORCE + `tenant_isolation` policy keyed on
+the `app.tenant_id` GUC) enforces the same rule for the ~160 raw-SQL call sites. Raw INSERTs
+resolve `tenant_id` from a column DEFAULT that reads the same GUC. Tenant deletion
+**cascades** to all workspace data. Migrations run with `app.bypass = 'on'` because the
+application role owns its tables. Signup, storefront, and health are the only unauthenticated
+surfaces; the storefront binds the founding tenant explicitly.
 
-> Change the default passwords before any real use. Note the seeded admin intentionally does **not** carry the
-> `finance` permission (separation of duties); grant it per-user if needed.
+## Deployment
 
-### Roles
+- **Backend** — Vercel project `vendora-backend`, Git integration on `master`, root
+  directory `backend/`, `vercel.json` rewrites `/api/* → /*`. Env vars on Vercel:
+  `DATABASE_URL` (Neon **pooled** URL), `SECRET_KEY`, `APP_ENV=production`,
+  `CORS_ORIGINS` (JSON array — **this Vercel var overrides `config.py`; add new frontend
+  origins there, not only in code**, then redeploy).
+- **Frontend** — Vercel project `mizan-app`, deployed via
+  `npx vercel --prod --yes --token <TOKEN>` from `frontend/`. `vercel.json` sets
+  `VITE_BASE=/` and rewrites every path to `index.html` (SPA, real 200s on deep links).
+  GitHub Pages still auto-mirrors `frontend/**` pushes at the legacy URL.
+- **Database** — Neon `quiet-bread-42676613` / branch `br-still-sunset-aegj3ngq` /
+  endpoint `ep-misty-tooth-aeavzg5g`. Migrations v0–v32 are applied there; for manual runs
+  use the app role with `set_config('app.bypass', 'on')` first.
 
-| Role | Access |
-|------|--------|
-| Admin | Everything (except finance, unless granted) |
-| Manager | Sales, inventory, reports, shifts, finance |
-| Cashier | POS, sales, quotations |
-| Storekeeper | Inventory, operations, purchasing |
-| Accountant | Reports, finance, payroll |
+## Feature map
 
-## API notes for client developers
+| Area | Highlights |
+|---|---|
+| POS | barcode + search, retail/wholesale tiers, credit sales with limits, split payments, hold/resume, offline queue (IndexedDB), F2/F3/Esc shortcuts, shift enforcement |
+| Sales | invoices, quotations → invoice conversion, partial/full returns, cancellation, Excel export, scoped print documents |
+| Inventory | O(1) `stock_balances` reads, per-warehouse valuation, low-stock alerts, transfers, stocktaking, adjustments |
+| Purchasing | supplier invoices, PO receiving, price history, supplier statements |
+| Parties | customer/supplier ledgers, balances, credit limits, collections |
+| Finance | safes, wallets, expenses, cash flow, aging, accounting periods with monthly close |
+| HR/Payroll | attendance (CSV + ZK sync), payroll engine, draft → review → approve → pay, payslips |
+| Platform | self-serve signup, tailored demo seeding, plans & subscription requests, per-tenant brand hue |
+| Storefront | public catalog page for the founding tenant, themed from store settings |
 
-- **Auth** — JWT access tokens delivered as `HttpOnly` cookies (`access_token`) after `POST /auth/login`. Bearer
-  headers also work for non-browser clients.
-- **CSRF** — double-submit cookies: a readable `csrf_token` cookie is issued at login; mutating requests
-  (POST/PUT/PATCH/DELETE) authenticated by cookie must echo it in an `X-CSRF-Token` header. Bearer-authenticated
-  requests are exempt.
-- **Errors** — business errors return Arabic `detail` messages with proper 4xx codes; validation errors are standard
-  FastAPI 422 payloads.
-- **Docs** — full endpoint inventory at `/docs` (OpenAPI).
+## Frontend design system
 
-## Testing
-
-The e2e suite exercises the **live API** end to end (auth, POS sales, returns, purchases, inventory, payroll approval
-flow, shifts/safes, permissions, print documents) and cleans up every row it creates via direct DB access.
-
-```bash
-cd e2e
-python -m venv .venv && .venv/bin/pip install -r requirements.txt
-
-E2E_API_BASE=http://localhost:8000 \
-E2E_DATABASE_URL=postgresql://postgres:postgres@localhost:5433/inventory_db \
-.venv/bin/python -m pytest -q
-```
-
-Both environment variables must point at the **same server** — the harness fails fast on a mismatch, and cleanup
-deletes rows by id straight from the database. CI runs this suite against a fresh compose stack on every push.
-
-## Repository structure
-
-```
-Vendora/
-├── backend/                 # FastAPI service
-│   ├── app/
-│   │   ├── api/routers/     # 27 API routers + print/ sub-package
-│   │   ├── core/            # config, security, roles, rate limiting
-│   │   ├── models/          # SQLAlchemy ORM (all 52 tables)
-│   │   ├── schemas/         # Pydantic v2 request/response schemas
-│   │   ├── services/        # business logic (sale, stock, payroll, reports, ...)
-│   │   └── middleware.py    # CSRF double-submit middleware
-│   ├── migrations/          # SQL fragments referenced by scripts/migrate.py
-│   ├── main.py              # FastAPI entry point
-│   └── tests/               # unit tests
-├── e2e/                     # live-API end-to-end suite (107 tests)
-│   ├── api/                 # one file per domain
-│   ├── tools/schema_drift.py# model ↔ live-DB drift checker
-│   └── helpers.py           # httpx client, DB cleanup, CSRF echo
-├── data/sql/                # init_data.sql seed, prod dumps
-├── scripts/                 # migrate.py (28 tracked migrations), ZK sync, imports
-├── docs/                    # REFACTOR_PLAN.md, audits
-├── manage.py                # ops CLI (setup, deploy, backup, migrate, builds)
-├── install.sh / deploy.sh   # fresh-server setup / SSH production deploy
-├── docker-compose.yml       # db + backend
-├── AGENTS.md                # AI-agent persistent memory / context
-├── SYSTEM.md                # full system architecture reference
-└── TASKS.md                 # features & bugs tracking
-```
-
-## Backend architecture
-
-A single FastAPI app with **239 endpoints across 27 routers**, organized as thin routers → services → models.
-
-- **Auth & security** — JWT `HttpOnly` cookies, CSRF double-submit, bcrypt, login rate limiting (proxy-aware),
-  short-lived scoped print tokens for document views, sanitized `/health`.
-- **Permissions** — `require_perm()` feature guards on every module; warehouse-level access checks.
-- **Concurrency** — hot read-then-write paths (stock balances, safes, wallets, shifts) use `SELECT ... FOR UPDATE` +
-  advisory locks; `stock_balances` rows update atomically in each movement's transaction.
-- **Services** — `sale_service`, `stock_service`, `purchase_service`, `product_service`, `ledger_service`,
-  `payroll_engine`/`payroll_service`, `shift_service`, `report_service`, `hr_reports`.
-- **Migrations** — schema bootstrap via `Base.metadata.create_all` on startup, then tracked idempotent SQL migrations
-  in `scripts/migrate.py` (recorded in `schema_migrations`, safe to re-run).
-- **Monitoring** — audit log records every mutating action with old/new values.
-
-## Operations
-
-### manage.py
-
-| Command | What it does |
-|---------|--------------|
-| `setup` | First-time setup (check Docker, build, start) |
-| `deploy` | Update code, backup, migrate DB (safe) |
-| `build` | Build Docker images without deploying |
-| `deploy-fresh` | Wipe data and load `init_data.sql` |
-| `stop` / `restart` / `status` | Service lifecycle + health |
-| `backup` / `restore` | pg_dump backup to `backups/`, restore from file |
-| `migrate` | Apply incremental SQL migrations (idempotent) |
-| `logs` / `list-backups` | Tail logs, list backups |
-
-### Fresh server setup
-
-```bash
-bash install.sh
-python scripts/setup.py --domain your.domain.com
-```
-
-### Deployments
-
-- **Docker Compose** (self-host): `db` + `backend` containers; `deploy.sh` pushes `master`, SSHes in, migrates,
-  rebuilds, and health-checks.
-- **Vercel** (serverless preview): `backend/vercel.json` rewrites `/api/*` → backend routes.
-
-## CI/CD
-
-`.github/workflows/build.yml` on every push/PR:
-
-1. **Backend CI** — dependency install, app import check, ruff lint.
-2. **E2E** — boots the real compose stack, applies migrations, runs the 107-test live-API suite.
-3. **Manage check** — `manage.py` compiles and `--help` renders.
-4. On **master/main push**: builds `vendora-backend:beta` and pushes to `ghcr.io`.
-5. On **`v*` tags**: stable backend image to Docker Hub (when secrets are configured).
-
-## Configuration
-
-| Variable | Where | Purpose |
-|----------|-------|---------|
-| `DATABASE_URL` | `backend/.env` / compose | asyncpg connection string |
-| `SECRET_KEY` | `backend/.env` / compose | JWT signing (must be random in production) |
-| `APP_ENV` | `backend/.env` / compose | `production` enforces a real `SECRET_KEY` |
-| `FIREBASE_CREDENTIALS` | compose | optional FCM service account (push) |
-
-## Documentation
-
-| File | Purpose |
-|------|---------|
-| `SYSTEM.md` | Full architecture: roles, tables, API, workflows |
-| `TASKS.md` | Features and bug-fixing status |
-| `AGENTS.md` | AI-agent persistent memory / session context |
-| `docs/REFACTOR_PLAN.md` | Production refactoring plan (phases P0-P8) and progress |
-| `docs/AUDIT.md` | Backend audit log |
-
-## License
-
-Proprietary - all rights reserved. No open-source license is granted.
+`frontend/DESIGN_SYSTEM.md` is the binding visual canon (steel-blue/water tokens, type and
+icon scales, touch floors, composition language). `docs/ui-ux-kit/` is the binding
+methodology (page contracts, states, preflight, AI-tell score). Read both before touching UI.
