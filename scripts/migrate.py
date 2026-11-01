@@ -1265,6 +1265,55 @@ MIGRATIONS = [
         ALTER TABLE warehouses DROP CONSTRAINT IF EXISTS warehouses_tenant_id_fkey;
         ALTER TABLE warehouses ADD CONSTRAINT warehouses_tenant_id_fkey FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE;
     """),
+    ("v33_tenant_constraints_and_demo", """
+        -- 1. Fix global product_barcodes uniqueness to composite (tenant_id, barcode)
+        DROP INDEX IF EXISTS ix_product_barcodes_barcode;
+        ALTER TABLE product_barcodes DROP CONSTRAINT IF EXISTS product_barcodes_barcode_key;
+        CREATE UNIQUE INDEX IF NOT EXISTS uq_product_barcodes_tenant_barcode ON product_barcodes(tenant_id, barcode);
+
+        -- 2. Drop redundant global unique index on accounting_periods(month)
+        DROP INDEX IF EXISTS idx_accounting_periods_month;
+
+        -- 3. Fix safe_deposits uniqueness to composite (tenant_id, doc_number)
+        ALTER TABLE safe_deposits DROP CONSTRAINT IF EXISTS safe_deposits_doc_number_key;
+        CREATE UNIQUE INDEX IF NOT EXISTS uq_safe_deposits_tenant_doc_number ON safe_deposits(tenant_id, doc_number);
+
+        -- 4. Harden users table: backfill, NOT NULL tenant_id, composite unique, and RLS
+        UPDATE users SET tenant_id = (SELECT id FROM tenants ORDER BY created_at LIMIT 1) WHERE tenant_id IS NULL;
+        ALTER TABLE users ALTER COLUMN tenant_id SET NOT NULL;
+        ALTER TABLE users ALTER COLUMN tenant_id SET DEFAULT NULLIF(current_setting('app.tenant_id', true), '')::uuid;
+        ALTER TABLE users DROP CONSTRAINT IF EXISTS users_username_key;
+        CREATE UNIQUE INDEX IF NOT EXISTS uq_users_tenant_username ON users(tenant_id, username);
+        ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+        ALTER TABLE users FORCE ROW LEVEL SECURITY;
+        DO $fn$
+        BEGIN
+          IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'users' AND policyname = 'tenant_isolation') THEN
+            CREATE POLICY tenant_isolation ON users
+              USING (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid OR current_setting('app.bypass', true) = 'on')
+              WITH CHECK (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid OR current_setting('app.bypass', true) = 'on');
+          END IF;
+        END
+        $fn$;
+
+        -- 5. Add is_demo column to business tables for clean onboarding demo wipes
+        DO $fn$
+        DECLARE
+          tbl text;
+        BEGIN
+          FOR tbl IN SELECT unnest(ARRAY[
+            'products', 'categories', 'subcategories', 'warehouses', 'customers', 'suppliers',
+            'payment_wallets', 'safes', 'sales', 'sale_items', 'sale_payments', 'stock_movements',
+            'stock_balances', 'drawer_transactions', 'purchase_orders', 'purchase_order_items', 'users'
+          ]) LOOP
+            IF to_regclass('public.' || tbl) IS NOT NULL THEN
+              EXECUTE 'ALTER TABLE ' || tbl || ' ADD COLUMN IF NOT EXISTS is_demo BOOLEAN NOT NULL DEFAULT FALSE;';
+              EXECUTE 'CREATE INDEX IF NOT EXISTS idx_' || tbl || '_is_demo ON ' || tbl || '(is_demo) WHERE is_demo = TRUE;';
+            END IF;
+          END LOOP;
+        END
+        $fn$;
+    """),
 ]
 
 def ensure_foundation():
@@ -1289,55 +1338,56 @@ def ensure_foundation():
         -- pre-tenancy migration INSERTs resolve tenant_id from this GUC default
         DO $fn$
         BEGIN
-            IF to_regclass('public.accounting_periods') IS NOT NULL THEN ALTER TABLE accounting_periods ALTER COLUMN tenant_id SET DEFAULT current_setting('app.tenant_id', true)::uuid; END IF;
-            IF to_regclass('public.archived_documents') IS NOT NULL THEN ALTER TABLE archived_documents ALTER COLUMN tenant_id SET DEFAULT current_setting('app.tenant_id', true)::uuid; END IF;
-            IF to_regclass('public.audit_log') IS NOT NULL THEN ALTER TABLE audit_log ALTER COLUMN tenant_id SET DEFAULT current_setting('app.tenant_id', true)::uuid; END IF;
-            IF to_regclass('public.categories') IS NOT NULL THEN ALTER TABLE categories ALTER COLUMN tenant_id SET DEFAULT current_setting('app.tenant_id', true)::uuid; END IF;
-            IF to_regclass('public.collection_items') IS NOT NULL THEN ALTER TABLE collection_items ALTER COLUMN tenant_id SET DEFAULT current_setting('app.tenant_id', true)::uuid; END IF;
-            IF to_regclass('public.customer_payments') IS NOT NULL THEN ALTER TABLE customer_payments ALTER COLUMN tenant_id SET DEFAULT current_setting('app.tenant_id', true)::uuid; END IF;
-            IF to_regclass('public.customers') IS NOT NULL THEN ALTER TABLE customers ALTER COLUMN tenant_id SET DEFAULT current_setting('app.tenant_id', true)::uuid; END IF;
-            IF to_regclass('public.device_tokens') IS NOT NULL THEN ALTER TABLE device_tokens ALTER COLUMN tenant_id SET DEFAULT current_setting('app.tenant_id', true)::uuid; END IF;
-            IF to_regclass('public.drawer_transactions') IS NOT NULL THEN ALTER TABLE drawer_transactions ALTER COLUMN tenant_id SET DEFAULT current_setting('app.tenant_id', true)::uuid; END IF;
-            IF to_regclass('public.employees') IS NOT NULL THEN ALTER TABLE employees ALTER COLUMN tenant_id SET DEFAULT current_setting('app.tenant_id', true)::uuid; END IF;
-            IF to_regclass('public.expense_vendors') IS NOT NULL THEN ALTER TABLE expense_vendors ALTER COLUMN tenant_id SET DEFAULT current_setting('app.tenant_id', true)::uuid; END IF;
-            IF to_regclass('public.expenses') IS NOT NULL THEN ALTER TABLE expenses ALTER COLUMN tenant_id SET DEFAULT current_setting('app.tenant_id', true)::uuid; END IF;
-            IF to_regclass('public.financial_categories') IS NOT NULL THEN ALTER TABLE financial_categories ALTER COLUMN tenant_id SET DEFAULT current_setting('app.tenant_id', true)::uuid; END IF;
-            IF to_regclass('public.hr_advances') IS NOT NULL THEN ALTER TABLE hr_advances ALTER COLUMN tenant_id SET DEFAULT current_setting('app.tenant_id', true)::uuid; END IF;
-            IF to_regclass('public.hr_attendance') IS NOT NULL THEN ALTER TABLE hr_attendance ALTER COLUMN tenant_id SET DEFAULT current_setting('app.tenant_id', true)::uuid; END IF;
-            IF to_regclass('public.hr_audit_log') IS NOT NULL THEN ALTER TABLE hr_audit_log ALTER COLUMN tenant_id SET DEFAULT current_setting('app.tenant_id', true)::uuid; END IF;
-            IF to_regclass('public.hr_employees') IS NOT NULL THEN ALTER TABLE hr_employees ALTER COLUMN tenant_id SET DEFAULT current_setting('app.tenant_id', true)::uuid; END IF;
-            IF to_regclass('public.hr_payroll') IS NOT NULL THEN ALTER TABLE hr_payroll ALTER COLUMN tenant_id SET DEFAULT current_setting('app.tenant_id', true)::uuid; END IF;
-            IF to_regclass('public.hr_payroll_entries') IS NOT NULL THEN ALTER TABLE hr_payroll_entries ALTER COLUMN tenant_id SET DEFAULT current_setting('app.tenant_id', true)::uuid; END IF;
-            IF to_regclass('public.hr_payroll_periods') IS NOT NULL THEN ALTER TABLE hr_payroll_periods ALTER COLUMN tenant_id SET DEFAULT current_setting('app.tenant_id', true)::uuid; END IF;
-            IF to_regclass('public.hr_settings') IS NOT NULL THEN ALTER TABLE hr_settings ALTER COLUMN tenant_id SET DEFAULT current_setting('app.tenant_id', true)::uuid; END IF;
-            IF to_regclass('public.hr_shifts') IS NOT NULL THEN ALTER TABLE hr_shifts ALTER COLUMN tenant_id SET DEFAULT current_setting('app.tenant_id', true)::uuid; END IF;
-            IF to_regclass('public.hr_sync_log') IS NOT NULL THEN ALTER TABLE hr_sync_log ALTER COLUMN tenant_id SET DEFAULT current_setting('app.tenant_id', true)::uuid; END IF;
-            IF to_regclass('public.payment_wallets') IS NOT NULL THEN ALTER TABLE payment_wallets ALTER COLUMN tenant_id SET DEFAULT current_setting('app.tenant_id', true)::uuid; END IF;
-            IF to_regclass('public.payroll_entries') IS NOT NULL THEN ALTER TABLE payroll_entries ALTER COLUMN tenant_id SET DEFAULT current_setting('app.tenant_id', true)::uuid; END IF;
-            IF to_regclass('public.product_barcodes') IS NOT NULL THEN ALTER TABLE product_barcodes ALTER COLUMN tenant_id SET DEFAULT current_setting('app.tenant_id', true)::uuid; END IF;
-            IF to_regclass('public.product_collections') IS NOT NULL THEN ALTER TABLE product_collections ALTER COLUMN tenant_id SET DEFAULT current_setting('app.tenant_id', true)::uuid; END IF;
-            IF to_regclass('public.product_images') IS NOT NULL THEN ALTER TABLE product_images ALTER COLUMN tenant_id SET DEFAULT current_setting('app.tenant_id', true)::uuid; END IF;
-            IF to_regclass('public.products') IS NOT NULL THEN ALTER TABLE products ALTER COLUMN tenant_id SET DEFAULT current_setting('app.tenant_id', true)::uuid; END IF;
-            IF to_regclass('public.purchase_order_items') IS NOT NULL THEN ALTER TABLE purchase_order_items ALTER COLUMN tenant_id SET DEFAULT current_setting('app.tenant_id', true)::uuid; END IF;
-            IF to_regclass('public.purchase_orders') IS NOT NULL THEN ALTER TABLE purchase_orders ALTER COLUMN tenant_id SET DEFAULT current_setting('app.tenant_id', true)::uuid; END IF;
-            IF to_regclass('public.purchase_price_history') IS NOT NULL THEN ALTER TABLE purchase_price_history ALTER COLUMN tenant_id SET DEFAULT current_setting('app.tenant_id', true)::uuid; END IF;
-            IF to_regclass('public.safe_deposits') IS NOT NULL THEN ALTER TABLE safe_deposits ALTER COLUMN tenant_id SET DEFAULT current_setting('app.tenant_id', true)::uuid; END IF;
-            IF to_regclass('public.safe_transactions') IS NOT NULL THEN ALTER TABLE safe_transactions ALTER COLUMN tenant_id SET DEFAULT current_setting('app.tenant_id', true)::uuid; END IF;
-            IF to_regclass('public.safes') IS NOT NULL THEN ALTER TABLE safes ALTER COLUMN tenant_id SET DEFAULT current_setting('app.tenant_id', true)::uuid; END IF;
-            IF to_regclass('public.sale_items') IS NOT NULL THEN ALTER TABLE sale_items ALTER COLUMN tenant_id SET DEFAULT current_setting('app.tenant_id', true)::uuid; END IF;
-            IF to_regclass('public.sale_payments') IS NOT NULL THEN ALTER TABLE sale_payments ALTER COLUMN tenant_id SET DEFAULT current_setting('app.tenant_id', true)::uuid; END IF;
-            IF to_regclass('public.sales') IS NOT NULL THEN ALTER TABLE sales ALTER COLUMN tenant_id SET DEFAULT current_setting('app.tenant_id', true)::uuid; END IF;
-            IF to_regclass('public.shifts') IS NOT NULL THEN ALTER TABLE shifts ALTER COLUMN tenant_id SET DEFAULT current_setting('app.tenant_id', true)::uuid; END IF;
-            IF to_regclass('public.stock_balances') IS NOT NULL THEN ALTER TABLE stock_balances ALTER COLUMN tenant_id SET DEFAULT current_setting('app.tenant_id', true)::uuid; END IF;
-            IF to_regclass('public.stock_movements') IS NOT NULL THEN ALTER TABLE stock_movements ALTER COLUMN tenant_id SET DEFAULT current_setting('app.tenant_id', true)::uuid; END IF;
-            IF to_regclass('public.store_settings') IS NOT NULL THEN ALTER TABLE store_settings ALTER COLUMN tenant_id SET DEFAULT current_setting('app.tenant_id', true)::uuid; END IF;
-            IF to_regclass('public.subcategories') IS NOT NULL THEN ALTER TABLE subcategories ALTER COLUMN tenant_id SET DEFAULT current_setting('app.tenant_id', true)::uuid; END IF;
-            IF to_regclass('public.supplier_prices') IS NOT NULL THEN ALTER TABLE supplier_prices ALTER COLUMN tenant_id SET DEFAULT current_setting('app.tenant_id', true)::uuid; END IF;
-            IF to_regclass('public.supplier_transactions') IS NOT NULL THEN ALTER TABLE supplier_transactions ALTER COLUMN tenant_id SET DEFAULT current_setting('app.tenant_id', true)::uuid; END IF;
-            IF to_regclass('public.suppliers') IS NOT NULL THEN ALTER TABLE suppliers ALTER COLUMN tenant_id SET DEFAULT current_setting('app.tenant_id', true)::uuid; END IF;
-            IF to_regclass('public.wallet_transactions') IS NOT NULL THEN ALTER TABLE wallet_transactions ALTER COLUMN tenant_id SET DEFAULT current_setting('app.tenant_id', true)::uuid; END IF;
-            IF to_regclass('public.warehouse_product_status') IS NOT NULL THEN ALTER TABLE warehouse_product_status ALTER COLUMN tenant_id SET DEFAULT current_setting('app.tenant_id', true)::uuid; END IF;
-            IF to_regclass('public.warehouses') IS NOT NULL THEN ALTER TABLE warehouses ALTER COLUMN tenant_id SET DEFAULT current_setting('app.tenant_id', true)::uuid; END IF;
+            IF to_regclass('public.accounting_periods') IS NOT NULL THEN ALTER TABLE accounting_periods ALTER COLUMN tenant_id SET DEFAULT NULLIF(current_setting('app.tenant_id', true), '')::uuid; END IF;
+            IF to_regclass('public.archived_documents') IS NOT NULL THEN ALTER TABLE archived_documents ALTER COLUMN tenant_id SET DEFAULT NULLIF(current_setting('app.tenant_id', true), '')::uuid; END IF;
+            IF to_regclass('public.audit_log') IS NOT NULL THEN ALTER TABLE audit_log ALTER COLUMN tenant_id SET DEFAULT NULLIF(current_setting('app.tenant_id', true), '')::uuid; END IF;
+            IF to_regclass('public.categories') IS NOT NULL THEN ALTER TABLE categories ALTER COLUMN tenant_id SET DEFAULT NULLIF(current_setting('app.tenant_id', true), '')::uuid; END IF;
+            IF to_regclass('public.collection_items') IS NOT NULL THEN ALTER TABLE collection_items ALTER COLUMN tenant_id SET DEFAULT NULLIF(current_setting('app.tenant_id', true), '')::uuid; END IF;
+            IF to_regclass('public.customer_payments') IS NOT NULL THEN ALTER TABLE customer_payments ALTER COLUMN tenant_id SET DEFAULT NULLIF(current_setting('app.tenant_id', true), '')::uuid; END IF;
+            IF to_regclass('public.customers') IS NOT NULL THEN ALTER TABLE customers ALTER COLUMN tenant_id SET DEFAULT NULLIF(current_setting('app.tenant_id', true), '')::uuid; END IF;
+            IF to_regclass('public.device_tokens') IS NOT NULL THEN ALTER TABLE device_tokens ALTER COLUMN tenant_id SET DEFAULT NULLIF(current_setting('app.tenant_id', true), '')::uuid; END IF;
+            IF to_regclass('public.drawer_transactions') IS NOT NULL THEN ALTER TABLE drawer_transactions ALTER COLUMN tenant_id SET DEFAULT NULLIF(current_setting('app.tenant_id', true), '')::uuid; END IF;
+            IF to_regclass('public.employees') IS NOT NULL THEN ALTER TABLE employees ALTER COLUMN tenant_id SET DEFAULT NULLIF(current_setting('app.tenant_id', true), '')::uuid; END IF;
+            IF to_regclass('public.expense_vendors') IS NOT NULL THEN ALTER TABLE expense_vendors ALTER COLUMN tenant_id SET DEFAULT NULLIF(current_setting('app.tenant_id', true), '')::uuid; END IF;
+            IF to_regclass('public.expenses') IS NOT NULL THEN ALTER TABLE expenses ALTER COLUMN tenant_id SET DEFAULT NULLIF(current_setting('app.tenant_id', true), '')::uuid; END IF;
+            IF to_regclass('public.financial_categories') IS NOT NULL THEN ALTER TABLE financial_categories ALTER COLUMN tenant_id SET DEFAULT NULLIF(current_setting('app.tenant_id', true), '')::uuid; END IF;
+            IF to_regclass('public.hr_advances') IS NOT NULL THEN ALTER TABLE hr_advances ALTER COLUMN tenant_id SET DEFAULT NULLIF(current_setting('app.tenant_id', true), '')::uuid; END IF;
+            IF to_regclass('public.hr_attendance') IS NOT NULL THEN ALTER TABLE hr_attendance ALTER COLUMN tenant_id SET DEFAULT NULLIF(current_setting('app.tenant_id', true), '')::uuid; END IF;
+            IF to_regclass('public.hr_audit_log') IS NOT NULL THEN ALTER TABLE hr_audit_log ALTER COLUMN tenant_id SET DEFAULT NULLIF(current_setting('app.tenant_id', true), '')::uuid; END IF;
+            IF to_regclass('public.hr_employees') IS NOT NULL THEN ALTER TABLE hr_employees ALTER COLUMN tenant_id SET DEFAULT NULLIF(current_setting('app.tenant_id', true), '')::uuid; END IF;
+            IF to_regclass('public.hr_payroll') IS NOT NULL THEN ALTER TABLE hr_payroll ALTER COLUMN tenant_id SET DEFAULT NULLIF(current_setting('app.tenant_id', true), '')::uuid; END IF;
+            IF to_regclass('public.hr_payroll_entries') IS NOT NULL THEN ALTER TABLE hr_payroll_entries ALTER COLUMN tenant_id SET DEFAULT NULLIF(current_setting('app.tenant_id', true), '')::uuid; END IF;
+            IF to_regclass('public.hr_payroll_periods') IS NOT NULL THEN ALTER TABLE hr_payroll_periods ALTER COLUMN tenant_id SET DEFAULT NULLIF(current_setting('app.tenant_id', true), '')::uuid; END IF;
+            IF to_regclass('public.hr_settings') IS NOT NULL THEN ALTER TABLE hr_settings ALTER COLUMN tenant_id SET DEFAULT NULLIF(current_setting('app.tenant_id', true), '')::uuid; END IF;
+            IF to_regclass('public.hr_shifts') IS NOT NULL THEN ALTER TABLE hr_shifts ALTER COLUMN tenant_id SET DEFAULT NULLIF(current_setting('app.tenant_id', true), '')::uuid; END IF;
+            IF to_regclass('public.hr_sync_log') IS NOT NULL THEN ALTER TABLE hr_sync_log ALTER COLUMN tenant_id SET DEFAULT NULLIF(current_setting('app.tenant_id', true), '')::uuid; END IF;
+            IF to_regclass('public.payment_wallets') IS NOT NULL THEN ALTER TABLE payment_wallets ALTER COLUMN tenant_id SET DEFAULT NULLIF(current_setting('app.tenant_id', true), '')::uuid; END IF;
+            IF to_regclass('public.payroll_entries') IS NOT NULL THEN ALTER TABLE payroll_entries ALTER COLUMN tenant_id SET DEFAULT NULLIF(current_setting('app.tenant_id', true), '')::uuid; END IF;
+            IF to_regclass('public.product_barcodes') IS NOT NULL THEN ALTER TABLE product_barcodes ALTER COLUMN tenant_id SET DEFAULT NULLIF(current_setting('app.tenant_id', true), '')::uuid; END IF;
+            IF to_regclass('public.product_collections') IS NOT NULL THEN ALTER TABLE product_collections ALTER COLUMN tenant_id SET DEFAULT NULLIF(current_setting('app.tenant_id', true), '')::uuid; END IF;
+            IF to_regclass('public.product_images') IS NOT NULL THEN ALTER TABLE product_images ALTER COLUMN tenant_id SET DEFAULT NULLIF(current_setting('app.tenant_id', true), '')::uuid; END IF;
+            IF to_regclass('public.products') IS NOT NULL THEN ALTER TABLE products ALTER COLUMN tenant_id SET DEFAULT NULLIF(current_setting('app.tenant_id', true), '')::uuid; END IF;
+            IF to_regclass('public.purchase_order_items') IS NOT NULL THEN ALTER TABLE purchase_order_items ALTER COLUMN tenant_id SET DEFAULT NULLIF(current_setting('app.tenant_id', true), '')::uuid; END IF;
+            IF to_regclass('public.purchase_orders') IS NOT NULL THEN ALTER TABLE purchase_orders ALTER COLUMN tenant_id SET DEFAULT NULLIF(current_setting('app.tenant_id', true), '')::uuid; END IF;
+            IF to_regclass('public.purchase_price_history') IS NOT NULL THEN ALTER TABLE purchase_price_history ALTER COLUMN tenant_id SET DEFAULT NULLIF(current_setting('app.tenant_id', true), '')::uuid; END IF;
+            IF to_regclass('public.safe_deposits') IS NOT NULL THEN ALTER TABLE safe_deposits ALTER COLUMN tenant_id SET DEFAULT NULLIF(current_setting('app.tenant_id', true), '')::uuid; END IF;
+            IF to_regclass('public.safe_transactions') IS NOT NULL THEN ALTER TABLE safe_transactions ALTER COLUMN tenant_id SET DEFAULT NULLIF(current_setting('app.tenant_id', true), '')::uuid; END IF;
+            IF to_regclass('public.safes') IS NOT NULL THEN ALTER TABLE safes ALTER COLUMN tenant_id SET DEFAULT NULLIF(current_setting('app.tenant_id', true), '')::uuid; END IF;
+            IF to_regclass('public.sale_items') IS NOT NULL THEN ALTER TABLE sale_items ALTER COLUMN tenant_id SET DEFAULT NULLIF(current_setting('app.tenant_id', true), '')::uuid; END IF;
+            IF to_regclass('public.sale_payments') IS NOT NULL THEN ALTER TABLE sale_payments ALTER COLUMN tenant_id SET DEFAULT NULLIF(current_setting('app.tenant_id', true), '')::uuid; END IF;
+            IF to_regclass('public.sales') IS NOT NULL THEN ALTER TABLE sales ALTER COLUMN tenant_id SET DEFAULT NULLIF(current_setting('app.tenant_id', true), '')::uuid; END IF;
+            IF to_regclass('public.shifts') IS NOT NULL THEN ALTER TABLE shifts ALTER COLUMN tenant_id SET DEFAULT NULLIF(current_setting('app.tenant_id', true), '')::uuid; END IF;
+            IF to_regclass('public.stock_balances') IS NOT NULL THEN ALTER TABLE stock_balances ALTER COLUMN tenant_id SET DEFAULT NULLIF(current_setting('app.tenant_id', true), '')::uuid; END IF;
+            IF to_regclass('public.stock_movements') IS NOT NULL THEN ALTER TABLE stock_movements ALTER COLUMN tenant_id SET DEFAULT NULLIF(current_setting('app.tenant_id', true), '')::uuid; END IF;
+            IF to_regclass('public.store_settings') IS NOT NULL THEN ALTER TABLE store_settings ALTER COLUMN tenant_id SET DEFAULT NULLIF(current_setting('app.tenant_id', true), '')::uuid; END IF;
+            IF to_regclass('public.subcategories') IS NOT NULL THEN ALTER TABLE subcategories ALTER COLUMN tenant_id SET DEFAULT NULLIF(current_setting('app.tenant_id', true), '')::uuid; END IF;
+            IF to_regclass('public.supplier_prices') IS NOT NULL THEN ALTER TABLE supplier_prices ALTER COLUMN tenant_id SET DEFAULT NULLIF(current_setting('app.tenant_id', true), '')::uuid; END IF;
+            IF to_regclass('public.supplier_transactions') IS NOT NULL THEN ALTER TABLE supplier_transactions ALTER COLUMN tenant_id SET DEFAULT NULLIF(current_setting('app.tenant_id', true), '')::uuid; END IF;
+            IF to_regclass('public.suppliers') IS NOT NULL THEN ALTER TABLE suppliers ALTER COLUMN tenant_id SET DEFAULT NULLIF(current_setting('app.tenant_id', true), '')::uuid; END IF;
+            IF to_regclass('public.users') IS NOT NULL THEN ALTER TABLE users ALTER COLUMN tenant_id SET DEFAULT NULLIF(current_setting('app.tenant_id', true), '')::uuid; END IF;
+            IF to_regclass('public.wallet_transactions') IS NOT NULL THEN ALTER TABLE wallet_transactions ALTER COLUMN tenant_id SET DEFAULT NULLIF(current_setting('app.tenant_id', true), '')::uuid; END IF;
+            IF to_regclass('public.warehouse_product_status') IS NOT NULL THEN ALTER TABLE warehouse_product_status ALTER COLUMN tenant_id SET DEFAULT NULLIF(current_setting('app.tenant_id', true), '')::uuid; END IF;
+            IF to_regclass('public.warehouses') IS NOT NULL THEN ALTER TABLE warehouses ALTER COLUMN tenant_id SET DEFAULT NULLIF(current_setting('app.tenant_id', true), '')::uuid; END IF;
         END
         $fn$;
     """

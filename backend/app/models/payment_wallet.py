@@ -20,6 +20,7 @@ class PaymentWallet(TenantScoped, Base):
     phone: Mapped[str | None] = mapped_column(String(32), nullable=True)
     balance: Mapped[Decimal] = mapped_column(Numeric(14, 2), default=Decimal("0"))
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    is_demo: Mapped[bool] = mapped_column(Boolean, default=False, server_default=func.false())
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     __table_args__ = (UniqueConstraint("tenant_id", "name", name="uq_payment_wallets_name"),)
 

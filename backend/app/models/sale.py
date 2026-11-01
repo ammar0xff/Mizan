@@ -47,6 +47,7 @@ class Sale(TenantScoped, Base):
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     returns_total: Mapped[Decimal | None] = mapped_column(Numeric(12, 2), nullable=True, default=0)
     last_paid_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    is_demo: Mapped[bool] = mapped_column(Boolean, default=False, server_default=func.false())
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), index=True)
 
     items: Mapped[list["SaleItem"]] = relationship(back_populates="sale", cascade="all, delete-orphan")
@@ -62,5 +63,6 @@ class SaleItem(TenantScoped, Base):
     unit_price: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
     unit_cost: Mapped[Decimal] = mapped_column(Numeric(12, 2), default=0)
     discount: Mapped[Decimal] = mapped_column(Numeric(12, 2), default=0)
+    is_demo: Mapped[bool] = mapped_column(Boolean, default=False, server_default=func.false())
 
     sale: Mapped["Sale"] = relationship(back_populates="items")

@@ -59,6 +59,8 @@ class SaleCreate(BaseModel):
     notes: str | None = None
     payments: list[SplitPaymentItem] | None = None
     local_id: str | None = None  # idempotency key for offline sync dedup
+    allow_negative_stock: bool = False
+    is_offline_sync: bool = False
 
 
 class UpdateSaleItem(BaseModel):

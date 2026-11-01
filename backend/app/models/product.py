@@ -17,6 +17,7 @@ class Category(TenantScoped, Base):
     name: Mapped[str] = mapped_column(String(128), index=True, nullable=False)
     code: Mapped[str | None] = mapped_column(String(32), nullable=True, index=True)
     image_url: Mapped[str | None] = mapped_column(String(512), nullable=True)
+    is_demo: Mapped[bool] = mapped_column(Boolean, default=False, server_default=func.false())
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     subcategories: Mapped[list["Subcategory"]] = relationship(back_populates="category", cascade="all, delete-orphan")
@@ -29,6 +30,7 @@ class Subcategory(TenantScoped, Base):
     category_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("categories.id", ondelete="CASCADE"))
     name: Mapped[str] = mapped_column(String(128), nullable=False)
     code: Mapped[str | None] = mapped_column(String(32), nullable=True, index=True)
+    is_demo: Mapped[bool] = mapped_column(Boolean, default=False, server_default=func.false())
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     category: Mapped["Category"] = relationship(back_populates="subcategories")
@@ -59,6 +61,7 @@ class Product(TenantScoped, Base):
     image_url: Mapped[str | None] = mapped_column(String(512), nullable=True)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    is_demo: Mapped[bool] = mapped_column(Boolean, default=False, server_default=func.false())
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
@@ -83,10 +86,11 @@ class ProductImage(TenantScoped, Base):
 
 class ProductBarcode(TenantScoped, Base):
     __tablename__ = "product_barcodes"
+    __table_args__ = (UniqueConstraint("tenant_id", "barcode", name="uq_product_barcodes_tenant_barcode"),)
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     product_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("products.id", ondelete="CASCADE"))
-    barcode: Mapped[str] = mapped_column(String(64), unique=True, nullable=False, index=True)
+    barcode: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
     is_primary: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 

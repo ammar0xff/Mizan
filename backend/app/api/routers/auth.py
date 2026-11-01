@@ -76,7 +76,7 @@ async def change_password(data: UserPasswordUpdate, current_user: User = Depends
 @router.post("/print-token")
 async def issue_print_token(current_user: User = Depends(get_current_user)):
     token = create_access_token(
-        {"sub": str(current_user.id), "scope": "print"},
+        {"sub": str(current_user.id), "scope": "print", "tid": str(current_user.tenant_id)},
         expires_delta=timedelta(seconds=60),
     )
     return {"token": token}

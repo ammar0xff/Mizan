@@ -289,6 +289,7 @@ async def create_sale(db: AsyncSession, data, cashier_id: uuid.UUID) -> Sale:
         shift = await db.get(Shift, data.shift_id)
         if not shift or shift.cashier_id != cashier_id:
             raise BusinessError("هذه الوردية لا تخصك")
+    allow_neg = bool(getattr(data, "allow_negative_stock", False) or getattr(data, "is_offline_sync", False) or getattr(data, "local_id", None))
     for item in sorted_items:
         if not await _is_untracked(db, item.product_id, data.warehouse_id):
             balance = await get_balance(db, item.product_id, data.warehouse_id, for_update=True)
@@ -296,7 +297,23 @@ async def create_sale(db: AsyncSession, data, cashier_id: uuid.UUID) -> Sale:
                 from sqlalchemy import text as sqlt
                 prod = await db.execute(sqlt("SELECT name FROM products WHERE id=:id"), {"id": item.product_id})
                 prod_name = prod.scalar() or str(item.product_id)
-                raise BusinessError(f"المخزون غير كافي لـ {prod_name}")
+                if not allow_neg:
+                    raise BusinessError(f"المخزون غير كافي لـ {prod_name}")
+                from app.models.audit_log import AuditLog
+                db.add(AuditLog(
+                    user_id=cashier_id,
+                    action="inventory_discrepancy",
+                    entity_type="product",
+                    entity_id=item.product_id,
+                    details={
+                        "note": f"عجز مخزون ناتج عن مزامنة غير متصلة لـ {prod_name}",
+                        "product_name": prod_name,
+                        "warehouse_id": str(data.warehouse_id),
+                        "balance_before": float(balance),
+                        "sold_qty": float(item.qty),
+                        "deficit": float(item.qty - balance),
+                    },
+                ))
 
     if data.is_credit and data.customer_id:
         from sqlalchemy import text as sqlt

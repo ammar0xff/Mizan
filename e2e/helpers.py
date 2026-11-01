@@ -67,6 +67,7 @@ class Api:
                 continue
             assert r.status_code == 200, f"login failed {r.status_code}: {r.text[:300]}"
             self.token = r.json()["access_token"]
+            self.client.headers["Authorization"] = f"Bearer {self.token}"
             self.username = username
             return r.json()
         raise AssertionError(f"login rate-limited after {attempts} attempts: {last.text[:200]}")

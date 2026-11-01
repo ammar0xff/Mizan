@@ -78,6 +78,7 @@ async def seed_demo(db: AsyncSession, tenant_id: uuid.UUID, owner_id: uuid.UUID,
         warehouses.append(Warehouse(
             id=uuid.uuid4(), code=f"WH{i+1}", name=BRANCH_NAMES[i % len(BRANCH_NAMES)],
             warehouse_type="showroom" if i == 0 else "warehouse",
+            is_demo=True,
         ))
     db.add_all(warehouses)
     await db.flush()  # FK targets exist before any referencing row
@@ -86,8 +87,8 @@ async def seed_demo(db: AsyncSession, tenant_id: uuid.UUID, owner_id: uuid.UUID,
     categories: list[Category] = []
     products: list[Product] = []
     for cat_seq, (cat_name, items) in enumerate(catalog, start=1):
-        cat = Category(id=uuid.uuid4(), name=cat_name, code=f"C{cat_seq:02d}")
-        sub = Subcategory(id=uuid.uuid4(), category=cat, name=cat_name, code=f"S{cat_seq:02d}")
+        cat = Category(id=uuid.uuid4(), name=cat_name, code=f"C{cat_seq:02d}", is_demo=True)
+        sub = Subcategory(id=uuid.uuid4(), category=cat, name=cat_name, code=f"S{cat_seq:02d}", is_demo=True)
         categories.append(cat)
         for j in range(n_products // len(catalog) + 1):
             if len(products) >= n_products:
@@ -102,17 +103,17 @@ async def seed_demo(db: AsyncSession, tenant_id: uuid.UUID, owner_id: uuid.UUID,
                 unit=rng.choice(["عدد", "عدد", "عدد", "متر", "كجم"]),
                 retail_price=retail, wholesale_price=(retail * Decimal("0.88")).quantize(Decimal("0.25")),
                 cost_price=cost, reorder_point=Decimal(rng.randrange(5, 25)),
-                is_active=True,
+                is_active=True, is_demo=True,
             ))
     db.add_all(categories)
     db.add_all(products)
 
     # parties
     customers = [Customer(id=uuid.uuid4(), name=CUSTOMER_NAMES[i % len(CUSTOMER_NAMES)],
-                          phone=f"01{rng.randrange(1, 3)}{rng.randrange(10**8)}", is_cash=(i == 0))
+                          phone=f"01{rng.randrange(1, 3)}{rng.randrange(10**8)}", is_cash=(i == 0), is_demo=True)
                  for i in range(n_customers)]
     suppliers = [Supplier(id=uuid.uuid4(), name=SUPPLIER_NAMES[i % len(SUPPLIER_NAMES)],
-                          phone=f"02{rng.randrange(10**7)}", type="supplier")
+                          phone=f"02{rng.randrange(10**7)}", type="supplier", is_demo=True)
                  for i in range(n_suppliers)]
     if features and "credit" in features:
         for c in customers[1:4]:
@@ -123,10 +124,10 @@ async def seed_demo(db: AsyncSession, tenant_id: uuid.UUID, owner_id: uuid.UUID,
 
     # treasury
     db.add_all([
-        PaymentWallet(id=uuid.uuid4(), name=WALLET_NAMES[0], type="cash"),
-        PaymentWallet(id=uuid.uuid4(), name=WALLET_NAMES[1], type="mobile"),
+        PaymentWallet(id=uuid.uuid4(), name=WALLET_NAMES[0], type="cash", is_demo=True),
+        PaymentWallet(id=uuid.uuid4(), name=WALLET_NAMES[1], type="mobile", is_demo=True),
     ])
-    db.add(Safe(id=uuid.uuid4(), name="الخزينة الرئيسية", balance=Decimal("25000")))
+    db.add(Safe(id=uuid.uuid4(), name="الخزينة الرئيسية", balance=Decimal("25000"), is_demo=True))
 
     # opening stock (skip — balances start from sales math below; give stock life)
     balances: list[StockBalance] = []
@@ -135,7 +136,7 @@ async def seed_demo(db: AsyncSession, tenant_id: uuid.UUID, owner_id: uuid.UUID,
             qty = Decimal(rng.randrange(0, 220))
             if rng.random() < 0.12:  # a few real low-stock items for the dashboard
                 qty = Decimal(rng.randrange(0, 4))
-            balances.append(StockBalance(product_id=p.id, warehouse_id=w.id, qty=qty))
+            balances.append(StockBalance(product_id=p.id, warehouse_id=w.id, qty=qty, is_demo=True))
     db.add_all(balances)
 
     # two weeks of confirmed sales (cash-heavy, some credit, cancellations sprinkled)
@@ -157,7 +158,7 @@ async def seed_demo(db: AsyncSession, tenant_id: uuid.UUID, owner_id: uuid.UUID,
             created_by=owner_id, sale_mode=SaleMode.wholesale if (cust and rng.random() < 0.4) else SaleMode.retail,
             status=SaleStatus.cancelled if rng.random() < 0.05 else SaleStatus.confirmed,
             is_credit=is_credit, payment_method="credit" if is_credit else "cash",
-            created_at=ts,
+            created_at=ts, is_demo=True,
         )
         for p in picked:
             qty = Decimal(rng.randrange(1, 6))
@@ -165,14 +166,14 @@ async def seed_demo(db: AsyncSession, tenant_id: uuid.UUID, owner_id: uuid.UUID,
             total += price * qty
             sale.items.append(SaleItem(
                 id=uuid.uuid4(), product_id=p.id, qty=qty, unit_price=price,
-                unit_cost=p.cost_price, discount=Decimal("0"),
+                unit_cost=p.cost_price, discount=Decimal("0"), is_demo=True,
             ))
         sale.total = total
         sale.net_total = total
         sale.paid_amount = Decimal("0") if is_credit else total
         if not is_credit:
             payments.append(SalePayment(
-                id=uuid.uuid4(), sale_id=sale.id, method="cash", amount=total, created_at=ts,
+                id=uuid.uuid4(), sale_id=sale.id, method="cash", amount=total, created_at=ts, is_demo=True,
             ))
         if sale.status == SaleStatus.confirmed:
             day_total[days_ago] += total

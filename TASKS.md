@@ -10,12 +10,11 @@ is shipped and CI-green; everything below is what remains.
 - [ ] **Plan gating** — enforce plan limits server-side (branches, users, features) with
       tenant-aware middleware; upgrade prompts in-app.
 - [ ] **Trial lifecycle** — expiry enforcement (read-only workspace after trial), reminder
-      notifications, tenant self-service data reset ("امسح البيانات التجريبية وابدأ بياناتي").
+      notifications; [x] tenant self-service data reset shipped via `POST /platform/wipe-demo` (v33).
 
 ## Platform hardening
 
-- [ ] **RLS on `users`** — the only scoped surface without a policy (NULL-tenant legacy
-      path needs a design first).
+- [x] **RLS on `users`** (v33) — backfilled, `tenant_id NOT NULL`, composite `uq_users_tenant_username (tenant_id, username)`, and `tenant_isolation` policy with forced RLS.
 - [ ] **Custom domain** — `mizan-app-liart.vercel.app` → a real domain (also resolves the
       "Mizan" name collision with an unrelated UAE legal product).
 - [ ] **Rotate credentials** — the Vercel token shared in chat (2026-11-01) and the Neon

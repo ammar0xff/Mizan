@@ -35,6 +35,7 @@ services:
       SECRET_KEY: 9ctFsYq0nJ2lIDQiat8aBKd9jItGAL0ITFwnPO82m56o4st9Sv6W0QxOtpoBZFru98UsgMvPLvALfwfmLwhsyA
       FIREBASE_CREDENTIALS: /app/firebase-service-account.json
     volumes:
+      - ./backend:/app
       - uploads_data:/app/uploads
       - ./firebase-service-account.json:/app/firebase-service-account.json:ro
     ports:

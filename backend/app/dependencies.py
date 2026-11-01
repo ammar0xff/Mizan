@@ -46,17 +46,21 @@ async def get_current_user(
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
 
     user_id = _decode_user_id(payload)
+    tid_str = payload.get("tid")
+    if tid_str:
+        await bind_tenant(db, uuid.UUID(tid_str))
+    else:
+        # Fallback for tokens issued without tid payload
+        await db.execute(text("SELECT set_config('app.bypass', 'on', true)"))
+
     result = await db.execute(
         select(User).where(User.id == uuid.UUID(user_id), User.is_active)
     )
     user = result.scalar_one_or_none()
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
-    tid = user.tenant_id
-    if tid is None:  # legacy/platform user → land in the primary workspace
-        from app.core.tenancy import primary_tenant_id
-        tid = await primary_tenant_id(db)
-    await bind_tenant(db, tid)
+    if not tid_str:
+        await bind_tenant(db, user.tenant_id)
     return user
 
 
@@ -70,10 +74,18 @@ async def get_print_user(request: Request, token: str | None = None, db: AsyncSe
     if payload.get("scope") != "print":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid token scope for print")
     user_id = payload.get("sub")
+    tid_str = payload.get("tid")
+    if tid_str:
+        await bind_tenant(db, uuid.UUID(tid_str))
+    else:
+        await db.execute(text("SELECT set_config('app.bypass', 'on', true)"))
+
     result = await db.execute(select(User).where(User.id == uuid.UUID(user_id), User.is_active))
     user = result.scalar_one_or_none()
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
+    if not tid_str:
+        await bind_tenant(db, user.tenant_id)
     return user
 
 

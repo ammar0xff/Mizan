@@ -3,7 +3,7 @@ import uuid
 from datetime import datetime
 from decimal import Decimal
 
-from sqlalchemy import DateTime, ForeignKey, Numeric, func
+from sqlalchemy import Boolean, DateTime, ForeignKey, Numeric, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -18,4 +18,5 @@ class StockBalance(TenantScoped, Base):
     product_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("products.id", ondelete="CASCADE"), primary_key=True)
     warehouse_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("warehouses.id", ondelete="CASCADE"), primary_key=True)
     qty: Mapped[Decimal] = mapped_column(Numeric(12, 3), default=Decimal("0"))
+    is_demo: Mapped[bool] = mapped_column(Boolean, default=False, server_default=func.false())
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())

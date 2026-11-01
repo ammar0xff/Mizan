@@ -21,17 +21,21 @@ Current as of 2026-11-01, post SaaS pivot. Verified against the running system.
 2. **Insert stamping** — `before_flush` copies the contextvar onto new `TenantScoped` rows
    whose `tenant_id` is unset.
 3. **Row-Level Security** — every scoped table is `ENABLE`+`FORCE` RLS with policy
-   `tenant_isolation`: `tenant_id = current_setting('app.tenant_id')::uuid OR
-   current_setting('app.bypass') = 'on'`. `bind_tenant()` sets both the ContextVar and the
-   GUC (`set_config(…, false)`) per request; `get_db` clears the GUC on release.
+   `tenant_isolation`: `tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid OR
+   current_setting('app.bypass', true) = 'on'`. `bind_tenant()` sets the ContextVar and binds
+   the GUC via transaction-local `set_config('app.tenant_id', :t, true)`. An `after_begin` Session
+   listener re-applies `set_config(..., true)` on every transaction (preventing state loss across
+   `db.commit()` under PgBouncer transaction pooling), and `unbind_tenant` executes `RESET app.tenant_id; RESET app.bypass;`.
 
 Supporting mechanics:
-- `tenant_id` columns DEFAULT to `current_setting('app.tenant_id')::uuid` → the 58 raw
-  `INSERT` sites need no changes.
-- Tenant deletion **cascades** (v32) through all 50 tables *and* `users`.
+- `tenant_id` columns DEFAULT to `NULLIF(current_setting('app.tenant_id', true), '')::uuid` → raw
+  `INSERT` sites evaluate cleanly without type errors when unauthenticated.
+- Tenant deletion **cascades** through all tables *and* `users`.
 - Composite per-tenant uniques replaced global ones (invoice numbers, wallet names,
-  PO numbers, period months, category names, warehouse codes, emp codes, hr keys).
-- `users.tenant_id` is nullable: NULL = legacy/platform user → primary workspace.
+  PO numbers, period months, category names, warehouse codes, barcodes, safe doc numbers, and users(tenant_id, username)).
+- `users.tenant_id` is NOT NULL (v33); `User` inherits `TenantScoped` and enforces RLS.
+- Demo data tracking: `is_demo BOOLEAN NOT NULL DEFAULT FALSE` across business tables enables clean, self-serve data wipes via `POST /platform/wipe-demo`.
+- Offline POS stock collision policy: when offline sale synced (`allow_negative_stock` or `is_offline_sync`), insufficient stock is decremented into negative balance and an `AuditLog(inventory_discrepancy)` entry is created for manager reconciliation.
 
 ## Request lifecycle (API)
 

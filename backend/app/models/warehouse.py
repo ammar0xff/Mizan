@@ -22,6 +22,7 @@ class Warehouse(TenantScoped, Base):
     name: Mapped[str] = mapped_column(String(128), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     warehouse_type: Mapped[str] = mapped_column(String(20), nullable=False, default="warehouse")  # 'showroom' | 'warehouse'
+    is_demo: Mapped[bool] = mapped_column(Boolean, default=False, server_default=func.false())
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     users: Mapped[list["User"]] = relationship(secondary=user_warehouses, back_populates="warehouses")

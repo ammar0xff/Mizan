@@ -152,3 +152,84 @@ async def my_tenant(db: AsyncSession = Depends(get_db), current_user: User = Dep
         "scale": tenant.scale, "palette": tenant.palette, "features": tenant.features,
         "plan": tenant.plan, "trial_ends_at": tenant.trial_ends_at.isoformat() if tenant.trial_ends_at else None,
     }
+
+
+@router.post("/wipe-demo")
+async def wipe_demo(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Safely delete seeded demo data for the current tenant while preserving
+    real user-created products, categories, branches, and sales."""
+    if current_user.role not in ("admin", "manager") and not current_user.is_manager:
+        raise HTTPException(status_code=403, detail="صلاحية مدير مطلوبة لمسح البيانات التجريبية")
+
+    tid = current_tenant_id.get() or current_user.tenant_id
+    if not tid:
+        raise HTTPException(status_code=400, detail="لا توجد مساحة عمل مرتبطة")
+
+    from sqlalchemy import text as sqlt
+
+    # 1. Delete demo sales & payments (cascade takes care of sale_items, payments)
+    del_sales = (await db.execute(sqlt("DELETE FROM sales WHERE tenant_id=:tid AND is_demo=TRUE RETURNING id"), {"tid": tid})).fetchall()
+
+    # 2. Delete demo stock balances
+    del_balances = (await db.execute(sqlt("DELETE FROM stock_balances WHERE tenant_id=:tid AND is_demo=TRUE RETURNING product_id"), {"tid": tid})).fetchall()
+
+    # 3. Delete demo products NOT referenced by any real sales
+    del_products = (await db.execute(sqlt("""
+        DELETE FROM products
+        WHERE tenant_id=:tid AND is_demo=TRUE
+          AND id NOT IN (SELECT product_id FROM sale_items WHERE tenant_id=:tid)
+        RETURNING id
+    """), {"tid": tid})).fetchall()
+
+    # 4. Delete demo subcategories & categories without remaining products
+    del_subcats = (await db.execute(sqlt("""
+        DELETE FROM subcategories
+        WHERE tenant_id=:tid AND is_demo=TRUE
+          AND id NOT IN (SELECT subcategory_id FROM products WHERE tenant_id=:tid AND subcategory_id IS NOT NULL)
+        RETURNING id
+    """), {"tid": tid})).fetchall()
+
+    del_cats = (await db.execute(sqlt("""
+        DELETE FROM categories
+        WHERE tenant_id=:tid AND is_demo=TRUE
+          AND id NOT IN (SELECT category_id FROM subcategories WHERE tenant_id=:tid)
+        RETURNING id
+    """), {"tid": tid})).fetchall()
+
+    # 5. Delete demo customers & suppliers not referenced by real transactions
+    del_customers = (await db.execute(sqlt("""
+        DELETE FROM customers
+        WHERE tenant_id=:tid AND is_demo=TRUE
+          AND id NOT IN (SELECT customer_id FROM sales WHERE tenant_id=:tid AND customer_id IS NOT NULL)
+        RETURNING id
+    """), {"tid": tid})).fetchall()
+
+    del_suppliers = (await db.execute(sqlt("""
+        DELETE FROM suppliers
+        WHERE tenant_id=:tid AND is_demo=TRUE
+          AND id NOT IN (SELECT supplier_id FROM purchase_orders WHERE tenant_id=:tid AND supplier_id IS NOT NULL)
+        RETURNING id
+    """), {"tid": tid})).fetchall()
+
+    # 6. Reset demo safes / wallets balance if they exist
+    await db.execute(sqlt("""
+        UPDATE safes SET balance = 0 WHERE tenant_id=:tid AND is_demo=TRUE
+    """), {"tid": tid})
+
+    await db.commit()
+    return {
+        "ok": True,
+        "message": "تم مسح البيانات التجريبية بنجاح",
+        "deleted": {
+            "sales": len(del_sales),
+            "stock_balances": len(del_balances),
+            "products": len(del_products),
+            "subcategories": len(del_subcats),
+            "categories": len(del_cats),
+            "customers": len(del_customers),
+            "suppliers": len(del_suppliers),
+        },
+    }

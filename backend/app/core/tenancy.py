@@ -37,6 +37,16 @@ class TenantScoped:
 def install_tenancy_events() -> None:
     """Attach global scoping listeners to the sync Session class (all sessions)."""
 
+    @event.listens_for(Session, "after_begin")
+    def _set_pg_tenant(session, transaction, connection):
+        tid = current_tenant_id.get()
+        if tid is not None:
+            from sqlalchemy import text
+            connection.execute(
+                text("SELECT set_config('app.tenant_id', :t, true)"),
+                {"t": str(tid)},
+            )
+
     @event.listens_for(Session, "do_orm_execute")
     def _scope_statements(execute_state):
         if not (execute_state.is_select or execute_state.is_update or execute_state.is_delete):
@@ -73,17 +83,18 @@ async def primary_tenant_id(db) -> uuid.UUID | None:
 
 async def bind_tenant(db, tid: uuid.UUID | None) -> None:
     """Bind the tenant to BOTH the request context (ORM stamping/scoping)
-    and the Postgres GUC (RLS — enforces raw SQL too)."""
+    and the Postgres GUC (RLS — enforces raw SQL too). Uses transaction-local
+    setting (true) so the pool automatically clears on commit/rollback."""
     from sqlalchemy import text
     current_tenant_id.set(tid)
     if tid is not None:
-        await db.execute(text("SELECT set_config('app.tenant_id', :t, false)"), {"t": str(tid)})
+        await db.execute(text("SELECT set_config('app.tenant_id', :t, true)"), {"t": str(tid)})
 
 
 async def unbind_tenant(db) -> None:
     from sqlalchemy import text
     current_tenant_id.set(None)
     try:
-        await db.execute(text("SELECT set_config('app.tenant_id', '', false)"))
+        await db.execute(text("RESET app.tenant_id; RESET app.bypass;"))
     except Exception:
         pass  # connection already gone
