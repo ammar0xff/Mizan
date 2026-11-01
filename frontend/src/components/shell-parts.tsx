@@ -187,7 +187,7 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
         label: "شؤون الطلاب والأقساط الدراسية",
         hint: "المدارس والأكاديميات",
         group: "action",
-        icon: <GraduationCap className="size-4 text-indigo-500" />,
+        icon: <GraduationCap className="size-4 text-primary" />,
         run: () => nav("/school/students"),
       });
     }
@@ -224,7 +224,7 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
           label: p.name,
           hint: `${p.retail_price} ج.م ${p.barcode ? `· ${p.barcode}` : ""}`,
           group: "product",
-          icon: <Boxes className="size-4 text-indigo-400" />,
+          icon: <Boxes className="size-4 text-primary" />,
           run: () => nav(`/products?search=${encodeURIComponent(p.name)}`),
         });
       }
@@ -238,7 +238,7 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
           label: c.name,
           hint: `رصيد: ${c.balance} ج.م`,
           group: "customer",
-          icon: <Users className="size-4 text-teal-400" />,
+          icon: <Users className="size-4 text-muted-foreground" />,
           run: () => nav(`/customers`),
         });
       }
@@ -259,7 +259,7 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
           label: s.name,
           hint: `طالب (${s.grade}) · متبقي: ${s.balance_due} ج.م`,
           group: "student",
-          icon: <GraduationCap className="size-4 text-indigo-400" />,
+          icon: <GraduationCap className="size-4 text-primary" />,
           run: () => nav("/school/students"),
         });
       }

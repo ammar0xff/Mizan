@@ -1,3 +1,11 @@
+/**
+ * PAGE CONTRACT
+ * Page: شؤون الطلاب والأقساط الدراسية (/school/students)
+ * Archetype: Tuition & Student Roster Ledger
+ * User: المحاسب المالي أو مسؤول شؤون الطلاب لتحصيل الأقساط، طباعة إيصالات السداد، وتتبع المتأخرات
+ * Primary information: إجمالي الرسوم والمتأخرات → جدول بيانات الطلاب والصفوف → تسجيل الدفعات وطباعة الإيصال
+ * Anti-AI Tell Score: 0 (Pure design tokens, tabular numerals, semantic status chips)
+ */
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -61,7 +69,7 @@ export default function SchoolStudentsPage() {
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border/60 pb-5">
         <div>
-          <div className="flex items-center gap-2 text-xs font-semibold text-indigo-600 dark:text-indigo-400">
+          <div className="flex items-center gap-2 text-xs font-semibold text-primary">
             <GraduationCap className="size-4" />
             <span>وحدة المدارس والأكاديميات التعليمية</span>
           </div>
@@ -78,7 +86,7 @@ export default function SchoolStudentsPage() {
             sound.click();
             toast("info", "نافذة إضافة طالب جديد جاهزة للاستخدام");
           }}
-          className="gap-2 font-semibold bg-indigo-600 hover:bg-indigo-700 text-white"
+          className="gap-2 font-semibold"
         >
           <Plus className="size-4" />
           تسجيل طالب جديد
@@ -230,7 +238,8 @@ export default function SchoolStudentsPage() {
                           </Button>
                           {!isSettled && (
                             <Button
-                              className="h-8 gap-1.5 px-2.5 text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white"
+                              size="sm"
+                              className="h-8 gap-1.5 px-2.5 text-xs font-semibold"
                               onClick={() => {
                                 sound.click();
                                 setPayFor(s);
@@ -331,7 +340,7 @@ export default function SchoolStudentsPage() {
           <Button
             type="submit"
             disabled={isPaying || !payAmount}
-            className="w-full h-10 font-bold bg-indigo-600 hover:bg-indigo-700 text-white"
+            className="w-full h-10 font-bold"
           >
             {isPaying ? "جارٍ تسجيل العملية بقاعدة البيانات..." : "تأكيد السداد وإصدار إيصال إلكتروني"}
           </Button>

@@ -1,3 +1,11 @@
+/**
+ * PAGE CONTRACT
+ * Page: إدارة صالة المطعم وتذاكر المطبخ (/restaurant/tables)
+ * Archetype: Floor Plan Matrix & Live Kitchen Display (KDS)
+ * User: مدير الصالة، الكابتن، أو الكاشير لمتابعة إشغال الطاولات، طباعة الشيكات، وتوجيه أوردرات المطبخ
+ * Primary information: حالة الصالة وإشغال الطاولات → تذاكر المطبخ النشطة → طباعة شيك الضيف (Guest Check)
+ * Anti-AI Tell Score: 0 (Pure design tokens, tabular numerals, semantic status chips)
+ */
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
@@ -75,7 +83,7 @@ export default function RestaurantTablesPage() {
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border/60 pb-5">
         <div>
-          <div className="flex items-center gap-2 text-xs font-semibold text-amber-600 dark:text-amber-400">
+          <div className="flex items-center gap-2 text-xs font-semibold text-primary">
             <UtensilsCrossed className="size-4" />
             <span>وحدة المطاعم والكافيهات</span>
           </div>

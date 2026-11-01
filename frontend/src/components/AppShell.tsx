@@ -1,7 +1,21 @@
 import { useEffect, useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Building2, Clock, LogOut, Menu, Moon, Scale, Search, Settings, ShieldCheck, ShoppingCart, Sun, UserRound, Blocks } from "lucide-react";
+import {
+  Building2,
+  Clock,
+  LogOut,
+  Menu,
+  Scale,
+  Search,
+  Settings,
+  ShieldCheck,
+  ShoppingCart,
+  UserRound,
+  Blocks,
+  Palette,
+  ChevronDown,
+} from "lucide-react";
 import { api } from "@/lib/api";
 import { NAV_GROUPS, NAV_ITEMS, type NavItem } from "@/lib/nav";
 import { cn } from "@/lib/utils";
@@ -11,8 +25,14 @@ import { Avatar, AvatarFallback } from "@/components/kit/avatar";
 import { Badge } from "@/components/kit/badge";
 import { Button } from "@/components/kit/button";
 import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem,
-  DropdownMenuLabel, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
 } from "@/components/kit/dropdown-menu";
 import { Sheet, SheetContent, SheetTitle } from "@/components/kit/sheet";
 import { PageTransition } from "@/components/motion";
@@ -21,6 +41,7 @@ import { CommandPalette, TrialBanner, useHotkeySearch } from "@/components/shell
 import { useUiStore } from "@/stores/ui";
 import { sound } from "@/lib/sound";
 import { Kbd } from "@/components/kit/kbd";
+import { AppearanceSettingsModal } from "@/components/AppearanceSettingsModal";
 
 interface Warehouse {
   id: string;
@@ -40,6 +61,7 @@ export function useBranch() {
   return { warehouses: data ?? [], branchId: current?.id ?? null, branchName: current?.name ?? "…", setBranchId };
 }
 
+/* ── 1. Classic Full Sidebar (Tree View) ── */
 function AppSidebar({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = useLocation().pathname;
   const { can, tenant } = useAuth();
@@ -54,9 +76,9 @@ function AppSidebar({ onNavigate }: { onNavigate?: () => void }) {
     .filter((g) => g.items.length > 0);
 
   return (
-    <div className="flex h-full flex-col bg-sidebar text-sidebar-foreground">
+    <div className="flex h-full flex-col bg-sidebar text-sidebar-foreground border-e border-sidebar-border">
       <div className="flex h-16 items-center gap-3 border-b border-sidebar-border px-5">
-        <span className="flex size-9 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+        <span className="flex size-9 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground font-bold">
           <Scale className="size-5" aria-hidden />
         </span>
         <div className="flex flex-col leading-tight">
@@ -164,11 +186,134 @@ function AppSidebar({ onNavigate }: { onNavigate?: () => void }) {
   );
 }
 
+/* ── 2. Compact Icon Rail (High-Density Screen Real Estate) ── */
+function AppRail({ onNavigate }: { onNavigate?: () => void }) {
+  const pathname = useLocation().pathname;
+  const { can } = useAuth();
+  const { hasModule } = useModulesStore();
+  const setAppearanceModalOpen = useUiStore((s) => s.setAppearanceModalOpen);
+
+  const visible = NAV_ITEMS.filter((n) => (!n.perm || can(n.perm)) && (!n.module || hasModule(n.module)));
+
+  return (
+    <div className="flex h-full w-16 flex-col items-center bg-sidebar text-sidebar-foreground border-e border-sidebar-border py-3">
+      {/* Brand Icon */}
+      <Link
+        to="/"
+        className="mb-4 flex size-10 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground font-bold shadow-xs transition hover:scale-105"
+        title="ميزان ERP"
+      >
+        <Scale className="size-5" aria-hidden />
+      </Link>
+
+      {/* Nav Icons */}
+      <nav className="flex flex-1 flex-col items-center gap-1.5 overflow-y-auto px-2">
+        {visible.map((item) => {
+          const active = item.to === "/" ? pathname === "/" : pathname === item.to || pathname.startsWith(`${item.to}/`);
+          const Icon = item.icon;
+          return (
+            <Link
+              key={item.to}
+              to={item.to}
+              onClick={onNavigate}
+              title={item.label}
+              className={cn(
+                "group relative flex size-10 items-center justify-center rounded-lg text-sidebar-foreground/75 transition-all hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                active && "bg-sidebar-accent font-semibold text-sidebar-accent-foreground shadow-xs ring-1 ring-sidebar-primary/40"
+              )}
+            >
+              <Icon className={cn("size-5", active && "text-sidebar-primary")} />
+              {/* Subtle active pill indicator on edge */}
+              {active && <span className="absolute -inline-end-2 h-5 w-1 rounded-full bg-sidebar-primary" />}
+            </Link>
+          );
+        })}
+      </nav>
+
+      {/* Bottom Pinned Controls */}
+      <div className="flex flex-col items-center gap-2 pt-2 border-t border-sidebar-border/60">
+        <button
+          onClick={() => setAppearanceModalOpen(true)}
+          title="تخصيص المظهر والتخطيط"
+          className="flex size-9 items-center justify-center rounded-lg text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition"
+        >
+          <Palette className="size-4" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ── 3. Horizontal Top Navigation Bar (ERP Menu Bar) ── */
+function AppTopNav() {
+  const pathname = useLocation().pathname;
+  const { can } = useAuth();
+  const { hasModule } = useModulesStore();
+
+  const visible = NAV_ITEMS.filter((n) => (!n.perm || can(n.perm)) && (!n.module || hasModule(n.module)));
+  const groups = (Object.keys(NAV_GROUPS) as NavItem["group"][])
+    .map((g) => ({ id: g, label: NAV_GROUPS[g], items: visible.filter((n) => n.group === g) }))
+    .filter((g) => g.items.length > 0);
+
+  return (
+    <div className="no-print hidden lg:flex items-center gap-1 border-b border-border/80 bg-card px-6 py-1.5 text-xs">
+      <Link
+        to="/"
+        className={cn(
+          "px-2.5 py-1 rounded font-medium transition hover:bg-muted",
+          pathname === "/" ? "bg-primary text-primary-foreground font-semibold" : "text-foreground"
+        )}
+      >
+        لوحة التحكم
+      </Link>
+
+      {groups.map((group) => {
+        const hasActiveItem = group.items.some((item) =>
+          item.to === "/" ? pathname === "/" : pathname === item.to || pathname.startsWith(`${item.to}/`)
+        );
+        return (
+          <DropdownMenu key={group.id}>
+            <DropdownMenuTrigger
+              render={
+                <button
+                  className={cn(
+                    "flex items-center gap-1 px-2.5 py-1 rounded font-medium transition hover:bg-muted",
+                    hasActiveItem ? "bg-accent text-accent-foreground font-semibold" : "text-muted-foreground hover:text-foreground"
+                  )}
+                />
+              }
+            >
+              <span>{group.label}</span>
+              <ChevronDown className="size-3 opacity-60" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="min-w-48">
+              <DropdownMenuGroup>
+                <DropdownMenuLabel>{group.label}</DropdownMenuLabel>
+                {group.items.map((item) => {
+                  const active =
+                    item.to === "/" ? pathname === "/" : pathname === item.to || pathname.startsWith(`${item.to}/`);
+                  const Icon = item.icon;
+                  return (
+                    <DropdownMenuItem key={item.to} render={<Link to={item.to} />}>
+                      <Icon className={cn("size-4 me-2", active && "text-primary")} />
+                      <span className={cn(active && "font-semibold text-primary")}>{item.label}</span>
+                    </DropdownMenuItem>
+                  );
+                })}
+              </DropdownMenuGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        );
+      })}
+    </div>
+  );
+}
+
 function AppTopbar({ onOpenMenu, onOpenSearch }: { onOpenMenu: () => void; onOpenSearch: () => void }) {
   const navigate = useNavigate();
   const { user, tenant, logout } = useAuth();
   const { warehouses, branchId, branchName, setBranchId } = useBranch();
-  const { density, toggleDensity, soundMuted, toggleSound } = useUiStore();
+  const { density, toggleDensity, soundMuted, toggleSound, setAppearanceModalOpen } = useUiStore();
 
   const shift = useQuery({
     queryKey: ["shift", "topbar", branchId],
@@ -177,12 +322,6 @@ function AppTopbar({ onOpenMenu, onOpenSearch }: { onOpenMenu: () => void; onOpe
     retry: false,
     refetchInterval: 60_000,
   });
-
-  function toggleTheme() {
-    sound.click();
-    const dark = document.documentElement.classList.toggle("dark");
-    localStorage.setItem("vendora.theme", dark ? "dark" : "light");
-  }
 
   // Global F2 shortcut to jump to POS from any screen
   useEffect(() => {
@@ -298,10 +437,19 @@ function AppTopbar({ onOpenMenu, onOpenSearch }: { onOpenMenu: () => void; onOpe
           )}
         </button>
 
-        {/* Theme Toggle */}
-        <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="تبديل الوضع الليلي" onClick={toggleTheme}>
-          <Sun className="size-4 dark:hidden" />
-          <Moon className="size-4 hidden dark:block" />
+        {/* Appearance & Themes Modal Switcher */}
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-8 gap-1.5 px-2.5 text-xs font-semibold"
+          aria-label="تخصيص المظهر والتخطيط"
+          onClick={() => {
+            sound.click();
+            setAppearanceModalOpen(true);
+          }}
+        >
+          <Palette className="size-3.5 text-primary" />
+          <span className="hidden sm:inline">المظهر</span>
         </Button>
 
         {/* User Menu */}
@@ -320,6 +468,10 @@ function AppTopbar({ onOpenMenu, onOpenSearch }: { onOpenMenu: () => void; onOpe
               <DropdownMenuItem onClick={() => navigate("/settings")}>
                 <UserRound className="size-4" />
                 الإعدادات
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setAppearanceModalOpen(true)}>
+                <Palette className="size-4" />
+                المظهر والتخطيط
               </DropdownMenuItem>
               <DropdownMenuItem
                 variant="destructive"
@@ -345,6 +497,7 @@ export default function Shell() {
   const [searchOpen, setSearchOpen] = useState(false);
   const pathname = useLocation().pathname;
   const fetchModules = useModulesStore((s) => s.fetchModules);
+  const { layoutMode, appearanceModalOpen, setAppearanceModalOpen } = useUiStore();
 
   useEffect(() => {
     fetchModules();
@@ -353,20 +506,36 @@ export default function Shell() {
   useHotkeySearch(() => setSearchOpen(true));
 
   return (
-    <div className="flex min-h-svh">
-      <aside className="no-print sticky top-0 hidden h-svh w-64 shrink-0 lg:block">
-        <AppSidebar />
-      </aside>
+    <div className="flex min-h-svh bg-background text-foreground">
+      {/* Sidebar Layout Mode */}
+      {layoutMode === "sidebar" && (
+        <aside className="no-print sticky top-0 hidden h-svh w-64 shrink-0 lg:block">
+          <AppSidebar />
+        </aside>
+      )}
+
+      {/* Rail Layout Mode */}
+      {layoutMode === "rail" && (
+        <aside className="no-print sticky top-0 hidden h-svh w-16 shrink-0 lg:block">
+          <AppRail />
+        </aside>
+      )}
+
+      {/* Mobile Drawer (Always Available on Small Screens) */}
       <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
         <SheetContent side="right" className="w-72 p-0" showCloseButton={false}>
           <SheetTitle className="sr-only">القائمة الرئيسية</SheetTitle>
           <AppSidebar onNavigate={() => setMenuOpen(false)} />
         </SheetContent>
       </Sheet>
+
+      {/* Main Content Area */}
       <div className="flex min-w-0 flex-1 flex-col">
         <AppTopbar onOpenMenu={() => setMenuOpen(true)} onOpenSearch={() => setSearchOpen(true)} />
+        {layoutMode === "topnav" && <AppTopNav />}
         <TrialBanner />
         <CommandPalette open={searchOpen} onOpenChange={setSearchOpen} />
+        <AppearanceSettingsModal open={appearanceModalOpen} onOpenChange={setAppearanceModalOpen} />
         <main className="flex-1 px-4 py-6 md:px-6 lg:px-8">
           <PageTransition routeKey={pathname}>
             <Outlet />

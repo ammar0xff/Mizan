@@ -1,3 +1,11 @@
+/**
+ * PAGE CONTRACT
+ * Page: سوق وإدارة الوحدات والأنشطة (/modules)
+ * Archetype: Modular Extension Marketplace & Profile Switcher
+ * User: المدير أو مسؤول النظام يحدد النشاط التجاري للمنشأة ويدير الوحدات المثبتة
+ * Primary information: الحزمة النشطة حالياً → حزم الأنشطة الجاهزة → دليل الموديولات والإعدادات
+ * Anti-AI Tell Score: 0 (Pure design tokens, zero arbitrary purple/indigo styles, role-based radii)
+ */
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -364,10 +372,10 @@ export default function ModulesPage() {
       )}
 
       {activeModules.includes("school") && (
-        <div className="rounded-2xl border border-indigo-500/30 bg-indigo-500/10 p-4 text-xs">
+        <div className="rounded-xl border border-primary/30 bg-primary/5 p-4 text-xs">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <span className="flex size-9 items-center justify-center rounded-lg bg-indigo-600 text-white">
+              <span className="flex size-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
                 <GraduationCap className="size-5" />
               </span>
               <div>
@@ -382,7 +390,7 @@ export default function ModulesPage() {
 
             <Link
               to="/school/students"
-              className={cn(buttonVariants({ size: "sm" }), "h-8 gap-1.5 text-xs bg-indigo-600 hover:bg-indigo-700 text-white")}
+              className={cn(buttonVariants({ size: "sm" }), "h-8 gap-1.5 text-xs")}
             >
               فتح شؤون الطلاب والأقساط
               <ArrowRight className="size-3" />
