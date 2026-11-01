@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Building2, Clock, LogOut, Menu, Moon, Scale, Search, ShoppingCart, Sun, UserRound } from "lucide-react";
+import { Building2, Clock, LogOut, Menu, Moon, Scale, Search, Settings, ShieldCheck, ShoppingCart, Sun, UserRound } from "lucide-react";
 import { api } from "@/lib/api";
 import { NAV_GROUPS, NAV_ITEMS, type NavItem } from "@/lib/nav";
 import { cn } from "@/lib/utils";
@@ -89,16 +89,49 @@ function AppSidebar({ onNavigate }: { onNavigate?: () => void }) {
           ))}
         </div>
       </nav>
-      <div className="border-t border-sidebar-border p-4">
+      {/* Pinned quick access footer for compact displays */}
+      <div className="shrink-0 border-t border-sidebar-border bg-sidebar/95 p-3 backdrop-blur">
+        <div className="mb-2 flex items-center justify-between gap-1.5">
+          {can("settings") && (
+            <Link
+              to="/settings"
+              onClick={onNavigate}
+              className={cn(
+                "flex flex-1 items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-medium transition hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                pathname.startsWith("/settings") ? "bg-sidebar-accent text-sidebar-accent-foreground font-semibold" : "text-sidebar-foreground/70"
+              )}
+              title="إعدادات المتجر والنظام"
+            >
+              <Settings className="size-3.5" />
+              <span>الإعدادات</span>
+            </Link>
+          )}
+
+          {can("users") && (
+            <Link
+              to="/users"
+              onClick={onNavigate}
+              className={cn(
+                "flex flex-1 items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-medium transition hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                pathname.startsWith("/users") ? "bg-sidebar-accent text-sidebar-accent-foreground font-semibold" : "text-sidebar-foreground/70"
+              )}
+              title="المستخدمون والصلاحيات"
+            >
+              <ShieldCheck className="size-3.5" />
+              <span>المستخدمون</span>
+            </Link>
+          )}
+        </div>
+
         {tenant?.plan === "trial" && (
-          <Link to="/pricing" className="mb-3 block rounded-xl bg-sidebar-primary/15 p-3 ring-1 ring-sidebar-primary/30 transition hover:bg-sidebar-primary/25">
+          <Link to="/pricing" className="mb-2 block rounded-xl bg-sidebar-primary/15 p-2.5 ring-1 ring-sidebar-primary/30 transition hover:bg-sidebar-primary/25">
             <p className="text-xs font-bold text-sidebar-foreground">فعّل خطتك</p>
-            <p className="mt-0.5 text-[11px] leading-5 text-sidebar-foreground/70">
+            <p className="mt-0.5 text-[10px] leading-4 text-sidebar-foreground/70">
               النسخة التجريبية حتى {tenantTrialEnds} — بياناتك محفوظة
             </p>
           </Link>
         )}
-        <p className="px-1 text-[11px] text-sidebar-foreground/50">
+        <p className="px-1 text-[10px] text-sidebar-foreground/50">
           ميزان <span className="num">3.0</span> — نظام إدارة التجار
         </p>
       </div>
