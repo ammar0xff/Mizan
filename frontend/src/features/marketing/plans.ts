@@ -88,12 +88,50 @@ export const PLANS: Plan[] = [
 export const TRIAL_DAYS = 14;
 
 export const SECTOR_OPTIONS = [
-  { value: "gym", label: "أندية وصالات رياضية (Gym & Fitness)", desc: "اشتراكات، بوابات دخول ذكية، حصص تدريب شخصي، وكافيتيريا Gym-POS" },
-  { value: "restaurant", label: "مطاعم، كافيهات، وضيافة", desc: "إدارة صالة، طاولات، وشاشات مطبخ KDS تفاعلية وRestaurant-POS" },
-  { value: "retail", label: "تجارة، تجزئة، وسوبرماركت", desc: "سوبرماركت، معارض، ومخازن تجارية وRetail-POS مع موازين وباركود" },
-  { value: "school", label: "مدارس، مراكز تدريب، وأكاديميات", desc: "شؤون الطلاب، أقساط، وإيصالات رسوم مدرسية وحافلات نقل" },
-  { value: "healthcare", label: "مراكز رعاية وصيدليات وعيادات", desc: "أدوية، مستلزمات، ملفات فحص، مواعيد أطباء، وروشتات" },
-  { value: "services", label: "خدمات، مكاتب، ومقاولات", desc: "استشارات، عقود، فواتير مشاريع، وتتبع تكاليف ميدانية" },
+  // Phase 1: Core Business Systems
+  { value: "retail", label: "تجارة، تجزئة، وسوبرماركت (Retail)", desc: "سوبرماركت، معارض، ومخازن تجارية وRetail-POS مع موازين وباركود" },
+  { value: "restaurant", label: "مطاعم، كافيهات، وضيافة (Restaurant)", desc: "إدارة صالة، طاولات، وشاشات مطبخ KDS تفاعلية وRestaurant-POS" },
+  { value: "pharmacy", label: "صيدليات ومستلزمات طبية (Pharmacy)", desc: "دواء، تشغيلات، تواريخ صلاحية، رقابة صرف وتأمين صحي" },
+  { value: "consulting", label: "مكاتب محاسبة واستشارات (Consulting)", desc: "ساعات قابلة للفوترة، خطابات تكليف، عقود، وتقارير أرباح المشروعات" },
+  { value: "school", label: "مدارس ومعاهد تدريب وأكاديميات (School)", desc: "شؤون الطلاب، أقساط، وإيصالات رسوم مدرسية وحافلات نقل" },
+  
+  // Phase 2: Distribution and Logistics
+  { value: "wholesale", label: "تجارة جملة وتوزيع وتوريدات (Wholesale)", desc: "أسعار كميات، قوائم أسعار عملاء، تسعير حسب الحجم والخصومات" },
+  { value: "logistics", label: "نقل، شحن، وخدمات لوجستية (Logistics)", desc: "بوالص شحن، تتبع مسارات، إدارة أساطيل، وتكاليف وقود" },
+  { value: "wms_3pl", label: "مستودعات وخدمات لوجستية للغير (3PL WMS)", desc: "مستودعات متعددة العملاء، استلام، وتوزيع حسب مواقع التخزين" },
+  { value: "ecommerce", label: "تجارة إلكترونية ومتاجر رقمية (E-commerce)", desc: "ربط المتاجر، مزامنة المخزون اللحظية، وتجهيز الشحنات" },
+  
+  // Phase 3: Service-Based Systems
+  { value: "healthcare", label: "عيادات ومراكز طبية ومستشفيات (Healthcare)", desc: "ملفات مرضى، حجز مواعيد، روشتات، وفواتير تأمين طبي" },
+  { value: "law_firm", label: "مكاتب ومؤسسات المحاماة (Law Firm)", desc: "إدارة القضايا، مواعيد الجلسات، وسجلات أموال العملاء وحسابات الأمانة" },
+  { value: "travel", label: "وكالات السياحة والسفر (Travel Agency)", desc: "برامج سياحية، حجوزات طيران وفنادق، وفواتير موحدة للمجموعات" },
+  { value: "hotel", label: "فنادق، منتجعات، وضيافة (Hotels & Resorts)", desc: "حجوزات، غرف، فواتير إقامة، وتدقيق ليلي ومطاعم فندقية" },
+  { value: "gym", label: "أندية وصالات رياضية ولياقة بدنية (Gym)", desc: "اشتراكات، بوابات دخول ذكية، حصص تدريب شخصي، وكافيتيريا Gym-POS" },
+  { value: "salon", label: "صالونات تجميل ومراكز سبا (Salon & Spa)", desc: "مواعيد مصففين، باقات خدمات، وعمولات موظفين ومستهلكات" },
+  { value: "agency", label: "وكالات دعاية وتصميم وترجمة (Creative Agency)", desc: "إدارة ملخصات العملاء، مهام، مراجعة تصاميم، وفواتير مشروعات" },
+  { value: "field_service", label: "صيانة وخدمات ميدانية وتشغيل (Field Service)", desc: "أوامر شغل، توجيه فنيين، قطع غيار متنقلة، وتوقيعات عملاء" },
+
+  // Phase 4: Manufacturing and Production
+  { value: "discrete_mfg", label: "تصنيع وتجميع ميكانيكي وإلكتروني (Manufacturing)", desc: "شجرة منتج BOM، مراكز تشغيل، تخطيط مواد MRP، وتكاليف إنتاج" },
+  { value: "food_mfg", label: "تصنيع ومعالجة أغذية ومشروبات (Food Mfg)", desc: "وصفات وخلطات، تتبع تشغيلات، صلاحيات، ورقابة سلامة الغذاء" },
+  { value: "pharma_mfg", label: "صناعات دوائية وكيميائية (Pharma Mfg)", desc: "سجلات تشغيل إلكترونية، معايير GMP، ورقابة جودة وتتبع حرج" },
+  { value: "printing", label: "مطابع، تغليف، وتعبئة (Print & Packaging)", desc: "تذاكر تشغيل، مونتاج، استهلاك أحبار وورق، وهالك تجهيز" },
+
+  // Phase 5: Projects and Infrastructure
+  { value: "construction", label: "مقاولات عامة وتشييد (Construction)", desc: "مقايسات BOQ، مستخلصات، مقاولو باطن، ومعدات ثقيلة" },
+  { value: "real_estate", label: "إدارة عقارات ومجمعات تجارية (Real Estate)", desc: "وحدات، عقود إيجار، تحصيل شيكات، وصيانة وإيرادات صافية" },
+  { value: "agriculture", label: "مزارع وإنتاج زراعي وحيواني (Agriculture)", desc: "أحواض زراعية، دورات محصولية، أسمدة، وتتبع محاصيل وثروة حيوانية" },
+  { value: "energy", label: "محطات طاقة وتوليد ومرافق (Energy & Utilities)", desc: "أصول، صيانة تنبؤية، قراءات عدادات، وتصاريح عمل وأمان بيئي" },
+
+  // Phase 6: Specialized Systems
+  { value: "banking", label: "بنوك ومؤسسات تمويل وإقراض (Banking & Microfinance)", desc: "محرك قيود مزدوجة لحظي، قروض، فوائد، ومراقبة غسيل أموال" },
+  { value: "insurance", label: "شركات تأمين وتكافل (Insurance)", desc: "وثائق، تسعير اكتواري، مطالبات، واحتياطيات فنية وإعادة تأمين" },
+  { value: "government", label: "جهات حكومية وجمعيات غير ربحية (Gov & Nonprofits)", desc: "محاسبة صناديق، موازنات ومخصصات، مناقصات، ومساعدات مستفيدين" },
+  { value: "entertainment", label: "فعاليات ومدن ترفيهية وألعاب (Entertainment)", desc: "تذاكر، بوابات دخول، بطاقات ألعاب، وتوزيع إيرادات فعاليات" },
+  { value: "oil_gas", label: "عمليات بترول وغاز وتكرير (Oil & Gas)", desc: "آبار، إنتاج يومي، محاسبة مشاركات نفطية، وأمان تشغيلي" },
+
+  // Legacy aliases
+  { value: "services", label: "خدمات عامة، مكاتب، ومقاولات", desc: "استشارات، عقود، فواتير مشاريع، وتتبع تكاليف ميدانية" },
   { value: "plumbing", label: "توريدات ومواد بناء وتشطيبات", desc: "سباكة، كهرباء، دهانات، ومواد إنشائية ومعارض تجارية" },
 ];
 

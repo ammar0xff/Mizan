@@ -41,7 +41,22 @@ PLANS = [
      "features": ["فروع ومستخدمون بلا حدود", "خادم VPS مخصص مع عزل أمني فائق", "ترخيص نسخة سطح مكتب أوفلاين (.exe)", "دومين مخصص وتخزين سحابي غير محدود"]},
 ]
 
-SECTORS = ["gym", "restaurant", "retail", "school", "services", "healthcare", "plumbing", "electrical", "tiles", "paint"]
+SECTORS = [
+    # Phase 1: Core Business Systems
+    "retail", "restaurant", "pharmacy", "consulting", "school",
+    # Phase 2: Distribution and Logistics
+    "wholesale", "logistics", "wms_3pl", "ecommerce",
+    # Phase 3: Service-Based Systems
+    "healthcare", "law_firm", "travel", "hotel", "gym", "salon", "agency", "field_service",
+    # Phase 4: Manufacturing and Production
+    "discrete_mfg", "food_mfg", "pharma_mfg", "printing",
+    # Phase 5: Projects and Infrastructure
+    "construction", "real_estate", "agriculture", "energy",
+    # Phase 6: Specialized Systems
+    "banking", "insurance", "government", "entertainment", "oil_gas",
+    # Legacy aliases for backward compatibility
+    "services", "plumbing", "electrical", "tiles", "paint",
+]
 SCALES = ["small", "medium", "large"]
 
 PALETTE_HUES = {

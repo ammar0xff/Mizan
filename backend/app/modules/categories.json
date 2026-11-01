@@ -1,68 +1,407 @@
 {
-  "version": "1.0.0",
+  "version": "3.0.0",
+  "name": "Vendora ERP 30-Industry Category & Business Registry",
   "categories": [
     {
       "id": "pos_collections",
       "name": "مجموعات نقاط البيع المتخصصة",
       "name_en": "Specialized POS Collections",
       "icon": "ShoppingCart",
-      "description": "حلول نقاط البيع المخصصة حسب طبيعة النشاط التجاري (نوادي، مطاعم، تجزئة، خدمات)",
+      "description": "حلول كاشير ونقاط بيع متكيفة مع بيئات العمل الميدانية (نوادي، مطاعم، تجزئة، صالونات، فعاليات)",
       "order": 1,
-      "allowed_business_types": ["gym", "restaurant", "retail", "supermarket", "services"]
+      "allowed_business_types": [
+        "retail",
+        "restaurant",
+        "pharmacy",
+        "gym",
+        "salon",
+        "entertainment",
+        "supermarket"
+      ]
     },
     {
       "id": "vertical_sectors",
       "name": "القطاعات المتخصصة",
       "name_en": "Vertical Industry Modules",
       "icon": "Building2",
-      "description": "أنظمة إدارة المنشآت الرأسية (نوادي رياضية، مطاعم وصالات، مدارس وأكاديميات، مراكز طبية)",
+      "description": "أنظمة إدارة رأسية للمنشآت الخدمية والأكاديمية والصحية",
       "order": 2,
-      "allowed_business_types": ["gym", "restaurant", "school", "clinic", "services"]
+      "allowed_business_types": [
+        "gym",
+        "restaurant",
+        "school",
+        "healthcare",
+        "hotel",
+        "travel",
+        "law_firm",
+        "consulting",
+        "agency"
+      ]
     },
     {
       "id": "core_operations",
-      "name": "العمليات والمخزون",
-      "name_en": "Core Operations & Inventory",
+      "name": "العمليات والمخزون والتوريد",
+      "name_en": "Core Operations, Inventory & SCM",
       "icon": "Boxes",
-      "description": "إدارة المستودعات، الجرد الدوري، تحويلات الفروع، وأوامر الشراء والتوريد",
+      "description": "إدارة المستودعات، الجرد الدوري، تحويلات الفروع، وأوامر الشراء والتوريد لكافة المنشآت",
       "order": 3,
       "allowed_business_types": ["*"]
     },
     {
       "id": "financial_management",
-      "name": "المالية والخزائن",
-      "name_en": "Financial Management",
+      "name": "المالية والخزائن ودفاتر الأستاذ",
+      "name_en": "Financial Management & General Ledger",
       "icon": "DollarSign",
-      "description": "الخزائن النقدية، الحسابات البنكية، مسيرات المصروفات، ودفاتر الأستاذ",
+      "description": "الخزائن النقدية، الحسابات البنكية، دفاتر اليومية، الضرائب، ومراكز التكلفة",
       "order": 4,
       "allowed_business_types": ["*"]
     },
     {
       "id": "human_capital",
-      "name": "الموارد البشرية والورديات",
-      "name_en": "Human Capital & Shifts",
+      "name": "الموارد البشرية والرواتب",
+      "name_en": "Human Capital & Localized Payroll",
       "icon": "Users",
-      "description": "شؤون الموظفين، الحضور والانصراف البيومتري، الورديات، ومسيرات الرواتب",
+      "description": "شؤون الموظفين، البصمة الحيوية، الورديات، مسيرات الأجور والخصومات القانونية",
       "order": 5,
       "allowed_business_types": ["*"]
     },
     {
-      "id": "customer_experience",
-      "name": "تجربة العملاء والواجهات",
-      "name_en": "Customer Experience & Fronts",
-      "icon": "Monitor",
-      "description": "شاشات المطابخ KDS، المتجر الإلكتروني، برامج الولاء والاشتراكات",
+      "id": "distribution_logistics",
+      "name": "التوزيع واللوجستيات وإدارة المستودعات 3PL",
+      "name_en": "Distribution, Logistics & WMS",
+      "icon": "Truck",
+      "description": "إدارة أساطيل الشحن، بوالص الشحن، وإدارة المستودعات متعددة العملاء (3PL)",
       "order": 6,
-      "allowed_business_types": ["restaurant", "cafe", "retail", "gym"]
+      "allowed_business_types": [
+        "wholesale",
+        "logistics",
+        "wms_3pl",
+        "ecommerce"
+      ]
     },
     {
-      "id": "governance_archival",
-      "name": "الأرشفة والحوكمة",
-      "name_en": "Governance & Archiving",
-      "icon": "Archive",
-      "description": "الأرشيف الإلكتروني، حفظ الوثائق والعقود، وسجلات التدقيق الصارمة",
+      "id": "manufacturing_production",
+      "name": "التصنيع والإنتاج والمطابع",
+      "name_en": "Manufacturing, Process & Printing",
+      "icon": "Factory",
+      "description": "أوامر التشغيل، شجرة المواد BOM، تخطيط الاحتياجات MRP، وضبط الجودة GMP",
       "order": 7,
+      "allowed_business_types": [
+        "discrete_mfg",
+        "food_mfg",
+        "pharma_mfg",
+        "printing"
+      ]
+    },
+    {
+      "id": "projects_infrastructure",
+      "name": "المشاريع والعقارات والبنية التحتية",
+      "name_en": "Projects, Real Estate & Infrastructure",
+      "icon": "HardHat",
+      "description": "مقايسات BOQ، المستخلصات الإنشائية، إدارة العقارات والتأجير، والمزارع ومحطات الطاقة",
+      "order": 8,
+      "allowed_business_types": [
+        "construction",
+        "real_estate",
+        "agriculture",
+        "energy"
+      ]
+    },
+    {
+      "id": "specialized_institutional",
+      "name": "المؤسسات المالية والسيادية المتخصصة",
+      "name_en": "Regulated Institutional & Specialized Systems",
+      "icon": "ShieldCheck",
+      "description": "محركات المعاملات المالية، التأمين والتعويضات، المحاسبة الحكومية، وعمليات النفط والغاز",
+      "order": 9,
+      "allowed_business_types": [
+        "banking",
+        "insurance",
+        "government",
+        "entertainment",
+        "oil_gas"
+      ]
+    },
+    {
+      "id": "cross_cutting_engines",
+      "name": "محركات المنصة المشتركة والعتاد",
+      "name_en": "Shared Platform Engines & Hardware",
+      "icon": "Cpu",
+      "description": "محرك الطباعة والإيصالات الحرارية، محرك الموافقات، الجدولة، والاشتراكات الدورية",
+      "order": 10,
       "allowed_business_types": ["*"]
+    }
+  ],
+  "business_types": [
+    {
+      "code": "retail",
+      "name_ar": "تجارة وتجزئة وسوبرماركت",
+      "name_en": "Retail & Supermarkets",
+      "phase": 1,
+      "prefix": "RET",
+      "primary_pos_collection": "retail-pos",
+      "recommended_modules": ["retail-pos", "inventory", "purchases", "invoicing", "safes"]
+    },
+    {
+      "code": "restaurant",
+      "name_ar": "مطاعم، كافيهات، وضيافة",
+      "name_en": "Restaurants, Cafés & Hospitality",
+      "phase": 1,
+      "prefix": "RES",
+      "primary_pos_collection": "restaurant-pos",
+      "recommended_modules": ["restaurant-pos", "kitchen_display", "inventory", "purchases", "safes"]
+    },
+    {
+      "code": "pharmacy",
+      "name_ar": "صيدليات ومستلزمات طبية",
+      "name_en": "Pharmacies & Medical Supplies",
+      "phase": 1,
+      "prefix": "PHA",
+      "primary_pos_collection": "retail-pos",
+      "recommended_modules": ["retail-pos", "inventory", "purchases", "invoicing", "safes"]
+    },
+    {
+      "code": "consulting",
+      "name_ar": "مكاتب محاسبة واستشارات قانونية ومالية",
+      "name_en": "Accounting & Management Consulting",
+      "phase": 1,
+      "prefix": "CON",
+      "primary_pos_collection": null,
+      "recommended_modules": ["invoicing", "ledger", "services", "safes", "employees"]
+    },
+    {
+      "code": "school",
+      "name_ar": "مدارس ومعاهد تدريب وأكاديميات",
+      "name_en": "Schools & Educational Institutes",
+      "phase": 1,
+      "prefix": "EDU",
+      "primary_pos_collection": null,
+      "recommended_modules": ["school", "invoicing", "safes", "ledger", "employees"]
+    },
+    {
+      "code": "wholesale",
+      "name_ar": "تجارة جملة وتوزيع وتوريدات",
+      "name_en": "Wholesale & Bulk Distribution",
+      "phase": 2,
+      "prefix": "WHO",
+      "primary_pos_collection": "retail-pos",
+      "recommended_modules": ["inventory", "purchases", "invoicing", "ledger", "safes"]
+    },
+    {
+      "code": "logistics",
+      "name_ar": "شحن ونقل وخدمات لوجستية",
+      "name_en": "Logistics & Fleet Transportation",
+      "phase": 2,
+      "prefix": "LOG",
+      "primary_pos_collection": null,
+      "recommended_modules": ["services", "invoicing", "safes", "ledger", "employees"]
+    },
+    {
+      "code": "wms_3pl",
+      "name_ar": "مستودعات وخدمات لوجستية للغير (3PL)",
+      "name_en": "Third-Party Logistics & WMS",
+      "phase": 2,
+      "prefix": "WMS",
+      "primary_pos_collection": null,
+      "recommended_modules": ["inventory", "invoicing", "purchases", "safes", "ledger"]
+    },
+    {
+      "code": "ecommerce",
+      "name_ar": "تجارة إلكترونية ومتاجر رقمية متعددة القنوات",
+      "name_en": "Omnichannel E-commerce",
+      "phase": 2,
+      "prefix": "ECS",
+      "primary_pos_collection": "retail-pos",
+      "recommended_modules": ["retail-pos", "inventory", "invoicing", "safes", "purchases"]
+    },
+    {
+      "code": "healthcare",
+      "name_ar": "عيادات ومراكز طبية ومستشفيات",
+      "name_en": "Clinics, Hospitals & Healthcare",
+      "phase": 3,
+      "prefix": "HLT",
+      "primary_pos_collection": null,
+      "recommended_modules": ["clinic", "invoicing", "inventory", "safes", "employees"]
+    },
+    {
+      "code": "law_firm",
+      "name_ar": "مكاتب ومؤسسات المحاماة والاستشارات القانونية",
+      "name_en": "Law Firms & Legal Practices",
+      "phase": 3,
+      "prefix": "LAW",
+      "primary_pos_collection": null,
+      "recommended_modules": ["services", "invoicing", "safes", "ledger", "employees"]
+    },
+    {
+      "code": "travel",
+      "name_ar": "وكالات السياحة والسفر وتنظيم الرحلات",
+      "name_en": "Travel Agencies & Tour Operators",
+      "phase": 3,
+      "prefix": "TRV",
+      "primary_pos_collection": null,
+      "recommended_modules": ["services", "invoicing", "safes", "ledger", "employees"]
+    },
+    {
+      "code": "hotel",
+      "name_ar": "فنادق ومنتجعات وشقق فندقية",
+      "name_en": "Hotels, Resorts & Hospitality",
+      "phase": 3,
+      "prefix": "HOT",
+      "primary_pos_collection": "restaurant-pos",
+      "recommended_modules": ["restaurant-pos", "inventory", "invoicing", "safes", "employees"]
+    },
+    {
+      "code": "gym",
+      "name_ar": "نوادي وصالات رياضية ولياقة بدنية",
+      "name_en": "Gyms, Crossfit & Sports Clubs",
+      "phase": 3,
+      "prefix": "GYM",
+      "primary_pos_collection": "gym-pos",
+      "recommended_modules": ["gym-pos", "gym_fitness", "invoicing", "inventory", "safes", "employees"]
+    },
+    {
+      "code": "salon",
+      "name_ar": "صالونات تجميل ومراكز سبا وعناية",
+      "name_en": "Beauty Salons, Spas & Barbershops",
+      "phase": 3,
+      "prefix": "SAL",
+      "primary_pos_collection": "retail-pos",
+      "recommended_modules": ["retail-pos", "inventory", "invoicing", "safes", "employees"]
+    },
+    {
+      "code": "agency",
+      "name_ar": "وكالات دعاية وإعلان وتصميم وترجمة",
+      "name_en": "Creative, Marketing & Translation Agencies",
+      "phase": 3,
+      "prefix": "AGE",
+      "primary_pos_collection": null,
+      "recommended_modules": ["services", "invoicing", "safes", "ledger", "employees"]
+    },
+    {
+      "code": "field_service",
+      "name_ar": "صيانة دورية وخدمات ميدانية وتشغيل",
+      "name_en": "Field Service, Maintenance & Operations",
+      "phase": 3,
+      "prefix": "FSM",
+      "primary_pos_collection": null,
+      "recommended_modules": ["services", "inventory", "invoicing", "safes", "employees"]
+    },
+    {
+      "code": "discrete_mfg",
+      "name_ar": "تصنيع وتجميع ميكانيكي وإلكتروني",
+      "name_en": "Discrete Manufacturing & Assembly",
+      "phase": 4,
+      "prefix": "MFG",
+      "primary_pos_collection": null,
+      "recommended_modules": ["inventory", "purchases", "invoicing", "ledger", "safes"]
+    },
+    {
+      "code": "food_mfg",
+      "name_ar": "تصنيع ومعالجة الأغذية والمشروبات",
+      "name_en": "Food & Beverage Process Manufacturing",
+      "phase": 4,
+      "prefix": "FOD",
+      "primary_pos_collection": null,
+      "recommended_modules": ["inventory", "purchases", "invoicing", "ledger", "safes"]
+    },
+    {
+      "code": "pharma_mfg",
+      "name_ar": "صناعات دوائية ومستحضرات تجميل وكيمياويات",
+      "name_en": "Pharmaceutical & Chemical Manufacturing",
+      "phase": 4,
+      "prefix": "PHM",
+      "primary_pos_collection": null,
+      "recommended_modules": ["inventory", "purchases", "invoicing", "ledger", "safes"]
+    },
+    {
+      "code": "printing",
+      "name_ar": "مطابع، تغليف، وتعبئة تجارية",
+      "name_en": "Commercial Printing & Packaging Plants",
+      "phase": 4,
+      "prefix": "PRN",
+      "primary_pos_collection": null,
+      "recommended_modules": ["inventory", "purchases", "invoicing", "ledger", "safes"]
+    },
+    {
+      "code": "construction",
+      "name_ar": "مقاولات عامة وتشييد وبنية تحتية",
+      "name_en": "Construction, Contracting & Civil Works",
+      "phase": 5,
+      "prefix": "CST",
+      "primary_pos_collection": null,
+      "recommended_modules": ["services", "purchases", "invoicing", "ledger", "safes"]
+    },
+    {
+      "code": "real_estate",
+      "name_ar": "إدارة وتأجير العقارات والمجمعات التجارية",
+      "name_en": "Real Estate & Property Management",
+      "phase": 5,
+      "prefix": "RE",
+      "primary_pos_collection": null,
+      "recommended_modules": ["services", "invoicing", "safes", "ledger", "employees"]
+    },
+    {
+      "code": "agriculture",
+      "name_ar": "مزارع وإنتاج زراعي وثروة حيوانية",
+      "name_en": "Commercial Agriculture, Farms & Livestock",
+      "phase": 5,
+      "prefix": "AGR",
+      "primary_pos_collection": null,
+      "recommended_modules": ["inventory", "purchases", "invoicing", "ledger", "safes"]
+    },
+    {
+      "code": "energy",
+      "name_ar": "محطات طاقة وتوليد كهرباء ومرافق",
+      "name_en": "Energy, Power Generation & Utilities",
+      "phase": 5,
+      "prefix": "ENG",
+      "primary_pos_collection": null,
+      "recommended_modules": ["services", "inventory", "purchases", "safes", "ledger"]
+    },
+    {
+      "code": "banking",
+      "name_ar": "بنوك ومؤسسات تمويل وإقراض متناهي الصغر",
+      "name_en": "Banking & Microfinance Institutions",
+      "phase": 6,
+      "prefix": "BNK",
+      "primary_pos_collection": null,
+      "recommended_modules": ["ledger", "safes", "invoicing", "employees"]
+    },
+    {
+      "code": "insurance",
+      "name_ar": "شركات تأمين وتكافل وإدارة مطالبات",
+      "name_en": "Insurance & Takaful Providers",
+      "phase": 6,
+      "prefix": "INS",
+      "primary_pos_collection": null,
+      "recommended_modules": ["ledger", "invoicing", "safes", "employees"]
+    },
+    {
+      "code": "government",
+      "name_ar": "هيئات حكومية وجمعيات أهلية وأوقاف",
+      "name_en": "Government Agencies & Nonprofits",
+      "phase": 6,
+      "prefix": "GOV",
+      "primary_pos_collection": null,
+      "recommended_modules": ["ledger", "purchases", "invoicing", "safes", "employees"]
+    },
+    {
+      "code": "entertainment",
+      "name_ar": "مدن ملاهي، فعاليات، ومراكز ألعاب",
+      "name_en": "Entertainment, Theme Parks & Gaming",
+      "phase": 6,
+      "prefix": "ENT",
+      "primary_pos_collection": "retail-pos",
+      "recommended_modules": ["retail-pos", "restaurant-pos", "inventory", "invoicing", "safes"]
+    },
+    {
+      "code": "oil_gas",
+      "name_ar": "عمليات بترول وغاز ومستودعات وقود",
+      "name_en": "Upstream & Downstream Oil & Gas",
+      "phase": 6,
+      "prefix": "OIL",
+      "primary_pos_collection": null,
+      "recommended_modules": ["services", "inventory", "purchases", "ledger", "safes"]
     }
   ]
 }
