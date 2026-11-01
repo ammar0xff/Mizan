@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   FileText,
   GraduationCap,
@@ -16,6 +16,7 @@ import { Empty, ErrorBox, Input, Modal, useToast } from "@/components/ui";
 import { api } from "@/lib/api";
 import { moneyEGP } from "@/lib/format";
 import { sound } from "@/lib/sound";
+import { SchoolTuitionReceiptModal, type SchoolPaymentReceiptData } from "@/features/modules/SpecializedReceiptModals";
 
 interface Student {
   id: string;
@@ -30,9 +31,12 @@ interface Student {
 }
 
 export default function SchoolStudentsPage() {
+  const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [payFor, setPayFor] = useState<Student | null>(null);
   const [payAmount, setPayAmount] = useState("");
+  const [isPaying, setIsPaying] = useState(false);
+  const [receiptData, setReceiptData] = useState<SchoolPaymentReceiptData | null>(null);
   const { toast } = useToast();
 
   const studentsQuery = useQuery({
@@ -207,7 +211,18 @@ export default function SchoolStudentsPage() {
                             className="h-8 gap-1.5 px-2.5 text-xs text-muted-foreground hover:text-foreground"
                             onClick={() => {
                               sound.click();
-                              toast("info", `كشف حساب الطالب ${s.name} جاهز للطباعة`);
+                              setReceiptData({
+                                receipt_no: `STMT-${s.code}`,
+                                student_name: s.name,
+                                student_code: s.code,
+                                grade: s.grade,
+                                parent_phone: s.parent_phone,
+                                paid_amount: 0,
+                                total_paid: s.paid_tuition,
+                                total_tuition: s.total_tuition,
+                                new_balance_due: s.balance_due,
+                                notes: "كشف حساب دراسي معتمد بموقف الرسوم والأقساط",
+                              });
                             }}
                           >
                             <FileText className="size-3.5" />
@@ -238,14 +253,55 @@ export default function SchoolStudentsPage() {
       )}
 
       {/* Collect Tuition Installment Modal */}
-      <Modal open={!!payFor} onClose={() => setPayFor(null)} title={`تحصيل قسط دراسي — الطالب: ${payFor?.name ?? ""}`}>
+      <Modal open={!!payFor} onClose={() => !isPaying && setPayFor(null)} title={`تحصيل قسط دراسي — الطالب: ${payFor?.name ?? ""}`}>
         <form
-          onSubmit={(e) => {
+          onSubmit={async (e) => {
             e.preventDefault();
-            sound.success();
-            toast("success", `تم تسجيل تحصيل مبلغ ${payAmount} ج.م للطالب ${payFor?.name} وإصدار إيصال السداد`);
-            setPayFor(null);
-            setPayAmount("");
+            if (!payFor) return;
+            const amt = parseFloat(payAmount);
+            if (isNaN(amt) || amt <= 0) {
+              toast("error", "يرجى إدخال مبلغ صحيح أكبر من صفر");
+              return;
+            }
+
+            setIsPaying(true);
+            try {
+              sound.click();
+              const res = await api.post<{
+                detail: string;
+                receipt_no: string;
+                paid_amount: number;
+                new_balance_due: number;
+                total_paid: number;
+                student_name: string;
+                student_code: string;
+              }>(`/modules/school/students/${payFor.id}/pay`, { amount: amt });
+
+              sound.success();
+              toast("success", res.detail);
+              await queryClient.invalidateQueries({ queryKey: ["school-students"] });
+
+              setReceiptData({
+                receipt_no: res.receipt_no,
+                student_name: res.student_name,
+                student_code: res.student_code,
+                grade: payFor.grade,
+                parent_phone: payFor.parent_phone,
+                paid_amount: res.paid_amount,
+                new_balance_due: res.new_balance_due,
+                total_paid: res.total_paid,
+                total_tuition: payFor.total_tuition,
+                notes: "سداد قسط دراسي في خزانة المدرسة (مسجل بقاعدة البيانات)",
+              });
+
+              setPayFor(null);
+              setPayAmount("");
+            } catch (err: any) {
+              sound.error();
+              toast("error", err.message || "فشل تسجيل السداد");
+            } finally {
+              setIsPaying(false);
+            }
           }}
           className="flex flex-col gap-4"
         >
@@ -267,15 +323,27 @@ export default function SchoolStudentsPage() {
               placeholder="0.00"
               value={payAmount}
               onChange={(e) => setPayAmount(e.target.value)}
+              disabled={isPaying}
               required
             />
           </div>
 
-          <Button type="submit" className="w-full h-10 font-bold bg-indigo-600 hover:bg-indigo-700 text-white">
-            تأكيد السداد وإصدار إيصال إلكتروني
+          <Button
+            type="submit"
+            disabled={isPaying || !payAmount}
+            className="w-full h-10 font-bold bg-indigo-600 hover:bg-indigo-700 text-white"
+          >
+            {isPaying ? "جارٍ تسجيل العملية بقاعدة البيانات..." : "تأكيد السداد وإصدار إيصال إلكتروني"}
           </Button>
         </form>
       </Modal>
+
+      {/* Official Tuition Receipt Modal */}
+      <SchoolTuitionReceiptModal
+        open={!!receiptData}
+        onClose={() => setReceiptData(null)}
+        data={receiptData}
+      />
     </div>
   );
 }

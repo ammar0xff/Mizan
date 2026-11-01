@@ -20,6 +20,8 @@ import {
   UtensilsCrossed,
   Wallet,
   Blocks,
+  UploadCloud,
+  FileArchive,
 } from "lucide-react";
 import { Badge } from "@/components/kit/badge";
 import { Button, buttonVariants } from "@/components/kit/button";
@@ -27,6 +29,7 @@ import { Card } from "@/components/kit/card";
 import { Input, Modal, useToast } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import { sound } from "@/lib/sound";
+import { api } from "@/lib/api";
 import { useModulesStore, type ModuleManifest, type BusinessPreset } from "@/stores/modules";
 
 const ICON_MAP: Record<string, any> = {
@@ -67,9 +70,36 @@ export default function ModulesPage() {
   const [settingsValues, setSettingsValues] = useState<Record<string, any>>({});
   const [isLoadingSettings, setIsLoadingSettings] = useState(false);
   const [isSavingSettings, setIsSavingSettings] = useState(false);
+  const [uploadModalOpen, setUploadModalOpen] = useState(false);
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
   const { toast } = useToast();
 
   const activePresetObj = presets.find((p) => p.id === activePreset);
+
+  async function handleUploadPackage(e: React.FormEvent) {
+    e.preventDefault();
+    if (!uploadFile) return;
+
+    setIsUploading(true);
+    try {
+      sound.click();
+      const form = new FormData();
+      form.append("file", uploadFile);
+
+      const res = await api.postForm<{ detail: string; module: any }>("/modules/upload", form);
+      sound.success();
+      toast("success", res.detail || "تم تثبيت واستيراد الموديول بنجاح");
+      setUploadModalOpen(false);
+      setUploadFile(null);
+      await fetchModules();
+    } catch (err: any) {
+      sound.error();
+      toast("error", err.message || "فشل استيراد الموديول");
+    } finally {
+      setIsUploading(false);
+    }
+  }
 
   async function handleApplyPreset(preset: BusinessPreset) {
     if (preset.id === activePreset) return;
@@ -169,6 +199,20 @@ export default function ModulesPage() {
               <span className="num font-bold">({activeModules.length} وحدات نشطة)</span>
             </div>
           )}
+
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 gap-1.5 text-xs font-semibold"
+            onClick={() => {
+              sound.click();
+              setUploadFile(null);
+              setUploadModalOpen(true);
+            }}
+          >
+            <UploadCloud className="size-3.5 text-primary" />
+            <span>تثبيت موديول خارجي (.zip)</span>
+          </Button>
 
           <Button
             variant="ghost"
@@ -662,6 +706,95 @@ export default function ModulesPage() {
             </div>
           </form>
         )}
+      </Modal>
+
+      {/* Upload External Module Modal */}
+      <Modal
+        open={uploadModalOpen}
+        onClose={() => !isUploading && setUploadModalOpen(false)}
+        title="استيراد وتثبيت موديول إضافي (.zip)"
+      >
+        <form onSubmit={handleUploadPackage} className="flex flex-col gap-5">
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            يمكنك تثبيت إضافات وقطاعات أعمال مخصصة للنظام عبر رفع حزمة موديول بصيغة <strong className="font-mono text-foreground">.zip</strong> تحتوي على ملف <code className="font-mono text-primary font-bold">manifest.json</code> التعريفي.
+          </p>
+
+          <div
+            className={`flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed p-6 transition-all ${
+              uploadFile
+                ? "border-primary/60 bg-primary/5"
+                : "border-border/80 bg-muted/20 hover:border-primary/40 hover:bg-muted/30"
+            }`}
+          >
+            {uploadFile ? (
+              <div className="flex flex-col items-center text-center">
+                <div className="flex size-12 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-sm">
+                  <FileArchive className="size-6" />
+                </div>
+                <h4 className="mt-3 font-bold text-sm text-foreground">{uploadFile.name}</h4>
+                <p className="num mt-1 text-[11px] text-muted-foreground font-mono">
+                  {(uploadFile.size / 1024).toFixed(1)} كيلوبايت
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setUploadFile(null)}
+                  className="mt-2 text-[11px] font-semibold text-destructive hover:underline"
+                >
+                  اختيار ملف آخر
+                </button>
+              </div>
+            ) : (
+              <label className="flex flex-col items-center cursor-pointer text-center">
+                <div className="flex size-12 items-center justify-center rounded-2xl bg-muted text-muted-foreground shadow-xs">
+                  <UploadCloud className="size-6 text-primary" />
+                </div>
+                <span className="mt-3 text-xs font-bold text-foreground">
+                  انقر هنا لاختيار حزمة الموديول (.zip)
+                </span>
+                <span className="mt-1 text-[11px] text-muted-foreground">
+                  أو اسحب وأفلت الملف داخل هذا المربع
+                </span>
+                <input
+                  type="file"
+                  accept=".zip,application/zip"
+                  className="hidden"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) {
+                      sound.click();
+                      setUploadFile(f);
+                    }
+                  }}
+                />
+              </label>
+            )}
+          </div>
+
+          <div className="rounded-xl border border-border/80 bg-muted/20 p-3 text-[11px] text-muted-foreground space-y-1">
+            <p className="font-semibold text-foreground">متطلبات حزمة الموديول:</p>
+            <p>• ملف <code className="font-mono text-primary">manifest.json</code> يحتوي على (id, name, version, icon, category, settings_schema).</p>
+            <p>• مسارات الواجهات والـ API الخاصة بالوحدة يتم اكتشافها وتحميلها ديناميكياً.</p>
+          </div>
+
+          <div className="flex items-center gap-2 pt-2 border-t border-border/60">
+            <Button
+              type="button"
+              variant="outline"
+              disabled={isUploading}
+              className="flex-1 h-9 text-xs"
+              onClick={() => setUploadModalOpen(false)}
+            >
+              إلغاء
+            </Button>
+            <Button
+              type="submit"
+              disabled={!uploadFile || isUploading}
+              className="flex-1 h-9 font-bold text-xs bg-primary text-primary-foreground"
+            >
+              {isUploading ? "جارٍ الفحص والتثبيت..." : "تثبيت الموديول في النظام"}
+            </Button>
+          </div>
+        </form>
       </Modal>
     </div>
   );

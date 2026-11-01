@@ -1,9 +1,22 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Boxes, Clock, Plus, Receipt, Search, ShoppingCart, Users } from "lucide-react";
+import {
+  ArrowLeft,
+  Boxes,
+  ChefHat,
+  Clock,
+  GraduationCap,
+  Plus,
+  Receipt,
+  Search,
+  ShoppingCart,
+  Users,
+  UtensilsCrossed,
+} from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { useAuth } from "@/stores/auth";
+import { useModulesStore } from "@/stores/modules";
 import { NAV_ITEMS } from "@/lib/nav";
 import { Dialog, DialogContent, DialogTitle } from "@/components/kit/dialog";
 import { Kbd } from "@/components/kit/kbd";
@@ -62,7 +75,7 @@ interface PaletteAction {
   label: string;
   hint?: string;
   kbd?: string;
-  group: "action" | "nav" | "product" | "customer";
+  group: "action" | "nav" | "product" | "customer" | "student" | "table";
   icon: React.ReactNode;
   run: () => void;
 }
@@ -70,6 +83,7 @@ interface PaletteAction {
 /* ── Precision Raycast/Linear Command Palette ──────────────────── */
 export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
   const { can } = useAuth();
+  const { hasModule } = useModulesStore();
   const nav = useNavigate();
   const [q, setQ] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -91,6 +105,20 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
     queryFn: () => api.get<SearchCustomer[]>("/customers", { search: trimmed }),
     enabled: open && shouldSearchLive,
     staleTime: 10_000,
+  });
+
+  const { data: searchStudents } = useQuery({
+    queryKey: ["cmd-students"],
+    queryFn: () => api.get<any[]>("/modules/school/students"),
+    enabled: open && shouldSearchLive && hasModule("school"),
+    staleTime: 30_000,
+  });
+
+  const { data: searchTables } = useQuery({
+    queryKey: ["cmd-tables"],
+    queryFn: () => api.get<any[]>("/modules/restaurant/tables"),
+    enabled: open && shouldSearchLive && hasModule("restaurant"),
+    staleTime: 30_000,
   });
 
   // Static actions and navigation
@@ -134,8 +162,39 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
       },
     ];
 
+    if (hasModule("restaurant")) {
+      list.push({
+        id: "act-dining-tables",
+        label: "إدارة طاولات الصالة والضيافة",
+        hint: "المطاعم والكافيهات",
+        group: "action",
+        icon: <UtensilsCrossed className="size-4 text-amber-500" />,
+        run: () => nav("/restaurant/tables"),
+      });
+      list.push({
+        id: "act-kds-kitchen",
+        label: "شاشة تحضير المطبخ (KDS)",
+        hint: "المطاعم والكافيهات",
+        group: "action",
+        icon: <ChefHat className="size-4 text-amber-500" />,
+        run: () => nav("/restaurant/kitchen"),
+      });
+    }
+
+    if (hasModule("school")) {
+      list.push({
+        id: "act-school-students",
+        label: "شؤون الطلاب والأقساط الدراسية",
+        hint: "المدارس والأكاديميات",
+        group: "action",
+        icon: <GraduationCap className="size-4 text-indigo-500" />,
+        run: () => nav("/school/students"),
+      });
+    }
+
     for (const n of NAV_ITEMS) {
       if (n.perm && !can(n.perm)) continue;
+      if (n.module && !hasModule(n.module)) continue;
       list.push({
         id: `nav-${n.to}`,
         label: n.label,
@@ -146,7 +205,7 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
       });
     }
     return list;
-  }, [can, nav]);
+  }, [can, hasModule, nav]);
 
   // Combine static and live search results
   const allResults = useMemo<PaletteAction[]>(() => {
@@ -173,7 +232,7 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
 
     // Add matching customers
     if (Array.isArray(searchCustomers) && searchCustomers.length > 0) {
-      for (const c of searchCustomers.slice(0, 4)) {
+      for (const c of searchCustomers.slice(0, 3)) {
         dynamicItems.push({
           id: `cust-${c.id}`,
           label: c.name,
@@ -185,8 +244,50 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
       }
     }
 
+    // Add matching school students
+    if (Array.isArray(searchStudents) && searchStudents.length > 0) {
+      const qLower = trimmed.toLowerCase();
+      const matched = searchStudents.filter(
+        (s) =>
+          s.name?.toLowerCase().includes(qLower) ||
+          s.code?.toLowerCase().includes(qLower) ||
+          s.grade?.includes(qLower)
+      );
+      for (const s of matched.slice(0, 3)) {
+        dynamicItems.push({
+          id: `stu-${s.id}`,
+          label: s.name,
+          hint: `طالب (${s.grade}) · متبقي: ${s.balance_due} ج.م`,
+          group: "student",
+          icon: <GraduationCap className="size-4 text-indigo-400" />,
+          run: () => nav("/school/students"),
+        });
+      }
+    }
+
+    // Add matching dining tables
+    if (Array.isArray(searchTables) && searchTables.length > 0) {
+      const qLower = trimmed.toLowerCase();
+      const matched = searchTables.filter(
+        (t) =>
+          `طاولة ${t.number}`.includes(qLower) ||
+          t.number.includes(qLower) ||
+          t.section?.toLowerCase().includes(qLower)
+      );
+      for (const t of matched.slice(0, 3)) {
+        dynamicItems.push({
+          id: `tbl-${t.id}`,
+          label: `طاولة رقم ${t.number} (${t.section})`,
+          hint: `سعة ${t.capacity} أفراد · ${t.status === "occupied" ? "مشغولة حالياً" : "متاحة"}`,
+          group: "table",
+          icon: <UtensilsCrossed className="size-4 text-amber-500" />,
+          run: () => nav("/restaurant/tables"),
+        });
+      }
+    }
+
     return [...dynamicItems, ...items].slice(0, 14);
-  }, [staticItems, trimmed, searchProducts, searchCustomers, nav]);
+  }, [staticItems, trimmed, searchProducts, searchCustomers, searchStudents, searchTables, nav]);
 
   useEffect(() => {
     if (open) {

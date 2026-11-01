@@ -159,8 +159,66 @@ async def apply_preset(
     }
 
 
+import io
+import json
+import zipfile
+from fastapi import File, UploadFile
+from app.modules.restaurant.router import get_restaurant_tables as db_get_tables, update_table_status as db_update_table, UpdateTableStatusRequest
+from app.modules.kitchen_display.router import get_kitchen_orders as db_get_kitchen_orders, update_kitchen_ticket_status as db_update_ticket, UpdateTicketStatusRequest
+from app.modules.school.router import get_school_students as db_get_students, pay_student_installment as db_pay_installment, PayInstallmentRequest
+
+
+@router.post("/upload")
+async def upload_module_package(
+    file: UploadFile = File(...),
+    db: AsyncSession = Depends(get_db),
+    _=Depends(require_perm("settings")),
+):
+    """Import and install a custom third-party module package (.zip)."""
+    if not file.filename.endswith(".zip"):
+        raise HTTPException(status_code=400, detail="يجب أن تكون حزمة الموديول ملفاً مضغوطاً بصيغة .zip")
+
+    content = await file.read()
+    try:
+        with zipfile.ZipFile(io.BytesIO(content)) as z:
+            manifest_names = [n for n in z.namelist() if n.endswith("manifest.json")]
+            if not manifest_names:
+                raise HTTPException(status_code=400, detail="الحزمة لا تحتوي على ملف manifest.json التعريفي")
+
+            manifest_path = manifest_names[0]
+            manifest_data = json.loads(z.read(manifest_path).decode("utf-8"))
+            mod_id = manifest_data.get("id")
+            if not mod_id:
+                raise HTTPException(status_code=400, detail="معرف الموديول 'id' غير محدد في المانيفست")
+
+            target_dir = registry.modules_dir / mod_id
+            target_dir.mkdir(parents=True, exist_ok=True)
+
+            prefix = manifest_path.rsplit("manifest.json", 1)[0]
+            for member in z.namelist():
+                if member.endswith("/"):
+                    continue
+                rel_path = member[len(prefix):] if prefix and member.startswith(prefix) else member
+                if not rel_path or ".." in rel_path:
+                    continue
+                dest = target_dir / rel_path
+                dest.parent.mkdir(parents=True, exist_ok=True)
+                dest.write_bytes(z.read(member))
+
+            registry._discovered = False
+            discovered = registry.discover_modules()
+            manifest = discovered.get(mod_id)
+
+            return {
+                "detail": f"تم استيراد وتثبيت وحدة «{manifest_data.get('name', mod_id)}» بنجاح في النظام",
+                "module": asdict(manifest) if manifest else manifest_data,
+            }
+    except zipfile.BadZipFile:
+        raise HTTPException(status_code=400, detail="ملف الـ ZIP تالف أو غير صالح")
+
+
 # ============================================================================
-# Specialized Industry Endpoints (Restaurant & School Mock / Interactive Data)
+# Specialized Industry Endpoints (Connected Directly to PostgreSQL Database)
 # ============================================================================
 
 @router.get("/restaurant/tables")
@@ -169,15 +227,20 @@ async def get_restaurant_tables(
     _mod=Depends(require_module("restaurant")),
     _user=Depends(get_current_user),
 ):
-    """Return dining hall tables and current active orders."""
-    return [
-        {"id": "t1", "number": "1", "capacity": 4, "section": "الصالة الرئيسية", "status": "occupied", "order_total": 450.0, "guests": 3, "opened_at": "منذ 25 دقيقة"},
-        {"id": "t2", "number": "2", "capacity": 2, "section": "الصالة الرئيسية", "status": "available", "order_total": 0.0, "guests": 0, "opened_at": None},
-        {"id": "t3", "number": "3", "capacity": 6, "section": "صالة العائلات", "status": "occupied", "order_total": 1280.0, "guests": 5, "opened_at": "منذ 45 دقيقة"},
-        {"id": "t4", "number": "4", "capacity": 4, "section": "صالة العائلات", "status": "reserved", "order_total": 0.0, "guests": 4, "opened_at": None},
-        {"id": "t5", "number": "5", "capacity": 8, "section": "التراس الخارجي", "status": "occupied", "order_total": 890.0, "guests": 6, "opened_at": "منذ 10 دقائق"},
-        {"id": "t6", "number": "6", "capacity": 2, "section": "التراس الخارجي", "status": "available", "order_total": 0.0, "guests": 0, "opened_at": None},
-    ]
+    """Return dining hall tables from PostgreSQL database."""
+    return await db_get_tables(db=db, _user=_user)
+
+
+@router.post("/restaurant/tables/{table_id}/status")
+async def update_restaurant_table_status(
+    table_id: str,
+    data: UpdateTableStatusRequest,
+    db: AsyncSession = Depends(get_db),
+    _mod=Depends(require_module("restaurant")),
+    _user=Depends(get_current_user),
+):
+    """Update table occupancy or reservation state in PostgreSQL."""
+    return await db_update_table(table_id=table_id, data=data, db=db, _user=_user)
 
 
 @router.get("/restaurant/kitchen-orders")
@@ -186,34 +249,20 @@ async def get_kitchen_orders(
     _mod=Depends(require_module("restaurant")),
     _user=Depends(get_current_user),
 ):
-    """Kitchen Display System (KDS) live ticket queue."""
-    return [
-        {
-            "id": "kds-101",
-            "order_number": "#K-104",
-            "table": "طاولة 3 (عائلات)",
-            "waiter": "كريم أحمد",
-            "elapsed_mins": 12,
-            "status": "cooking",
-            "items": [
-                {"name": "برجر دبل بيف مشوي", "qty": 2, "notes": "بدون بصل، جبنة إضافية"},
-                {"name": "بيتزا رانش دجاج لارج", "qty": 1, "notes": "تسوية مقرمشة"},
-                {"name": "بطاطس ويدجز متبلة", "qty": 2, "notes": ""},
-            ],
-        },
-        {
-            "id": "kds-102",
-            "order_number": "#K-105",
-            "table": "طاولة 1 (رئيسية)",
-            "waiter": "عمر محمود",
-            "elapsed_mins": 4,
-            "status": "pending",
-            "items": [
-                {"name": "باستا ألفريدو دجاج ومشروم", "qty": 1, "notes": "إكسترا صوص أبيض"},
-                {"name": "سلطة سيزر دجاج مشوي", "qty": 1, "notes": ""},
-            ],
-        },
-    ]
+    """Kitchen Display System (KDS) live ticket queue from PostgreSQL."""
+    return await db_get_kitchen_orders(db=db, _user=_user)
+
+
+@router.post("/restaurant/kitchen-orders/{ticket_id}/status")
+async def update_kitchen_ticket_status(
+    ticket_id: str,
+    data: UpdateTicketStatusRequest,
+    db: AsyncSession = Depends(get_db),
+    _mod=Depends(require_module("restaurant")),
+    _user=Depends(get_current_user),
+):
+    """Update kitchen ticket status in PostgreSQL."""
+    return await db_update_ticket(ticket_id=ticket_id, data=data, db=db, _user=_user)
 
 
 @router.get("/school/students")
@@ -222,10 +271,17 @@ async def get_school_students(
     _mod=Depends(require_module("school")),
     _user=Depends(get_current_user),
 ):
-    """School student roster with tuition installment balances."""
-    return [
-        {"id": "s-1", "code": "STU-2024-001", "name": "أحمد محمود حسن", "grade": "الصف الأول الإعدادي", "parent_phone": "01098765432", "total_tuition": 15000, "paid_tuition": 10000, "balance_due": 5000, "status": "active"},
-        {"id": "s-2", "code": "STU-2024-002", "name": "سارة إبراهيم فتحي", "grade": "الصف الثاني الثانوي", "parent_phone": "01123456789", "total_tuition": 22000, "paid_tuition": 22000, "balance_due": 0, "status": "settled"},
-        {"id": "s-3", "code": "STU-2024-003", "name": "يوسف طارق علي", "grade": "الصف السادس الابتدائي", "parent_phone": "01234567890", "total_tuition": 12000, "paid_tuition": 6000, "balance_due": 6000, "status": "overdue"},
-        {"id": "s-4", "code": "STU-2024-004", "name": "مريم خالد سمير", "grade": "الصف الثالث الإعدادي", "parent_phone": "01011223344", "total_tuition": 18000, "paid_tuition": 18000, "balance_due": 0, "status": "settled"},
-    ]
+    """School student roster from PostgreSQL database."""
+    return await db_get_students(db=db, _user=_user)
+
+
+@router.post("/school/students/{student_id}/pay")
+async def pay_school_student_installment(
+    student_id: str,
+    data: PayInstallmentRequest,
+    db: AsyncSession = Depends(get_db),
+    _mod=Depends(require_module("school")),
+    _user=Depends(get_current_user),
+):
+    """Record a student tuition installment payment in PostgreSQL."""
+    return await db_pay_installment(student_id=student_id, data=data, db=db, _user=_user)

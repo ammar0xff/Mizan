@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import {
   ChefHat,
@@ -10,6 +10,9 @@ import {
   UtensilsCrossed,
   LayoutGrid,
   CheckCircle2,
+  Printer,
+  LogOut,
+  UserPlus,
 } from "lucide-react";
 import { Skeleton } from "@/components/kit/skeleton";
 import { Badge } from "@/components/kit/badge";
@@ -20,6 +23,7 @@ import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { moneyEGP } from "@/lib/format";
 import { sound } from "@/lib/sound";
+import { RestaurantGuestCheckModal, type DiningTableReceiptData } from "@/features/modules/SpecializedReceiptModals";
 
 interface TableItem {
   id: string;
@@ -43,8 +47,11 @@ interface KDSTicket {
 }
 
 export default function RestaurantTablesPage() {
+  const queryClient = useQueryClient();
   const [tab, setTab] = useState<"hall" | "kds">("hall");
   const [selectedTable, setSelectedTable] = useState<TableItem | null>(null);
+  const [guestCheckData, setGuestCheckData] = useState<DiningTableReceiptData | null>(null);
+  const [isUpdatingTable, setIsUpdatingTable] = useState(false);
   const { toast } = useToast();
 
   const tablesQuery = useQuery({
@@ -300,9 +307,18 @@ export default function RestaurantTablesPage() {
 
                 <div className="mt-5 border-t border-border/60 pt-3">
                   <Button
-                    onClick={() => {
-                      sound.success();
-                      toast("success", `تم تجهيز التذكرة ${ticket.order_number} بنجاح`);
+                    onClick={async () => {
+                      sound.click();
+                      try {
+                        await api.post(`/modules/restaurant/kitchen-orders/${ticket.id}/status`, {
+                          status: "ready",
+                        });
+                        sound.success();
+                        toast("success", `تم تجهيز طلب ${ticket.order_number} للطاولة ${ticket.table} بنجاح`);
+                        await queryClient.invalidateQueries({ queryKey: ["restaurant-kds"] });
+                      } catch (err: any) {
+                        toast("error", err.message || "فشل تحديث حالة الطلب");
+                      }
                     }}
                     className="w-full h-9 text-xs font-bold gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white"
                   >
@@ -319,51 +335,155 @@ export default function RestaurantTablesPage() {
       {/* Table Detail / Order Modal */}
       <Modal
         open={!!selectedTable}
-        onClose={() => setSelectedTable(null)}
+        onClose={() => !isUpdatingTable && setSelectedTable(null)}
         title={selectedTable ? `طاولة رقم ${selectedTable.number} (${selectedTable.section})` : ""}
       >
         {selectedTable && (
           <div className="flex flex-col gap-4">
             <div className="grid grid-cols-2 gap-3 text-xs">
               <div className="rounded-lg bg-muted p-2.5">
-                <span className="text-muted-foreground">الحالة: </span>
-                <strong className="font-bold">
-                  {selectedTable.status === "occupied" ? "مشغولة" : "متاحة"}
+                <span className="text-muted-foreground">الحالة الحالية: </span>
+                <strong className={`font-bold ${selectedTable.status === "occupied" ? "text-amber-600" : "text-emerald-600"}`}>
+                  {selectedTable.status === "occupied" ? "مشغولة حالياً" : "فارغة ومتاحة"}
                 </strong>
               </div>
               <div className="rounded-lg bg-muted p-2.5">
-                <span className="text-muted-foreground">السعة: </span>
+                <span className="text-muted-foreground">سعة الطاولة: </span>
                 <strong className="font-bold">{selectedTable.capacity} أفراد</strong>
               </div>
             </div>
 
             {selectedTable.status === "occupied" ? (
-              <div className="rounded-xl border border-border p-3 text-xs">
+              <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-3.5 text-xs space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">الحساب الجاري:</span>
-                  <strong className="num text-lg font-bold text-primary">
+                  <span className="text-muted-foreground">إجمالي حساب الطاولة:</span>
+                  <strong className="num text-xl font-black text-amber-600 dark:text-amber-400">
                     {moneyEGP(selectedTable.order_total)}
                   </strong>
                 </div>
-                <p className="mt-1 text-[11px] text-muted-foreground">وقت بدء الجلسة: {selectedTable.opened_at}</p>
+                <div className="flex items-center justify-between text-muted-foreground text-[11px] pt-1 border-t border-border/40">
+                  <span>الضيوف الجالسين: <strong className="text-foreground">{selectedTable.guests} أفراد</strong></span>
+                  <span>وقت الجلوس: <strong className="text-foreground">{selectedTable.opened_at || "الآن"}</strong></span>
+                </div>
               </div>
             ) : (
-              <p className="text-xs text-muted-foreground">
-                الطاولة جاهزة لاستقبال ضيوف جدد وبدء طلب طعام جديد.
-              </p>
+              <div className="rounded-xl border border-border/60 bg-muted/20 p-3 text-xs text-muted-foreground">
+                الطاولة فارغة ونظيفة، جاهزة لاستقبال زبائن جدد أو تسكين حجز مسبق.
+              </div>
             )}
 
-            <div className="flex gap-2">
-              <Link
-                to="/pos"
-                className={cn(buttonVariants(), "flex-1 font-bold text-center")}
-              >
-                {selectedTable.status === "occupied" ? "إضافة أصناف / محاسبة" : "فتح طاولة وبدء الطلب"}
-              </Link>
+            <div className="flex flex-col gap-2 pt-2">
+              {selectedTable.status === "occupied" ? (
+                <>
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="flex-1 h-9 text-xs font-semibold gap-1.5"
+                      onClick={() => {
+                        sound.click();
+                        setGuestCheckData({
+                          tableNumber: selectedTable.number,
+                          section: selectedTable.section,
+                          serverName: "محمد الشافعي (كابتن صالة)",
+                          guests: selectedTable.guests || 2,
+                          openedAt: selectedTable.opened_at || undefined,
+                          subtotal: selectedTable.order_total || 240.0,
+                          serviceChargePercent: 12,
+                          vatPercent: 14,
+                        });
+                      }}
+                    >
+                      <Printer className="size-3.5 text-amber-500" />
+                      طباعة بون الحساب (Guest Check)
+                    </Button>
+
+                    <Button
+                      type="button"
+                      variant="outline"
+                      disabled={isUpdatingTable}
+                      className="h-9 text-xs font-semibold gap-1.5 border-destructive/40 text-destructive hover:bg-destructive/10"
+                      onClick={async () => {
+                        setIsUpdatingTable(true);
+                        try {
+                          sound.click();
+                          await api.post(`/modules/restaurant/tables/${selectedTable.id}/status`, {
+                            status: "available",
+                          });
+                          sound.success();
+                          toast("success", `تم إخلاء طاولة ${selectedTable.number} وتصفير الحساب بنجاح`);
+                          await queryClient.invalidateQueries({ queryKey: ["restaurant-tables"] });
+                          setSelectedTable(null);
+                        } catch (err: any) {
+                          toast("error", err.message || "فشل إخلاء الطاولة");
+                        } finally {
+                          setIsUpdatingTable(false);
+                        }
+                      }}
+                    >
+                      <LogOut className="size-3.5" />
+                      إخلاء الطاولة
+                    </Button>
+                  </div>
+
+                  <Link
+                    to="/pos"
+                    className={cn(buttonVariants(), "w-full font-bold text-center text-xs h-9")}
+                  >
+                    إضافة أصناف للطلب / محاسبة الكاشير
+                  </Link>
+                </>
+              ) : (
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    disabled={isUpdatingTable}
+                    className="flex-1 h-9 text-xs font-bold gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white"
+                    onClick={async () => {
+                      setIsUpdatingTable(true);
+                      try {
+                        sound.click();
+                        const timeStr = new Date().toLocaleTimeString("ar-EG", { hour: "2-digit", minute: "2-digit" });
+                        await api.post(`/modules/restaurant/tables/${selectedTable.id}/status`, {
+                          status: "occupied",
+                          guests: selectedTable.capacity,
+                          opened_at: timeStr,
+                          order_total: 180.0,
+                        });
+                        sound.success();
+                        toast("success", `تم تسكين الضيوف وفتح طاولة ${selectedTable.number} بنجاح`);
+                        await queryClient.invalidateQueries({ queryKey: ["restaurant-tables"] });
+                        setSelectedTable(null);
+                      } catch (err: any) {
+                        toast("error", err.message || "فشل فتح الطاولة");
+                      } finally {
+                        setIsUpdatingTable(false);
+                      }
+                    }}
+                  >
+                    <UserPlus className="size-3.5" />
+                    تسكين ضيوف وفتح الطاولة
+                  </Button>
+
+                  <Link
+                    to="/pos"
+                    className={cn(buttonVariants({ variant: "outline" }), "flex-1 font-bold text-center text-xs h-9")}
+                  >
+                    فتح طلب جديد بالـ POS
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
         )}
       </Modal>
+
+      {/* Guest Check Print Modal */}
+      <RestaurantGuestCheckModal
+        open={!!guestCheckData}
+        onClose={() => setGuestCheckData(null)}
+        data={guestCheckData}
+      />
     </div>
   );
 }

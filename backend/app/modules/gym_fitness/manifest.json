@@ -1,0 +1,36 @@
+{
+  "id": "gym_fitness",
+  "name": "النوادي الرياضية واللياقة (Gym & Fitness)",
+  "name_en": "Gym & Fitness Clubs",
+  "category": "services",
+  "target_business_types": [
+    "gym",
+    "sports_club",
+    "crossfit"
+  ],
+  "version": "1.0.0",
+  "icon": "Dumbbell",
+  "badge": "موديول خارجي",
+  "description": "إدارة اشتراكات الأعضاء، مواعيد المدربين، وبوابات الدخول والباركود الذكي.",
+  "dependencies": [
+    "core",
+    "finance"
+  ],
+  "is_core": false,
+  "settings_schema": [
+    {
+      "key": "grace_period_days",
+      "label": "فترة السماح بعد انتهاء الاشتراك (أيام)",
+      "type": "number",
+      "default": 3,
+      "description": "عدد الأيام المسموح للعضو بالدخول فيها بعد انتهاء تاريخ الاشتراك."
+    },
+    {
+      "key": "auto_sms_reminders",
+      "label": "إرسال رسائل تذكير تلقائية لتجديد الاشتراك",
+      "type": "boolean",
+      "default": true,
+      "description": "إرسال تنبيه قبل 3 أيام من انتهاء الاشتراك لتجديد العضوية."
+    }
+  ]
+}
