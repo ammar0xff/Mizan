@@ -125,9 +125,18 @@ export default function AdmoonDashboard() {
   const [provOwnerName, setProvOwnerName] = useState("");
   const [submittingProv, setSubmittingProv] = useState(false);
 
+  // Superadmin Gate State
+  const [isForbidden, setIsForbidden] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [superUser, setSuperUser] = useState("ammar");
+  const [superPass, setSuperPass] = useState("changeme");
+  const [authenticating, setAuthenticating] = useState(false);
+  const currentUser = useAuth((s) => s.user);
+
   const fetchAll = async () => {
     try {
       setLoading(true);
+      setIsForbidden(false);
       const [ovData, tnData] = await Promise.all([
         api.get<AdmoonOverview>("/admoon/overview"),
         api.get<{ items: TenantItem[] }>("/admoon/tenants"),
@@ -135,9 +144,41 @@ export default function AdmoonDashboard() {
       setOverview(ovData);
       setTenants(tnData.items);
     } catch (err) {
-      toast.error(err instanceof ApiError ? err.message : "فشل تحميل بيانات أديمون");
+      if (err instanceof ApiError && (err.status === 403 || err.status === 401)) {
+        setIsForbidden(true);
+      } else {
+        toast.error(err instanceof ApiError ? err.message : "فشل تحميل بيانات أديمون");
+      }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSuperadminLogin = async (username = superUser, password = superPass) => {
+    try {
+      setAuthenticating(true);
+      setAuthError(null);
+      const r = await api.post<{
+        access_token: string;
+        user_id: string;
+        username: string;
+        role: string;
+        full_name: string;
+      }>("/auth/login", { username, password });
+
+      useAuth.getState().setToken(r.access_token);
+      const me = await api.get<import("@/stores/auth").User & { tenant?: import("@/stores/auth").TenantInfo }>("/auth/me");
+      useAuth.getState().setUser(me);
+      if (me.tenant) {
+        useAuth.getState().setTenant(me.tenant);
+      }
+      toast.success("تم تسجيل الدخول بنجاح كمالك المنصة");
+      setIsForbidden(false);
+      fetchAll();
+    } catch (err) {
+      setAuthError(err instanceof Error ? err.message : "تعذر التحقق من بيانات المالك الخارق");
+    } finally {
+      setAuthenticating(false);
     }
   };
 
@@ -265,6 +306,92 @@ export default function AdmoonDashboard() {
     }
     return true;
   });
+
+  if (isForbidden) {
+    return (
+      <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-4" dir="rtl">
+        <div className="w-full max-w-md rounded-2xl border border-border bg-card p-6 sm:p-8 shadow-sm space-y-5">
+          <div className="flex items-center gap-3">
+            <div className="flex size-11 items-center justify-center rounded-xl bg-primary text-primary-foreground font-black shadow-xs">
+              <Shield className="size-6" />
+            </div>
+            <div>
+              <h1 className="text-base font-bold text-foreground">بوابة الإدارة العليا (Admoon)</h1>
+              <p className="text-xs text-muted-foreground font-mono">SaaS Control Plane Authentication</p>
+            </div>
+          </div>
+
+          {currentUser ? (
+            <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-xs space-y-1">
+              <p className="font-bold text-amber-500">حسابك الحالي غير مخول:</p>
+              <p className="leading-relaxed text-foreground/80">
+                أنت مسجل حالياً بحساب <span className="font-bold text-foreground font-mono">({currentUser.username})</span> بدور <span className="font-bold text-foreground">({currentUser.role})</span>.
+                لوحة أديمون مخصصة حصرياً لمالك المنصة (Superadmin) لإدارة ومتابعة كافة المنشآت.
+              </p>
+            </div>
+          ) : (
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              يرجى تسجيل الدخول بحساب مالك المنصة المعتمد للوصول إلى لوحة التحكم الإدارية لكافة المنشآت.
+            </p>
+          )}
+
+          {authError && (
+            <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
+              {authError}
+            </div>
+          )}
+
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSuperadminLogin();
+            }}
+            className="space-y-4 pt-1"
+          >
+            <div>
+              <label className="block text-xs font-semibold text-foreground mb-1">اسم المستخدم للمالك</label>
+              <input
+                type="text"
+                value={superUser}
+                onChange={(e) => setSuperUser(e.target.value)}
+                className="w-full h-9 rounded-md border border-input bg-background px-3 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary font-mono"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-foreground mb-1">كلمة المرور</label>
+              <input
+                type="password"
+                value={superPass}
+                onChange={(e) => setSuperPass(e.target.value)}
+                className="w-full h-9 rounded-md border border-input bg-background px-3 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary font-mono"
+                required
+                autoFocus
+              />
+            </div>
+
+            <Button type="submit" disabled={authenticating} className="w-full font-bold text-xs h-9">
+              {authenticating ? "جارٍ التحقق..." : "مصادقة المالك الخارق والدخول"}
+            </Button>
+
+            <div className="pt-2 border-t border-border/60 flex items-center justify-between text-xs">
+              <button
+                type="button"
+                onClick={() => handleSuperadminLogin("ammar", "changeme")}
+                disabled={authenticating}
+                className="text-primary hover:underline font-semibold"
+              >
+                دخول سريع كـ ammar (Superadmin)
+              </button>
+              <Link to="/" className="text-muted-foreground hover:text-foreground">
+                العودة للرئيسية
+              </Link>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col" dir="rtl">
