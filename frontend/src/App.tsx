@@ -34,10 +34,10 @@ function Page({ children }: { children: React.ReactNode }) {
 }
 
 function Guard({ perm, children }: { perm: string; children: React.ReactNode }) {
-  const { token, user } = useAuth();
+  const { token, user, can } = useAuth();
   if (!token || !user) return <Navigate to="/login" replace />;
-  if (perm && !user.permissions.includes(perm)) {
-    const fallback = NAV_ITEMS.find((n) => !n.perm || user.permissions.includes(n.perm));
+  if (perm && !can(perm)) {
+    const fallback = NAV_ITEMS.find((n) => !n.perm || can(n.perm));
     return (
       <Empty className="mx-auto mt-16 max-w-md border border-dashed">
         <EmptyHeader>

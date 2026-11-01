@@ -21,7 +21,10 @@ export default function SuppliersPage() {
 
   const list = useQuery({
     queryKey: ["suppliers", search],
-    queryFn: () => api.get<Supplier[]>("/suppliers", { search: search || undefined }),
+    queryFn: async () => {
+      const res = await api.get<{ items: Supplier[] } | Supplier[]>("/suppliers", { search: search || undefined });
+      return Array.isArray(res) ? res : res.items ?? [];
+    },
   });
   const ledger = useQuery({
     queryKey: ["supplier-ledger", ledgerFor?.id],

@@ -35,6 +35,7 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/kit/i
 import { Kbd } from "@/components/kit/kbd";
 import { enqueueSale, listQueue, replayQueue, removeSale, type QueuedSale } from "@/lib/offline";
 import { sound } from "@/lib/sound";
+import { useBranch } from "@/components/AppShell";
 
 interface Warehouse { id: string; name: string }
 interface Product {
@@ -108,11 +109,13 @@ export default function PosPage() {
   const [confirmClear, setConfirmClear] = useState(false);
   const { toast } = useToast();
 
+  const { branchId, setBranchId } = useBranch();
   const wh = useQuery({ queryKey: ["warehouses"], queryFn: () => api.get<Warehouse[]>("/stock/warehouses") });
-  const [warehouseId, setWarehouseId] = useState("");
+  const [warehouseId, setWarehouseId] = useState(branchId ?? "");
   useEffect(() => {
-    if (!warehouseId && wh.data?.length) setWarehouseId(wh.data[0].id);
-  }, [wh.data, warehouseId]);
+    if (branchId) setWarehouseId(branchId);
+    else if (!warehouseId && wh.data?.length) setWarehouseId(wh.data[0].id);
+  }, [branchId, wh.data, warehouseId]);
 
   const customers = useQuery({ queryKey: ["pos-customers"], queryFn: () => api.get<Customer[]>("/customers"), enabled: payOpen });
   const wallets = useQuery({ queryKey: ["pos-wallets"], queryFn: () => api.get<Wallet[]>("/wallets"), enabled: payOpen });
@@ -457,7 +460,11 @@ export default function PosPage() {
 
                 <Select
                   value={warehouseId}
-                  onChange={(e) => { sound.click(); setWarehouseId(e.target.value); }}
+                  onChange={(e) => {
+                    sound.click();
+                    setWarehouseId(e.target.value);
+                    setBranchId(e.target.value);
+                  }}
                   className="h-10 w-auto text-xs"
                 >
                   {wh.data?.map((w) => <option key={w.id} value={w.id}>{w.name}</option>)}

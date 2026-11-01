@@ -29,7 +29,13 @@ export default function PurchasesPage() {
     queryKey: ["purchases", page],
     queryFn: () => api.get<PO[]>("/purchases", { page, page_size: 25 }),
   });
-  const suppliers = useQuery({ queryKey: ["suppliers-list"], queryFn: () => api.get<Supplier[]>("/suppliers") });
+  const suppliers = useQuery({
+    queryKey: ["suppliers-list"],
+    queryFn: async () => {
+      const res = await api.get<{ items: Supplier[] } | Supplier[]>("/suppliers");
+      return Array.isArray(res) ? res : res.items ?? [];
+    },
+  });
   const warehouses = useQuery({ queryKey: ["warehouses"], queryFn: () => api.get<Warehouse[]>("/stock/warehouses") });
   const found = useQuery({
     queryKey: ["po-product-search", productSearch],

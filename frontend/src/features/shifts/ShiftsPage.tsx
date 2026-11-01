@@ -5,6 +5,7 @@ import { Skeleton } from "@/components/kit/skeleton";
 import { api, openPrintDoc } from "@/lib/api";
 import { dateTime, D, money, moneyEGP } from "@/lib/format";
 import { Badge, Button, Card, Empty, ErrorBox, Input, Select, Spinner } from "@/components/ui";
+import { useBranch } from "@/components/AppShell";
 
 interface Warehouse { id: string; name: string }
 interface Shift {
@@ -16,6 +17,7 @@ interface Tx { id: string; tx_type: string; amount: string; note: string | null;
 
 export default function ShiftsPage() {
   const qc = useQueryClient();
+  const { branchId, setBranchId } = useBranch();
   const [warehouseId, setWarehouseId] = useState("");
   const [openAmount, setOpenAmount] = useState("0");
   const [closeAmount, setCloseAmount] = useState("");
@@ -24,7 +26,7 @@ export default function ShiftsPage() {
   const [txNote, setTxNote] = useState("");
 
   const wh = useQuery({ queryKey: ["warehouses"], queryFn: () => api.get<Warehouse[]>("/stock/warehouses") });
-  const wid = warehouseId || wh.data?.[0]?.id || "";
+  const wid = warehouseId || branchId || wh.data?.[0]?.id || "";
 
   const current = useQuery({
     queryKey: ["shift", "current", wid],
@@ -73,7 +75,14 @@ export default function ShiftsPage() {
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-semibold tracking-tight">الورديات</h1>
-        <Select value={wid} onChange={(e) => setWarehouseId(e.target.value)} className="w-auto">
+        <Select
+          value={wid}
+          onChange={(e) => {
+            setWarehouseId(e.target.value);
+            setBranchId(e.target.value);
+          }}
+          className="w-auto"
+        >
           {wh.data?.map((w) => <option key={w.id} value={w.id}>{w.name}</option>)}
         </Select>
       </div>
