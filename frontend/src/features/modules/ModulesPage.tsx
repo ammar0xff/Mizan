@@ -5,14 +5,17 @@ import {
   Boxes,
   Briefcase,
   Check,
+  ChefHat,
   ExternalLink,
   GraduationCap,
   Layers,
   RefreshCw,
   Search,
+  Settings2,
   ShieldCheck,
   ShoppingCart,
   Sparkles,
+  Stethoscope,
   Store,
   UtensilsCrossed,
   Wallet,
@@ -21,7 +24,7 @@ import {
 import { Badge } from "@/components/kit/badge";
 import { Button, buttonVariants } from "@/components/kit/button";
 import { Card } from "@/components/kit/card";
-import { Input, useToast } from "@/components/ui";
+import { Input, Modal, useToast } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import { sound } from "@/lib/sound";
 import { useModulesStore, type ModuleManifest, type BusinessPreset } from "@/stores/modules";
@@ -37,6 +40,9 @@ const ICON_MAP: Record<string, any> = {
   Briefcase,
   Store,
   Blocks,
+  ChefHat,
+  Stethoscope,
+  Settings2,
 };
 
 export default function ModulesPage() {
@@ -49,12 +55,18 @@ export default function ModulesPage() {
     fetchModules,
     applyPreset,
     toggleModule,
+    fetchModuleSettings,
+    saveModuleSettings,
   } = useModulesStore();
 
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [search, setSearch] = useState("");
   const [applyingPreset, setApplyingPreset] = useState<string | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
+  const [selectedForSettings, setSelectedForSettings] = useState<ModuleManifest | null>(null);
+  const [settingsValues, setSettingsValues] = useState<Record<string, any>>({});
+  const [isLoadingSettings, setIsLoadingSettings] = useState(false);
+  const [isSavingSettings, setIsSavingSettings] = useState(false);
   const { toast } = useToast();
 
   const activePresetObj = presets.find((p) => p.id === activePreset);
@@ -86,6 +98,35 @@ export default function ModulesPage() {
       toast("error", e.message || "فشل تغيير حالة الوحدة");
     } finally {
       setTogglingId(null);
+    }
+  }
+
+  async function openSettings(mod: ModuleManifest) {
+    sound.click();
+    setSelectedForSettings(mod);
+    setIsLoadingSettings(true);
+    try {
+      const data = await fetchModuleSettings(mod.id);
+      setSettingsValues(data.values || {});
+    } catch {
+      toast("error", "فشل تحميل إعدادات الوحدة");
+    } finally {
+      setIsLoadingSettings(false);
+    }
+  }
+
+  async function handleSaveSettings(e: React.FormEvent) {
+    e.preventDefault();
+    if (!selectedForSettings) return;
+    setIsSavingSettings(true);
+    try {
+      await saveModuleSettings(selectedForSettings.id, settingsValues);
+      toast("success", `تم حفظ إعدادات «${selectedForSettings.name}» بنجاح`);
+      setSelectedForSettings(null);
+    } catch (err: any) {
+      toast("error", err.message || "فشل حفظ الإعدادات");
+    } finally {
+      setIsSavingSettings(false);
     }
   }
 
@@ -438,15 +479,190 @@ export default function ModulesPage() {
                     )}
                   </span>
 
-                  <span className={`font-semibold ${isInstalled ? "text-emerald-600 dark:text-emerald-400" : "text-muted-foreground"}`}>
-                    {isInstalled ? "● مثبتة" : "○ غير نشطة"}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    {mod.settings_schema && mod.settings_schema.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => openSettings(mod)}
+                        className="inline-flex items-center gap-1 rounded px-2 py-0.5 text-[10px] font-semibold text-primary hover:bg-primary/10 transition-colors border border-primary/20"
+                        title="تخصيص إعدادات الوحدة"
+                      >
+                        <Settings2 className="size-3" />
+                        الإعدادات
+                      </button>
+                    )}
+                    <span className={`font-semibold ${isInstalled ? "text-emerald-600 dark:text-emerald-400" : "text-muted-foreground"}`}>
+                      {isInstalled ? "● مثبتة" : "○ غير نشطة"}
+                    </span>
+                  </div>
                 </div>
               </Card>
             );
           })}
         </div>
       </section>
+
+      {/* Module Settings Modal */}
+      <Modal
+        open={!!selectedForSettings}
+        onClose={() => setSelectedForSettings(null)}
+        title={selectedForSettings ? `إعدادات وحدة: ${selectedForSettings.name}` : ""}
+      >
+        {selectedForSettings && (
+          <form onSubmit={handleSaveSettings} className="flex flex-col gap-4 text-xs">
+            <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/40 border border-border/70">
+              <span className="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                {(() => {
+                  const Icon = ICON_MAP[selectedForSettings.icon] || Blocks;
+                  return <Icon className="size-4.5" />;
+                })()}
+              </span>
+              <div>
+                <p className="font-bold text-foreground text-xs">{selectedForSettings.name}</p>
+                <p className="text-[10px] text-muted-foreground">{selectedForSettings.description}</p>
+              </div>
+            </div>
+
+            {isLoadingSettings ? (
+              <div className="grid place-items-center p-8">
+                <span className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+              </div>
+            ) : (
+              <div className="flex flex-col gap-3 max-h-[60vh] overflow-y-auto px-0.5">
+                {(selectedForSettings.settings_schema || []).map((field) => {
+                  if (field.type === "boolean") {
+                    return (
+                      <label
+                        key={field.key}
+                        className="flex items-start justify-between gap-3 p-3 rounded-xl border border-border/60 bg-muted/20 hover:bg-muted/30 cursor-pointer transition-colors"
+                      >
+                        <div className="flex flex-col gap-0.5">
+                          <span className="font-bold text-xs text-foreground">{field.label}</span>
+                          {field.description && (
+                            <span className="text-[11px] text-muted-foreground leading-relaxed">
+                              {field.description}
+                            </span>
+                          )}
+                        </div>
+                        <input
+                          type="checkbox"
+                          checked={Boolean(settingsValues[field.key])}
+                          onChange={(e) =>
+                            setSettingsValues((prev) => ({
+                              ...prev,
+                              [field.key]: e.target.checked,
+                            }))
+                          }
+                          className="mt-0.5 size-4.5 rounded accent-primary cursor-pointer"
+                        />
+                      </label>
+                    );
+                  }
+
+                  if (field.type === "select") {
+                    return (
+                      <div
+                        key={field.key}
+                        className="flex flex-col gap-1.5 p-3 rounded-xl border border-border/60 bg-muted/20"
+                      >
+                        <label className="font-bold text-xs text-foreground">{field.label}</label>
+                        {field.description && (
+                          <p className="text-[11px] text-muted-foreground">{field.description}</p>
+                        )}
+                        <select
+                          value={settingsValues[field.key] ?? field.default ?? ""}
+                          onChange={(e) =>
+                            setSettingsValues((prev) => ({
+                              ...prev,
+                              [field.key]: e.target.value,
+                            }))
+                          }
+                          className="h-9 rounded-lg border border-border bg-card px-3 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+                        >
+                          {(field.options || []).map((opt) => (
+                            <option key={opt} value={opt}>
+                              {opt}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    );
+                  }
+
+                  if (field.type === "number") {
+                    return (
+                      <div
+                        key={field.key}
+                        className="flex flex-col gap-1.5 p-3 rounded-xl border border-border/60 bg-muted/20"
+                      >
+                        <label className="font-bold text-xs text-foreground">{field.label}</label>
+                        {field.description && (
+                          <p className="text-[11px] text-muted-foreground">{field.description}</p>
+                        )}
+                        <Input
+                          type="number"
+                          step="any"
+                          className="num font-mono text-sm h-9 bg-card"
+                          value={settingsValues[field.key] ?? field.default ?? ""}
+                          onChange={(e) =>
+                            setSettingsValues((prev) => ({
+                              ...prev,
+                              [field.key]: parseFloat(e.target.value) || 0,
+                            }))
+                          }
+                          required
+                        />
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div
+                      key={field.key}
+                      className="flex flex-col gap-1.5 p-3 rounded-xl border border-border/60 bg-muted/20"
+                    >
+                      <label className="font-bold text-xs text-foreground">{field.label}</label>
+                      {field.description && (
+                        <p className="text-[11px] text-muted-foreground">{field.description}</p>
+                      )}
+                      <Input
+                        type="text"
+                        className="text-xs h-9 bg-card"
+                        value={settingsValues[field.key] ?? field.default ?? ""}
+                        onChange={(e) =>
+                          setSettingsValues((prev) => ({
+                            ...prev,
+                            [field.key]: e.target.value,
+                          }))
+                        }
+                        required
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            <div className="flex items-center gap-2 pt-2 border-t border-border/60">
+              <Button
+                type="button"
+                variant="outline"
+                className="flex-1 h-9 text-xs"
+                onClick={() => setSelectedForSettings(null)}
+              >
+                إلغاء
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSavingSettings || isLoadingSettings}
+                className="flex-1 h-9 font-bold text-xs"
+              >
+                {isSavingSettings ? "جارٍ الحفظ..." : "حفظ الإعدادات"}
+              </Button>
+            </div>
+          </form>
+        )}
+      </Modal>
     </div>
   );
 }

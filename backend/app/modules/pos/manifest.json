@@ -1,0 +1,42 @@
+{
+  "id": "pos",
+  "name": "نقطة البيع السريعة والكاشير",
+  "name_en": "Point of Sale (POS)",
+  "category": "retail",
+  "target_business_types": ["retail", "restaurant", "supermarket", "cafe", "pharmacy"],
+  "version": "3.0.0",
+  "icon": "ShoppingCart",
+  "description": "إصدار الفواتير الفوري، دعم قارئ الباركود، الشاشات اللمسية، إدارة أدراج الكاشير والورديات.",
+  "dependencies": ["core", "inventory"],
+  "is_core": false,
+  "settings_schema": [
+    {
+      "key": "require_active_shift",
+      "label": "إلزام فتح وردية قبل البيع",
+      "type": "boolean",
+      "default": true,
+      "description": "منع إصدار فواتير البيع إلا في حال وجود وردية كاشير مفتوحة ومعتمدة."
+    },
+    {
+      "key": "allow_price_override",
+      "label": "السماح بتعديل سعر البيع يدوياً",
+      "type": "boolean",
+      "default": false,
+      "description": "تمكين الكاشير من تغيير سعر الوحدة داخل الفاتورة دون صلاحيات المدير."
+    },
+    {
+      "key": "auto_print_receipt",
+      "label": "طباعة الإيصال تلقائياً فور الدفع",
+      "type": "boolean",
+      "default": false,
+      "description": "إرسال أمر الطباعة إلى طابعة الفواتير الحرارية مباشرة بعد إنهاء المحاسبة."
+    },
+    {
+      "key": "enable_quick_numpad",
+      "label": "تفعيل لوحة الأرقام اللمسية في نافذة الدفع",
+      "type": "boolean",
+      "default": true,
+      "description": "إظهار لوحة أرقام 44px سريعة لتسجيل المبالغ المستلمة وحساب الباقي."
+    }
+  ]
+}

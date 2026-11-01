@@ -1,0 +1,51 @@
+{
+  "id": "kitchen_display",
+  "name": "شاشات المطبخ اللحظية (KDS)",
+  "name_en": "Kitchen Display System",
+  "category": "hospitality",
+  "target_business_types": ["restaurant", "cafe", "fast_food", "cloud_kitchen"],
+  "version": "1.0.0",
+  "icon": "ChefHat",
+  "badge": "مباشر",
+  "description": "شاشات تحضير الطلبات اللحظية لطهاة المطبخ والبار، ترتيب التذاكر حسب الأولوية، ومتابعة أوقات الإعداد.",
+  "dependencies": ["core", "pos"],
+  "is_core": false,
+  "nav_items": [
+    {
+      "label": "شاشة المطبخ (KDS)",
+      "to": "/restaurant/kitchen",
+      "icon": "ChefHat",
+      "group": "operations"
+    }
+  ],
+  "settings_schema": [
+    {
+      "key": "auto_refresh_interval",
+      "label": "معدل التحديث التلقائي للتذاكر (ثوانٍ)",
+      "type": "number",
+      "default": 15,
+      "description": "الفترة الزمنية بين كل فحص لتذاكر الطلبات الجديدة من الكاشير والويتر."
+    },
+    {
+      "key": "sound_alert_on_new_order",
+      "label": "تنبيه صوتي عند وصول تذكرة جديدة",
+      "type": "boolean",
+      "default": true,
+      "description": "تشغيل صوت جرس تنبيهي في المطبخ فور إرسال الكاشير أو الويتر طلباً جديداً."
+    },
+    {
+      "key": "urgent_warning_minutes",
+      "label": "تنبيه التأخير عند تجاوز (دقائق)",
+      "type": "number",
+      "default": 15,
+      "description": "تمييز التذكرة باللون الأحمر عند تجاوز مدة انتظارها هذا الحد."
+    },
+    {
+      "key": "display_waiter_name",
+      "label": "إظهار اسم الويتر على التذكرة",
+      "type": "boolean",
+      "default": true,
+      "description": "عرض اسم موظف الصالة لتسهيل تسليم الوجبة فور جهوزيتها."
+    }
+  ]
+}

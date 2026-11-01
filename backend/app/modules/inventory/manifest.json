@@ -1,0 +1,36 @@
+{
+  "id": "inventory",
+  "name": "إدارة المخزون والتوريد",
+  "name_en": "Inventory & Supply",
+  "category": "retail",
+  "target_business_types": ["retail", "supermarket", "wholesale", "restaurant", "pharmacy"],
+  "version": "3.0.0",
+  "icon": "Boxes",
+  "description": "تتبع الأرصدة اللحظية، إدارة الفروع والمستودعات، تسويات الجرد، وأوامر الشراء والتوريد.",
+  "dependencies": ["core"],
+  "is_core": false,
+  "settings_schema": [
+    {
+      "key": "prevent_negative_stock",
+      "label": "منع البيع بالسالب (منع استنفاد الرصيد)",
+      "type": "boolean",
+      "default": true,
+      "description": "حظر إتمام عمليات البيع أو الصرف إذا كان الرصيد المتاح في المخزن غير كافٍ."
+    },
+    {
+      "key": "enable_reorder_alerts",
+      "label": "تنبيهات انخفاض المخزون اللحظية",
+      "type": "boolean",
+      "default": true,
+      "description": "إظهار شارة تحذيرية حمراء فور وصول رصيد أي صنف إلى حد إعادة الطلب."
+    },
+    {
+      "key": "valuation_method",
+      "label": "طريقة تقييم المخزون المعتمدة",
+      "type": "select",
+      "default": "average_cost",
+      "options": ["average_cost", "fifo"],
+      "description": "طريقة حساب تكلفة البضاعة المباعة (متوسط التكلفة المرجح أو الوارد أولاً صادر أولاً)."
+    }
+  ]
+}

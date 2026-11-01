@@ -1,0 +1,51 @@
+{
+  "id": "school",
+  "name": "المدارس والأكاديميات التعليمية",
+  "name_en": "School & Education Management",
+  "category": "education",
+  "target_business_types": ["school", "academy", "training_center", "kindergarten", "institute"],
+  "version": "1.0.0",
+  "icon": "GraduationCap",
+  "badge": "جديد",
+  "description": "شؤون وقيد الطلاب، إدارة المراحل والفصول، تحصيل الأقساط والمصروفات المجدولة، وإصدار إيصالات السداد الإلكترونية.",
+  "dependencies": ["core", "finance"],
+  "is_core": false,
+  "nav_items": [
+    {
+      "label": "شؤون الطلاب والأقساط",
+      "to": "/school/students",
+      "icon": "GraduationCap",
+      "group": "operations"
+    }
+  ],
+  "settings_schema": [
+    {
+      "key": "academic_year",
+      "label": "العام الدراسي الحالي",
+      "type": "string",
+      "default": "2025-2026",
+      "description": "العام الدراسي المعتمد لربط تسجيلات الطلاب وجداول الأقساط."
+    },
+    {
+      "key": "allow_partial_payment",
+      "label": "السماح بالتحصيل الجزئي للقسط",
+      "type": "boolean",
+      "default": true,
+      "description": "تمكين الخزينة من قبول مبالغ مجزأة من القسط الدراسي المستحق."
+    },
+    {
+      "key": "late_grace_period_days",
+      "label": "فترة السماح قبل احتساب التأخير (أيام)",
+      "type": "number",
+      "default": 10,
+      "description": "عدد الأيام المسموح بها بعد تاريخ استحقاق القسط قبل إرسال إشعار التأخير."
+    },
+    {
+      "key": "send_guardian_receipt_sms",
+      "label": "إرسال رسالة نصية لولي الأمر فور السداد",
+      "type": "boolean",
+      "default": true,
+      "description": "إرسال إشعار فوري برقم الإيصال والمبلغ المسدد والمتبقي إلى هاتف ولي الأمر."
+    }
+  ]
+}

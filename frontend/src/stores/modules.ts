@@ -2,6 +2,15 @@ import { create } from "zustand";
 import { api } from "@/lib/api";
 import { sound } from "@/lib/sound";
 
+export interface SettingField {
+  key: string;
+  label: string;
+  type: "boolean" | "number" | "string" | "select";
+  default: any;
+  description: string;
+  options?: string[];
+}
+
 export interface ModuleManifest {
   id: string;
   name: string;
@@ -14,6 +23,8 @@ export interface ModuleManifest {
   is_core: boolean;
   is_installed: boolean;
   badge?: string | null;
+  target_business_types?: string[];
+  settings_schema?: SettingField[];
 }
 
 export interface BusinessPreset {
@@ -37,6 +48,8 @@ interface ModulesState {
   hasModule: (moduleId: string) => boolean;
   applyPreset: (presetId: string) => Promise<boolean>;
   toggleModule: (moduleId: string, enabled: boolean) => Promise<boolean>;
+  fetchModuleSettings: (moduleId: string) => Promise<{ schema: SettingField[]; values: Record<string, any> }>;
+  saveModuleSettings: (moduleId: string, settings: Record<string, any>) => Promise<boolean>;
 }
 
 const DEFAULT_ACTIVE = ["core", "inventory", "pos", "finance", "hr"];
@@ -133,6 +146,27 @@ export const useModulesStore = create<ModulesState>((set, get) => ({
           is_installed: res.active_modules.includes(m.id),
         })),
       }));
+      return true;
+    } catch (e) {
+      sound.error();
+      throw e;
+    }
+  },
+
+  fetchModuleSettings: async (moduleId: string) => {
+    return await api.get<{
+      module_id: string;
+      module_name: string;
+      schema: SettingField[];
+      values: Record<string, any>;
+    }>(`/modules/${moduleId}/settings`);
+  },
+
+  saveModuleSettings: async (moduleId: string, settings: Record<string, any>) => {
+    try {
+      sound.click();
+      await api.post(`/modules/${moduleId}/settings`, { settings });
+      sound.success();
       return true;
     } catch (e) {
       sound.error();

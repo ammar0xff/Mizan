@@ -1,0 +1,28 @@
+{
+  "id": "services",
+  "name": "الشركات والمكاتب الخدمية",
+  "name_en": "Professional Services",
+  "category": "services",
+  "target_business_types": ["services", "consulting", "contracting", "freelance"],
+  "version": "1.0.0",
+  "icon": "Briefcase",
+  "description": "عروض الأسعار، عقود المشاريع، المطالبات والفوترة الزمنية، ومتابعة تسليمات العملاء.",
+  "dependencies": ["core", "finance"],
+  "is_core": false,
+  "settings_schema": [
+    {
+      "key": "proposal_validity_days",
+      "label": "مدة صلاحية عرض السعر الافتراضية (أيام)",
+      "type": "number",
+      "default": 30,
+      "description": "الفترة المسموح بها للعميل لقبول عرض السعر قبل انتهاء صلاحيته تلقائياً."
+    },
+    {
+      "key": "enable_milestone_billing",
+      "label": "تفعيل الفوترة بالمراحل والإنجاز",
+      "type": "boolean",
+      "default": true,
+      "description": "السماح بإصدار مطالبات مالية مجزأة مرتبطة بتسليم مراحل المشروع المتفق عليها."
+    }
+  ]
+}

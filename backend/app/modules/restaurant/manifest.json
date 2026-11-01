@@ -1,0 +1,51 @@
+{
+  "id": "restaurant",
+  "name": "إدارة المطاعم والصالة",
+  "name_en": "Restaurant & Dining Hall",
+  "category": "hospitality",
+  "target_business_types": ["restaurant", "cafe", "fast_food", "lounge"],
+  "version": "1.0.0",
+  "icon": "UtensilsCrossed",
+  "badge": "جديد",
+  "description": "مخطط صالة الطعام، إدارة وحجز الطاولات، تتبع الجلسات وأوقات الانتظار، وإجمالي حسابات الضيوف الجارية.",
+  "dependencies": ["core", "pos", "inventory"],
+  "is_core": false,
+  "nav_items": [
+    {
+      "label": "إدارة الصالة والطاولات",
+      "to": "/restaurant/tables",
+      "icon": "LayoutGrid",
+      "group": "operations"
+    }
+  ],
+  "settings_schema": [
+    {
+      "key": "enable_reservations",
+      "label": "تفعيل حجز الطاولات المسبق",
+      "type": "boolean",
+      "default": true,
+      "description": "إتاحة حجز الطاولات قبل موعد حضور الضيوف مع تحديد التوقيت والاسم."
+    },
+    {
+      "key": "default_service_charge",
+      "label": "نسبة خدمة الصالة (%)",
+      "type": "number",
+      "default": 12.0,
+      "description": "إضافة نسبة رسوم خدمة تلقائياً على طلبات الجلوس داخل الصالة."
+    },
+    {
+      "key": "auto_free_table_on_payment",
+      "label": "تحرير الطاولة تلقائياً بعد السداد",
+      "type": "boolean",
+      "default": true,
+      "description": "تحويل حالة الطاولة إلى 'فارغة ومتاحة' فور إغلاق الفاتورة والمحاسبة."
+    },
+    {
+      "key": "sections",
+      "label": "أقسام الصالة (مفصولة بفواصل)",
+      "type": "string",
+      "default": "الصالة الرئيسية, صالة العائلات, التراس الخارجي",
+      "description": "تصنيفات مناطق الجلوس داخل المنشأة."
+    }
+  ]
+}

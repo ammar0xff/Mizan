@@ -1,0 +1,29 @@
+{
+  "id": "clinic",
+  "name": "العيادات والمراكز الطبية",
+  "name_en": "Clinics & Healthcare",
+  "category": "healthcare",
+  "target_business_types": ["clinic", "medical_center", "dental", "lab", "polyclinic"],
+  "version": "1.0.0",
+  "icon": "Stethoscope",
+  "badge": "قريباً",
+  "description": "سجلات المرضى الطبية، حجز المواعيد والكشوفات، الروشتات، وصرف الأدوية والمستلزمات الطبية.",
+  "dependencies": ["core", "inventory", "finance"],
+  "is_core": false,
+  "settings_schema": [
+    {
+      "key": "slot_duration_minutes",
+      "label": "المدة الافتراضية للكشف الطبي (دقائق)",
+      "type": "number",
+      "default": 20,
+      "description": "الفترة المحجوزة في جدول الطبيب لكل مريض بشكل افتراضي."
+    },
+    {
+      "key": "require_patient_phone",
+      "label": "إلزام تسجيل رقم هاتف المريض",
+      "type": "boolean",
+      "default": true,
+      "description": "اشتراط وجود رقم جوال لإتمام حجز الكشف لإرسال رسائل التذكير."
+    }
+  ]
+}

@@ -18,6 +18,7 @@ from app.core.modules import (
     require_module,
     set_active_modules,
 )
+from app.modules.loader import registry
 from app.db.base import get_db
 from app.dependencies import get_current_user, require_perm
 
@@ -32,6 +33,10 @@ class ApplyPresetRequest(BaseModel):
     preset_id: str
 
 
+class UpdateModuleSettingsRequest(BaseModel):
+    settings: dict[str, Any]
+
+
 @router.get("")
 async def list_modules(
     db: AsyncSession = Depends(get_db),
@@ -41,8 +46,12 @@ async def list_modules(
     active_mods = await get_active_modules(db)
     active_preset = await get_active_preset(db)
 
+    # Combine built-in catalog with auto-discovered modules from loader
+    discovered = {m.id: m for m in registry.get_all_manifests()}
+    combined = {**MODULE_CATALOG, **discovered}
+
     catalog_list = []
-    for m in MODULE_CATALOG.values():
+    for m in combined.values():
         d = asdict(m)
         d["is_installed"] = m.id in active_mods
         catalog_list.append(d)
@@ -55,6 +64,37 @@ async def list_modules(
         "catalog": catalog_list,
         "presets": presets_list,
     }
+
+
+@router.get("/{module_id}/settings")
+async def get_module_settings_endpoint(
+    module_id: str,
+    db: AsyncSession = Depends(get_db),
+    _=Depends(get_current_user),
+):
+    """Retrieve settings schema and current tenant values for a module."""
+    try:
+        return await registry.get_settings(db, module_id)
+    except KeyError:
+        raise HTTPException(status_code=404, detail="الوحدة المطلوبة غير مسجلة")
+
+
+@router.post("/{module_id}/settings")
+async def save_module_settings_endpoint(
+    module_id: str,
+    data: UpdateModuleSettingsRequest,
+    db: AsyncSession = Depends(get_db),
+    _=Depends(require_perm("settings")),
+):
+    """Save updated settings for a module."""
+    try:
+        updated = await registry.save_settings(db, module_id, data.settings)
+        return {
+            "detail": "تم حفظ إعدادات الوحدة بنجاح",
+            "settings": updated,
+        }
+    except KeyError:
+        raise HTTPException(status_code=404, detail="الوحدة المطلوبة غير مسجلة")
 
 
 @router.post("/{module_id}/toggle")
