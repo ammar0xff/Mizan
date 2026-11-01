@@ -41,15 +41,26 @@ PLANS = [
      "features": ["فروع ومستخدمون بلا حدود", "صلاحيات متقدمة", "أولوية دعم", "تهيئة وتدريب فريق العمل"]},
 ]
 
-SECTORS = ["plumbing", "electrical", "tiles", "paint"]
+SECTORS = ["retail", "restaurant", "school", "services", "healthcare", "plumbing", "electrical", "tiles", "paint"]
 SCALES = ["small", "medium", "large"]
+
+PALETTE_HUES = {
+    "slate": 240,
+    "cobalt": 250,
+    "emerald": 155,
+    "amber": 75,
+    "monokai": 255,
+    "water": 250,
+    "copper": 55,
+    "midnight": 230,
+}
 
 
 class SignupRequest(BaseModel):
     company_name: str = Field(min_length=2, max_length=128)
     sector: str
     scale: str
-    palette: str = "water"
+    palette: str = "cobalt"
     features: list[str] = Field(default_factory=list)
     owner_username: str = Field(min_length=3, max_length=64, pattern=r"^[a-zA-Z0-9_.-]+$")
     owner_password: str = Field(min_length=6, max_length=128)
@@ -76,12 +87,13 @@ async def signup(data: SignupRequest, request: Request, db: AsyncSession = Depen
     if existing.scalar():
         raise HTTPException(status_code=409, detail="اسم المستخدم محجوز — اختر اسمًا آخر")
 
+    hue = PALETTE_HUES.get(data.palette, 250)
     tenant = Tenant(
         id=uuid.uuid4(),
         name=data.company_name.strip(),
         sector=data.sector,
         scale=data.scale,
-        palette={"hue": {"water": 250, "emerald": 155, "copper": 55, "midnight": 230}.get(data.palette, 250)},
+        palette={"name": data.palette, "hue": hue},
         features=data.features,
         plan="trial",
         trial_ends_at=datetime.now(UTC) + timedelta(days=TRIAL_DAYS),
