@@ -31,6 +31,7 @@ class User(Base, TenantScoped):
     password_hash: Mapped[str] = mapped_column(String(256), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     is_manager: Mapped[bool] = mapped_column(Boolean, default=False)
+    is_superadmin: Mapped[bool] = mapped_column(Boolean, default=False, server_default=func.false())
     is_demo: Mapped[bool] = mapped_column(Boolean, default=False, server_default=func.false())
     permissions: Mapped[list | None] = mapped_column(JSONB, nullable=True)
     default_warehouse_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("warehouses.id", ondelete="SET NULL"), nullable=True)

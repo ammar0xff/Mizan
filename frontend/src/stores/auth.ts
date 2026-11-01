@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-export type Role = "admin" | "manager" | "cashier" | "storekeeper" | "accountant";
+export type Role = "admin" | "manager" | "cashier" | "storekeeper" | "accountant" | "superadmin";
 
 export interface User {
   id: string;
@@ -9,18 +9,26 @@ export interface User {
   role: Role;
   permissions: string[];
   is_manager: boolean;
+  is_superadmin?: boolean;
   default_warehouse_id: string | null;
 }
 
 export interface TenantInfo {
   id: string;
   name: string;
+  slug?: string | null;
+  custom_domain?: string | null;
   sector: string;
+  business_type?: string;
   scale: string;
-  palette: { hue?: number };
+  palette: { name?: string; hue?: number };
   features: string[];
+  active_modules?: string[];
   plan: string;
   trial_ends_at: string | null;
+  deployment_mode?: string;
+  tech_stack?: Record<string, unknown>;
+  limits?: Record<string, unknown>;
 }
 
 interface AuthState {
@@ -89,6 +97,9 @@ export const useAuth = create<AuthState>((set, get) => ({
   can: (perm) => {
     const u = get().user;
     if (!u) return false;
-    return !perm || u.permissions.includes(perm);
+    if (u.is_superadmin) return true;
+    if (!perm) return true;
+    const perms = Array.isArray(u.permissions) ? u.permissions : [];
+    return perms.includes("*") || perms.includes(perm);
   },
 }));

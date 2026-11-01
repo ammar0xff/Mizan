@@ -19,6 +19,8 @@ const OperationsPage = lazy(() => import("@/features/operations/OperationsPage")
 const ModulesPage = lazy(() => import("@/features/modules/ModulesPage"));
 const RestaurantTablesPage = lazy(() => import("@/features/restaurant/RestaurantTablesPage"));
 const SchoolStudentsPage = lazy(() => import("@/features/school/SchoolStudentsPage"));
+const AdmoonDashboard = lazy(() => import("@/features/admoon/AdmoonDashboard"));
+const TenantResolverPage = lazy(() => import("@/features/marketing/TenantResolverPage"));
 import { Link, Navigate, Route, Routes } from "react-router-dom";
 import LandingPage from "@/features/marketing/LandingPage";
 import PricingPage from "@/features/marketing/PricingPage";
@@ -107,6 +109,8 @@ export default function App() {
       <Route path="/pricing" element={<PricingPage />} />
       <Route path="/signup" element={token && user ? <Navigate to="/" replace /> : <SignupPage />} />
       <Route path="/onboarding" element={<OnboardingWizard />} />
+      <Route path="/admoon" element={<Page><AdmoonDashboard /></Page>} />
+      <Route path="/c/:tenantSlug" element={<Page><TenantResolverPage /></Page>} />
       <Route
         element={
           <Guard perm="">

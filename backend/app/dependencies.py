@@ -7,7 +7,7 @@ from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.security import decode_token
-from app.core.tenancy import bind_tenant
+from app.core.tenancy import bind_tenant, current_tenant_id
 from app.db.base import get_db
 from app.models.user import User, user_warehouses
 
@@ -143,5 +143,30 @@ async def verify_warehouse_access(
     if result.scalar_one_or_none() is None:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="ليس لديك صلاحية الوصول إلى هذا الفرع")
     return warehouse_id
+
+
+async def require_superadmin(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> User:
+    """Superadmin gate for the SaaS owner (admoon dashboard).
+    Grants access to users with is_superadmin=True, role='superadmin', or username in DEFAULT_SUPERADMINS.
+    Enables postgres RLS bypass so the superadmin can query cross-tenant statistics and manage all clients.
+    """
+    is_super = (
+        getattr(current_user, "is_superadmin", False)
+        or current_user.role == "superadmin"
+        or current_user.username in ("ammar", "admoon")
+    )
+    if not is_super:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="صلاحية إدارة المنصة (Superadmin) مطلوبة للوصول إلى أديمون",
+        )
+    # Bypass tenant isolation so admoon can inspect all client ERPs
+    current_tenant_id.set(None)
+    await db.execute(text("SELECT set_config('app.bypass', 'on', true)"))
+    return current_user
+
 
 

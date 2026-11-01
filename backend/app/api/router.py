@@ -25,6 +25,7 @@ from app.api.routers import (
     users,
     wallets,
     modules,
+    admoon,
 )
 from app.api.routers import collections as collections_router
 from app.api.routers import export as export_router
@@ -64,4 +65,5 @@ router.include_router(export_router.router)
 router.include_router(notifications.router)
 router.include_router(updater_router.router)
 router.include_router(modules.router)
+router.include_router(admoon.router)
 
