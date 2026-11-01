@@ -110,7 +110,7 @@ function AppTopbar({ onOpenMenu, onOpenSearch }: { onOpenMenu: () => void; onOpe
 
   const shift = useQuery({
     queryKey: ["shift", "topbar", branchId],
-    queryFn: () => api.get<{ id: string; started_at: string }>("/shifts/current", { warehouse_id: branchId! }),
+    queryFn: () => api.get<{ id: string; started_at: string } | null>("/shifts/current", { warehouse_id: branchId! }),
     enabled: !!branchId,
     retry: false,
     refetchInterval: 60_000,

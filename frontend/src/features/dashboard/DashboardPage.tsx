@@ -106,7 +106,7 @@ export default function DashboardPage() {
   });
   const shift = useQuery({
     queryKey: ["shift", "dash", branchId],
-    queryFn: () => api.get<{ id: string; started_at: string }>("/shifts/current", { warehouse_id: branchId! }),
+    queryFn: () => api.get<{ id: string; started_at: string } | null>("/shifts/current", { warehouse_id: branchId! }),
     enabled: !!branchId,
     retry: false,
   });

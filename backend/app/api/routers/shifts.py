@@ -4,7 +4,6 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.exceptions import NotFoundError
 from app.db.base import get_db
 from app.dependencies import get_current_user, require_is_manager, require_perm, verify_warehouse_access
 from app.models.shift import DrawerTransaction, Shift, ShiftStatus
@@ -52,7 +51,7 @@ async def last_drawer_amount(warehouse_id: uuid.UUID, db: AsyncSession = Depends
 
 # ── Current shift ──────────────────────────────────────────────────────────────
 
-@router.get("/current", response_model=ShiftOut)
+@router.get("/current", response_model=ShiftOut | None)
 async def get_current_shift(warehouse_id: uuid.UUID, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
     await verify_warehouse_access(db, current_user, warehouse_id)
     result = await db.execute(
@@ -64,7 +63,7 @@ async def get_current_shift(warehouse_id: uuid.UUID, db: AsyncSession = Depends(
     )
     shift = result.scalar_one_or_none()
     if not shift:
-        raise NotFoundError("لا توجد وردية مفتوحة")
+        return None  # no open shift — 200 null (the UI treats it as "مغلقة")
     out = ShiftOut.model_validate(shift)
     name = (await db.execute(text("SELECT full_name FROM users WHERE id=:id"), {"id": shift.cashier_id})).scalar()
     out.cashier_name = name

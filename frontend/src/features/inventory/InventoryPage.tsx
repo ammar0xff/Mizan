@@ -2,13 +2,12 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeftRight, SlidersHorizontal } from "lucide-react";
 import { Skeleton } from "@/components/kit/skeleton";
-import { api } from "@/lib/api";
-import { D, dateTime, money, moneyEGP, qty as fq } from "@/lib/format";
+import { api, openPrintDoc } from "@/lib/api";
+import { D, dateTime, moneyEGP, qty as fq } from "@/lib/format";
 import { Button, Card, Empty, ErrorBox, Input, Select, Spinner } from "@/components/ui";
 
 interface Warehouse { id: string; name: string }
 interface Product { id: string; name: string; code: string | null; cost_price: string }
-interface ValuationRow { product_name?: string; name?: string; total_qty?: string; qty?: string; cost_value?: string; retail_value?: string }
 interface Movement { id: string; product_name?: string; movement_type: string; qty: string; created_at: string; note?: string | null }
 
 export default function InventoryPage() {
@@ -54,47 +53,27 @@ export default function InventoryPage() {
 function ValuationTab({ wid }: { wid: string }) {
   const v = useQuery({
     queryKey: ["valuation", wid],
-    queryFn: () => api.get<ValuationRow[]>("/stock/valuation", { warehouse_id: wid }),
+    queryFn: () => api.get<{ total_cost_value: number; total_retail_value: number; product_count: number }>("/stock/valuation", { warehouse_id: wid }),
     enabled: !!wid,
   });
-  const rows = v.data ?? [];
-  const totalCost = rows.reduce((s, r) => s + Number(r.cost_value ?? 0), 0);
-  const totalRetail = rows.reduce((s, r) => s + Number(r.retail_value ?? 0), 0);
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Card><p className="text-xs text-muted">قيمة المخزون بالتكلفة</p><p className="num text-xl font-black">{moneyEGP(totalCost)}</p></Card>
-        <Card><p className="text-xs text-muted">قيمة المخزون بالبيع</p><p className="num text-xl font-black text-brand">{moneyEGP(totalRetail)}</p></Card>
-      </div>
-      {v.isLoading ? <div className="flex flex-col gap-2" aria-busy="true" aria-label="جارٍ التحميل">
-            <Skeleton className="h-10 w-full" />
-            {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
-          </div>
-      : v.isError ? <ErrorBox message={(v.error as Error).message} onRetry={() => v.refetch()} />
-      : !rows.length ? <Empty text="لا توجد أصناف في هذا الفرع" />
-      : (
-        <div className="max-h-[60vh] overflow-auto">
-          <table className="w-full text-sm">
-            <thead className="sticky top-0 bg-surface">
-              <tr className="border-b border-line text-xs text-muted">
-                <th className="p-3 text-start">المنتج</th>
-                <th className="p-3 text-start">الكمية</th>
-                <th className="p-3 text-start">قيمة التكلفة</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.slice(0, 150).map((r, i) => (
-                <tr key={i} className="border-b border-line/60 last:border-0">
-                  <td className="p-3 font-semibold">{r.product_name ?? r.name ?? "—"}</td>
-                  <td className="num p-3">{fq(r.total_qty ?? r.qty ?? 0)}</td>
-                  <td className="num p-3 font-bold">{money(r.cost_value ?? 0)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      {v.isLoading ? (
+        <div className="grid gap-4 sm:grid-cols-3">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-28 rounded-xl" />)}</div>
+      ) : v.isError ? (
+        <ErrorBox message={(v.error as Error).message} onRetry={() => v.refetch()} />
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-3">
+          <Card><p className="text-xs text-muted">قيمة المخزون بالتكلفة</p><p className="num text-xl font-black">{moneyEGP(v.data?.total_cost_value ?? 0)}</p></Card>
+          <Card><p className="text-xs text-muted">قيمة المخزون بالبيع</p><p className="num text-xl font-black text-brand">{moneyEGP(v.data?.total_retail_value ?? 0)}</p></Card>
+          <Card><p className="text-xs text-muted">عدد الأصناف المتتبعة</p><p className="num text-xl font-black">{v.data?.product_count ?? 0}</p></Card>
         </div>
       )}
+      <p className="text-xs text-muted-foreground">
+        التقييم الإجمالي للفرع — تقرير الأصناف بالتفصيل متاح من
+        {" "}<button className="font-semibold text-primary hover:underline" onClick={() => openPrintDoc("/reports/inventory/print", { warehouse_id: wid })}>تقرير الجرد المطبوع</button>.
+      </p>
     </div>
   );
 }
@@ -102,7 +81,7 @@ function ValuationTab({ wid }: { wid: string }) {
 function LowTab({ wid }: { wid: string }) {
   const q = useQuery({
     queryKey: ["low-stock", wid],
-    queryFn: () => api.get<Record<string, unknown>[]>("/stock/low-stock", { warehouse_id: wid }),
+    queryFn: () => api.get<{ product_id: string; product_name: string; current_qty: number; unit: string }[]>("/stock/low-stock", { warehouse_id: wid }),
     enabled: !!wid,
   });
   return q.isLoading ? <div className="flex flex-col gap-2" aria-busy="true" aria-label="جارٍ التحميل">
@@ -110,23 +89,23 @@ function LowTab({ wid }: { wid: string }) {
             {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
           </div>
     : q.isError ? <ErrorBox message={(q.error as Error).message} onRetry={() => q.refetch()} />
-    : !q.data?.length ? <Empty text="لا توجد أصناف تحت الحد ✓" />
+    : !q.data?.length ? <Empty text="لا توجد أصناف تحت الحد" hint="كل الأصناف فوق حد الطلب في هذا الفرع" />
     : (
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-line text-xs text-muted">
-              {Object.keys(q.data[0]).filter((k) => k !== "id" && !k.endsWith("_id")).slice(0, 5).map((k) => (
-                <th key={k} className="p-3 text-start">{k}</th>
-              ))}
+              <th className="p-3 text-start">الصنف</th>
+              <th className="p-3 text-start">المتاح</th>
+              <th className="p-3 text-start">الوحدة</th>
             </tr>
           </thead>
           <tbody>
-            {q.data.slice(0, 60).map((r, i) => (
-              <tr key={i} className="border-b border-line/60 last:border-0">
-                {Object.keys(q.data![0]).filter((k) => k !== "id" && !k.endsWith("_id")).slice(0, 5).map((k) => (
-                  <td key={k} className="p-3">{String(r[k] ?? "—")}</td>
-                ))}
+            {q.data.slice(0, 60).map((r) => (
+              <tr key={r.product_id} className="border-b border-line/60 last:border-0">
+                <td className="p-3 font-semibold">{r.product_name}</td>
+                <td className="num p-3 font-bold text-destructive">{fq(r.current_qty)}</td>
+                <td className="p-3 text-muted-foreground">{r.unit}</td>
               </tr>
             ))}
           </tbody>

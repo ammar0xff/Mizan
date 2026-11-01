@@ -16,8 +16,11 @@ import { Button, ErrorBox, Input } from "@/components/ui";
 import { useAuth } from "@/stores/auth";
 
 export default function SignupPage() {
-  const [fullName, setFullName] = useState("");
-  const [username, setUsername] = useState("");
+  const draft: { full_name?: string; username?: string } = (() => {
+    try { return JSON.parse(sessionStorage.getItem("mizan.owner") ?? "{}"); } catch { return {}; }
+  })();
+  const [fullName, setFullName] = useState(draft.full_name ?? "");
+  const [username, setUsername] = useState(draft.username ?? "");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
