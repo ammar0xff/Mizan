@@ -231,7 +231,7 @@ button:not(:disabled) { cursor: pointer; }
 
 
 .login-brand-art {
-  background-image: url(/Vendora/products/pvc-pipe.png), url(/Vendora/products/mixer-faucet.png);
+  background-image: var(--brand-art-image, none);
   background-size: 420px, 340px;
   background-position: top -60px left -40px, bottom -50px right -30px;
   background-repeat: no-repeat;

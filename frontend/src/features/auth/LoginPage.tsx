@@ -62,7 +62,10 @@ export default function LoginPage() {
     <div className="grid min-h-screen lg:grid-cols-2">
       {/* Brand panel — the navy identity, right side in RTL */}
       <aside className="relative hidden flex-col justify-between overflow-hidden bg-side p-10 lg:flex">
-        <div className="login-brand-art pointer-events-none absolute inset-0 opacity-[0.07]" />
+        <div
+          className="login-brand-art pointer-events-none absolute inset-0 opacity-[0.07]"
+          style={{ "--brand-art-image": `url(${import.meta.env.BASE_URL}products/pvc-pipe.png), url(${import.meta.env.BASE_URL}products/mixer-faucet.png)` } as React.CSSProperties}
+        />
         <div className="relative flex items-center gap-3">
           <div className="grid h-11 w-11 place-items-center rounded-xl bg-side-primary text-xl font-black text-side-primary-ink">ف</div>
           <div className="leading-tight">

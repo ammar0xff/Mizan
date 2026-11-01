@@ -16,6 +16,7 @@ class Settings(BaseSettings):
         "http://localhost",
         "https://eg-co.duckdns.org",
         "https://ammar0xff.github.io",
+        "https://mizan-app-liart.vercel.app",
     ]
     IS_PRODUCTION: bool = False
     # ⚠️ CORS_ORIGINS must NOT contain wildcard ("*") when credentials are enabled
