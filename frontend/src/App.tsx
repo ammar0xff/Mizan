@@ -19,8 +19,27 @@ const OperationsPage = lazy(() => import("@/features/operations/OperationsPage")
 const ModulesPage = lazy(() => import("@/features/modules/ModulesPage"));
 const RestaurantTablesPage = lazy(() => import("@/features/restaurant/RestaurantTablesPage"));
 const SchoolStudentsPage = lazy(() => import("@/features/school/SchoolStudentsPage"));
-const AdmoonDashboard = lazy(() => import("@/features/admoon/AdmoonDashboard"));
 const TenantScopeLayout = lazy(() => import("@/features/marketing/TenantScopeLayout"));
+
+// Admoon SaaS Control Plane Pages
+const AdmoonLayout = lazy(() => import("@/admoon/AdmoonLayout"));
+const AdmoonDashboard = lazy(() => import("@/admoon/pages/Dashboard"));
+const AdmoonTenants = lazy(() => import("@/admoon/pages/Tenants"));
+const AdmoonTenantDetails = lazy(() => import("@/admoon/pages/TenantDetails"));
+const AdmoonTenantWizard = lazy(() => import("@/admoon/pages/TenantWizard"));
+const AdmoonHostingConfig = lazy(() => import("@/admoon/pages/HostingConfig"));
+const AdmoonDatabaseConfig = lazy(() => import("@/admoon/pages/DatabaseConfig"));
+const AdmoonStorageConfig = lazy(() => import("@/admoon/pages/StorageConfig"));
+const AdmoonInfrastructure = lazy(() => import("@/admoon/pages/Infrastructure"));
+const AdmoonProvisioningJobs = lazy(() => import("@/admoon/pages/ProvisioningJobs"));
+const AdmoonModuleCatalog = lazy(() => import("@/admoon/pages/ModuleCatalog"));
+const AdmoonSubscriptions = lazy(() => import("@/admoon/pages/Subscriptions"));
+const AdmoonBillingInvoices = lazy(() => import("@/admoon/pages/BillingInvoices"));
+const AdmoonBackups = lazy(() => import("@/admoon/pages/Backups"));
+const AdmoonMonitoringHealth = lazy(() => import("@/admoon/pages/MonitoringHealth"));
+const AdmoonAuditLogs = lazy(() => import("@/admoon/pages/AuditLogs"));
+const AdmoonPlatformUsers = lazy(() => import("@/admoon/pages/PlatformUsers"));
+const AdmoonSystemSettings = lazy(() => import("@/admoon/pages/SystemSettings"));
 import { Link, Navigate, Route, Routes } from "react-router-dom";
 import LandingPage from "@/features/marketing/LandingPage";
 import PricingPage from "@/features/marketing/PricingPage";
@@ -131,8 +150,33 @@ export default function App() {
 
   return (
     <Routes>
-      {/* SaaS Owner & Platform Control Plane */}
-      <Route path="/admoon" element={<Page><AdmoonDashboard /></Page>} />
+      {/* SaaS Owner & Platform Control Plane (/admoon) */}
+      <Route
+        path="/admoon"
+        element={
+          <Page>
+            <AdmoonLayout />
+          </Page>
+        }
+      >
+        <Route index element={<AdmoonDashboard />} />
+        <Route path="tenants" element={<AdmoonTenants />} />
+        <Route path="tenants/:tenantId" element={<AdmoonTenantDetails />} />
+        <Route path="wizard" element={<AdmoonTenantWizard />} />
+        <Route path="hosting" element={<AdmoonHostingConfig />} />
+        <Route path="databases" element={<AdmoonDatabaseConfig />} />
+        <Route path="storage" element={<AdmoonStorageConfig />} />
+        <Route path="infrastructure" element={<AdmoonInfrastructure />} />
+        <Route path="jobs" element={<AdmoonProvisioningJobs />} />
+        <Route path="modules" element={<AdmoonModuleCatalog />} />
+        <Route path="subscriptions" element={<AdmoonSubscriptions />} />
+        <Route path="billing" element={<AdmoonBillingInvoices />} />
+        <Route path="backups" element={<AdmoonBackups />} />
+        <Route path="monitoring" element={<AdmoonMonitoringHealth />} />
+        <Route path="audit-logs" element={<AdmoonAuditLogs />} />
+        <Route path="users" element={<AdmoonPlatformUsers />} />
+        <Route path="settings" element={<AdmoonSystemSettings />} />
+      </Route>
       <Route path="/pricing" element={<PricingPage />} />
       <Route path="/signup" element={token && user ? <Navigate to="/" replace /> : <SignupPage />} />
       <Route path="/onboarding" element={<OnboardingWizard />} />

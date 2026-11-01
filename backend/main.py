@@ -43,6 +43,7 @@ import app.models.stock
 import app.models.stock_balance
 import app.models.supplier_price
 import app.models.supplier_transaction
+import app.models.tenant
 import app.models.user
 import app.models.warehouse
 import app.models.warehouse_product_status

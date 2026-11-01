@@ -115,5 +115,14 @@ class PrintEngine:
 
         return rendered
 
+    def render(self, name: str, context: dict[str, Any]) -> str:
+        """Convenience render method that looks up template in tickets or documents."""
+        clean_name = name if name.endswith(".html") else f"{name}.html"
+        if (self.templates_dir / "tickets" / clean_name).exists():
+            return self.render_template("tickets", clean_name, context)
+        if (self.templates_dir / "documents" / clean_name).exists():
+            return self.render_template("documents", clean_name, context)
+        raise FileNotFoundError(f"Template '{name}' not found in tickets or documents.")
+
 
 print_engine = PrintEngine()

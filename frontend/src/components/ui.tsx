@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from "motion/react";
 import { CheckCircle2, Info, Inbox, X, XCircle } from "lucide-react";
+import * as React from "react";
 import {
   createContext, useCallback, useContext, useEffect, useState,
   type ReactNode,
@@ -23,19 +24,36 @@ export function Button({
   variant = "default",
   className = "",
   children,
+  size,
+  asChild,
   ...props
-}: React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: "default" | "ghost" | "danger" | "outline" }) {
+}: React.ButtonHTMLAttributes<HTMLButtonElement> & {
+  variant?: "default" | "ghost" | "danger" | "destructive" | "outline";
+  size?: "default" | "sm" | "lg" | "icon" | string;
+  asChild?: boolean;
+}) {
+  const normalizedVariant = variant === "destructive" ? "danger" : variant;
   const styles = {
     default: "bg-primary text-primary-foreground shadow-xs hover:bg-primary/90",
     ghost: "hover:bg-accent hover:text-accent-foreground",
     danger: "bg-destructive text-white shadow-xs hover:bg-destructive/90",
     outline: "border border-input bg-card shadow-xs hover:bg-accent hover:text-accent-foreground",
-  }[variant];
+  }[normalizedVariant];
+
+  const sizeStyle = size === "sm" ? "h-8 px-3 text-xs" : size === "lg" ? "h-10 px-6 text-base" : "";
+
+  if (asChild && React.isValidElement(children)) {
+    return React.cloneElement(children as React.ReactElement<any>, {
+      className: `${styles} ${sizeStyle} ${className} ${(children.props as any).className || ""}`,
+      ...props,
+    });
+  }
+
   return (
     <motion.button
       whileTap={{ scale: 0.97 }}
       transition={{ duration: 0.08 }}
-      className={`inline-flex h-9 shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-md px-4 text-sm font-medium transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-ring/40 disabled:pointer-events-none disabled:opacity-50 ${styles} ${className}`}
+      className={`inline-flex h-9 shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-md px-4 text-sm font-medium transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-ring/40 disabled:pointer-events-none disabled:opacity-50 ${styles} ${sizeStyle} ${className}`}
       {...(props as React.ComponentProps<typeof motion.button>)}
     >
       {children}

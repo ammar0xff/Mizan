@@ -28,8 +28,17 @@ export const date = (v: string | Date | null | undefined): string =>
 
 /* Prototype-named wrappers used by the ported shadcn views */
 export const formatMoney = (v: number): string => money(v);
+export const formatCurrency = (v: number | string | Decimal | null | undefined, currency: string = "USD"): string => {
+  const val = Number(D(v).toDecimalPlaces(2).toFixed(2));
+  try {
+    return new Intl.NumberFormat("en-US", { style: "currency", currency }).format(val);
+  } catch {
+    return `${val.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${currency}`;
+  }
+};
 export const formatNumber = (v: number): string => qty(v);
 export const formatDate = (iso: string): string => date(iso);
 export const formatDateTime = (iso: string): string => dateTime(iso);
 export const formatTime = (iso: string): string =>
   new Intl.DateTimeFormat(LOC, { timeStyle: "short", timeZone: "Africa/Cairo" }).format(new Date(iso));
+

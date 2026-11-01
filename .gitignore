@@ -1,13 +1,12 @@
-# Python
-backend/.venv/
-backend/__pycache__/
-backend/**/__pycache__/
-backend/**/*.pyc
+__pycache__/
+**/__pycache__/
+*.pyc
+*.tsbuildinfo
+*.log
 backend/.env
 backend/.env.*
 *.env
 *.env.*
-*.log
 
 # Docker volumes / uploads
 backend/uploads/
