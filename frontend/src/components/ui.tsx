@@ -5,6 +5,7 @@ import {
   type ReactNode,
 } from "react";
 import { spring } from "@/components/motion";
+import { sound } from "@/lib/sound";
 
 /* Legacy kit — visually identical to components/kit (shadcn v4).
    Kept for the not-yet-migrated screens; same API, kit styling. */
@@ -99,24 +100,48 @@ export function Modal({
 }) {
   useEffect(() => {
     if (!open) return;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    const originalOverflow = document.body.style.overflow;
+    const originalPaddingRight = document.body.style.paddingRight;
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+    if (scrollbarWidth > 0) {
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
+    }
+    document.body.style.overflow = "hidden";
+
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.stopPropagation();
+        onClose();
+      }
+    };
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = originalOverflow;
+      document.body.style.paddingRight = originalPaddingRight;
+    };
   }, [open, onClose]);
 
   return (
     <AnimatePresence>
       {open && (
         <motion.div
-          className="fixed inset-0 z-50 grid place-items-center bg-black/50 p-4 backdrop-blur-[2px]"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-3 sm:p-4 backdrop-blur-[2px] overscroll-contain"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.15 }}
-          onMouseDown={(e) => e.target === e.currentTarget && onClose()}
+          onMouseDown={(e) => {
+            if (e.target === e.currentTarget) {
+              sound.click();
+              onClose();
+            }
+          }}
         >
           <motion.div
-            className={`max-h-[90vh] w-full overflow-auto rounded-xl border border-line bg-card p-6 shadow-lg ${wide ? "max-w-3xl" : "max-w-md"}`}
+            className={`flex max-h-[90vh] sm:max-h-[85vh] w-full flex-col rounded-2xl border border-line bg-card text-card-foreground shadow-2xl overflow-hidden ${
+              wide ? "max-w-3xl" : "max-w-lg"
+            }`}
             role="dialog"
             aria-modal="true"
             aria-label={title}
@@ -125,13 +150,25 @@ export function Modal({
             exit={{ opacity: 0, scale: 0.97, y: 6 }}
             transition={spring}
           >
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-lg font-semibold">{title}</h2>
-              <button onClick={onClose} aria-label="إغلاق" className="rounded-md p-1.5 text-muted-foreground transition hover:bg-accent hover:text-accent-foreground">
+            {/* Pinned Sticky Header */}
+            <div className="shrink-0 flex items-center justify-between border-b border-border/70 px-5 py-3.5 bg-card">
+              <h2 className="text-base sm:text-lg font-semibold tracking-tight text-foreground">{title}</h2>
+              <button
+                type="button"
+                onClick={() => {
+                  sound.click();
+                  onClose();
+                }}
+                aria-label="إغلاق النافذة"
+                className="tactile-btn flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground active:scale-95"
+              >
                 <X size={18} />
               </button>
             </div>
-            {children}
+            {/* Scrollable Modal Content */}
+            <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-5 py-4">
+              {children}
+            </div>
           </motion.div>
         </motion.div>
       )}
@@ -160,12 +197,26 @@ export function ConfirmDialog({
   return (
     <Modal open={open} onClose={onClose} title={title}>
       <div className="space-y-4">
-        <p className="text-sm text-muted-foreground">{message}</p>
-        <div className="flex gap-2">
-          <Button variant={danger ? "danger" : "default"} className="flex-1" onClick={onConfirm}>
+        <p className="text-sm text-muted-foreground leading-relaxed">{message}</p>
+        <div className="flex gap-2.5 pt-2">
+          <Button
+            variant={danger ? "danger" : "default"}
+            className="flex-1 h-10 font-bold"
+            onClick={() => {
+              sound.click();
+              onConfirm();
+            }}
+          >
             {confirmLabel}
           </Button>
-          <Button variant="ghost" className="flex-1" onClick={onClose}>
+          <Button
+            variant="ghost"
+            className="flex-1 h-10 font-medium"
+            onClick={() => {
+              sound.click();
+              onClose();
+            }}
+          >
             إلغاء
           </Button>
         </div>
@@ -214,6 +265,14 @@ export const useToast = () => useContext(ToastCtx);
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
   const toast = useCallback((kind: ToastKind, message: string) => {
+    if (kind === "success") {
+      sound.success();
+    } else if (kind === "error") {
+      sound.error();
+    } else {
+      sound.click();
+    }
+
     const id = Date.now() + Math.random();
     setToasts((t) => [...t, { id, kind, message }]);
     setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), kind === "error" ? 6000 : 3500);
@@ -231,16 +290,33 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -10, scale: 0.98 }}
               transition={spring}
-              className={`pointer-events-auto flex max-w-md items-center gap-2.5 rounded-lg border px-4 py-3 text-sm font-medium shadow-lg backdrop-blur ${
+              onClick={() => {
+                sound.click();
+                setToasts((all) => all.filter((x) => x.id !== t.id));
+              }}
+              role="status"
+              className={`pointer-events-auto flex max-w-md items-center gap-2.5 rounded-xl border px-4 py-3 text-sm font-medium shadow-xl backdrop-blur-md cursor-pointer transition-all hover:scale-[1.01] active:scale-[0.99] ${
                 t.kind === "success"
-                  ? "border-success/30 bg-success/10 text-success"
+                  ? "border-success/30 bg-success/15 text-success dark:bg-success/20"
                   : t.kind === "error"
-                    ? "border-destructive/30 bg-destructive/10 text-destructive"
-                    : "border-line bg-popover text-popover-foreground"
+                    ? "border-destructive/30 bg-destructive/15 text-destructive dark:bg-destructive/20"
+                    : "border-border/80 bg-popover/95 text-popover-foreground"
               }`}
             >
-              {t.kind === "success" ? <CheckCircle2 size={16} /> : t.kind === "error" ? <XCircle size={16} /> : <Info size={16} />}
-              {t.message}
+              {t.kind === "success" ? <CheckCircle2 size={16} className="shrink-0" /> : t.kind === "error" ? <XCircle size={16} className="shrink-0" /> : <Info size={16} className="shrink-0" />}
+              <span className="flex-1 leading-snug">{t.message}</span>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  sound.click();
+                  setToasts((all) => all.filter((x) => x.id !== t.id));
+                }}
+                className="opacity-60 hover:opacity-100 p-1 rounded-md transition"
+                aria-label="إغلاق التنبيه"
+              >
+                <X size={14} />
+              </button>
             </motion.div>
           ))}
         </AnimatePresence>

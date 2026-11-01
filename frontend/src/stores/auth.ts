@@ -89,7 +89,6 @@ export const useAuth = create<AuthState>((set, get) => ({
   can: (perm) => {
     const u = get().user;
     if (!u) return false;
-    if (u.role === "admin") return true;
     return !perm || u.permissions.includes(perm);
   },
 }));

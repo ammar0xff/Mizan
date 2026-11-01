@@ -110,11 +110,17 @@ export default function UsersPage() {
       )}
 
       <Modal open={creating} onClose={() => setCreating(false)} title="مستخدم جديد">
-        <div className="flex flex-col gap-3">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (!create.isPending && form.username && form.password && form.full_name) create.mutate();
+          }}
+          className="flex flex-col gap-3"
+        >
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="mb-1 block text-sm font-medium">اسم المستخدم *</label>
-              <Input dir="ltr" value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} />
+              <Input autoFocus dir="ltr" value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} />
             </div>
             <div>
               <label className="mb-1 block text-sm font-medium">الاسم الكامل *</label>
@@ -134,20 +140,20 @@ export default function UsersPage() {
             </div>
           </div>
           {create.isError && <ErrorBox message={(create.error as Error).message} />}
-          <Button className="w-full" disabled={create.isPending || !form.username || !form.password || !form.full_name} onClick={() => create.mutate()}>
-            {create.isPending ? <Spinner /> : "إنشاء"}
+          <Button type="submit" className="w-full h-10 font-bold" disabled={create.isPending || !form.username || !form.password || !form.full_name}>
+            {create.isPending ? <Spinner /> : "إنشاء المستخدم"}
           </Button>
-        </div>
+        </form>
       </Modal>
 
       <Modal open={!!permFor} onClose={() => setPermFor(null)} title={`صلاحيات — ${permFor?.full_name ?? ""}`} wide>
         <div className="flex flex-col gap-6">
-          <p className="text-sm text-muted">
-            لاحظ: الدور لا يمنح الصلاحيات تلقائياً — كل صلاحية تُضبط يدوياً. (حتى admin لا يملك finance تلقائياً)
+          <p className="text-sm text-muted-foreground">
+            تخصيص الصلاحيات الدقيقة لهذا الحساب. يملك مدير النظام (Admin) صلاحيات شاملة تلقائياً.
           </p>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
             {ALL_PERMS.map((p) => (
-              <label key={p} className={`flex cursor-pointer items-center gap-2 rounded-lg border p-2.5 text-sm ${perms.includes(p) ? "border-brand bg-brand/10 font-bold" : "border-line"}`}>
+              <label key={p} className={`flex cursor-pointer items-center gap-2 rounded-lg border p-2.5 text-sm transition-colors ${perms.includes(p) ? "border-primary bg-primary/10 font-bold text-primary" : "border-line hover:bg-secondary/40"}`}>
                 <input
                   type="checkbox"
                   checked={perms.includes(p)}
@@ -158,23 +164,29 @@ export default function UsersPage() {
             ))}
           </div>
           {savePerms.isError && <ErrorBox message={(savePerms.error as Error).message} />}
-          <Button className="w-full" disabled={savePerms.isPending} onClick={() => savePerms.mutate()}>
+          <Button className="w-full h-10 font-bold" disabled={savePerms.isPending} onClick={() => savePerms.mutate()}>
             {savePerms.isPending ? <Spinner /> : "حفظ الصلاحيات"}
           </Button>
         </div>
       </Modal>
 
       <Modal open={!!pwFor} onClose={() => setPwFor(null)} title={`كلمة مرور جديدة — ${pwFor?.username ?? ""}`}>
-        <div className="flex flex-col gap-3">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (!resetPw.isPending && newPw) resetPw.mutate();
+          }}
+          className="flex flex-col gap-3"
+        >
           <div>
             <label className="mb-1 block text-sm font-medium">كلمة المرور الجديدة</label>
-            <Input type="password" dir="ltr" value={newPw} onChange={(e) => setNewPw(e.target.value)} />
+            <Input autoFocus type="password" dir="ltr" value={newPw} onChange={(e) => setNewPw(e.target.value)} />
           </div>
           {resetPw.isError && <ErrorBox message={(resetPw.error as Error).message} />}
-          <Button className="w-full" disabled={resetPw.isPending || !newPw} onClick={() => resetPw.mutate()}>
-            {resetPw.isPending ? <Spinner /> : "تعيين"}
+          <Button type="submit" className="w-full h-10 font-bold" disabled={resetPw.isPending || !newPw}>
+            {resetPw.isPending ? <Spinner /> : "تعيين كلمة المرور"}
           </Button>
-        </div>
+        </form>
       </Modal>
     </div>
   );

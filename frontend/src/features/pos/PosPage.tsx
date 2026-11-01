@@ -661,10 +661,10 @@ export default function PosPage() {
                                 sound.click();
                                 setCart((c) => c.map((x, j) => (j === idx ? { ...x, qty: Math.max(1, x.qty - 1) } : x)));
                               }}
-                              className="tactile-btn size-6 rounded flex items-center justify-center hover:bg-card text-muted-foreground hover:text-foreground"
+                              className="tactile-btn size-7.5 rounded-md flex items-center justify-center hover:bg-card text-muted-foreground hover:text-foreground active:scale-95 transition-all"
                               aria-label="تقليل الكمية"
                             >
-                              <Minus size={12} />
+                              <Minus size={13} />
                             </button>
                             <span className="num font-mono w-7 text-center font-bold text-xs">{i.qty}</span>
                             <button
@@ -673,10 +673,10 @@ export default function PosPage() {
                                 sound.click();
                                 setCart((c) => c.map((x, j) => (j === idx ? { ...x, qty: x.qty + 1 } : x)));
                               }}
-                              className="tactile-btn size-6 rounded flex items-center justify-center hover:bg-card text-muted-foreground hover:text-foreground"
+                              className="tactile-btn size-7.5 rounded-md flex items-center justify-center hover:bg-card text-muted-foreground hover:text-foreground active:scale-95 transition-all"
                               aria-label="زيادة الكمية"
                             >
-                              <Plus size={12} />
+                              <Plus size={13} />
                             </button>
                           </div>
 
@@ -690,10 +690,10 @@ export default function PosPage() {
                               sound.click();
                               setCart((c) => c.filter((_, j) => j !== idx));
                             }}
-                            className="tactile-btn size-6 rounded flex items-center justify-center text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+                            className="tactile-btn size-7.5 rounded-md flex items-center justify-center text-muted-foreground hover:bg-destructive/10 hover:text-destructive active:scale-95 transition-all"
                             aria-label="حذف الصنف"
                           >
-                            <X size={12} />
+                            <X size={14} />
                           </button>
                         </div>
                       </li>
@@ -794,19 +794,32 @@ export default function PosPage() {
       </div>
 
       {/* ── Mobile Fixed Sticky Bottom Action Bar ── */}
-      <div className="fixed inset-x-0 bottom-0 z-30 flex items-center justify-between gap-3 border-t border-line bg-background/95 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur lg:hidden">
+      <div className="fixed inset-x-0 bottom-0 z-30 flex items-center justify-between gap-3 border-t border-line bg-background/95 px-4 py-2.5 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur lg:hidden shadow-lg">
         <div className="flex flex-col leading-tight">
-          <span className="text-[10px] text-muted-foreground">الإجمالي الصافي</span>
-          <span className="num font-mono text-lg font-black text-foreground">{money(total)} ج.م</span>
+          <span className="text-[10px] text-muted-foreground font-medium">الإجمالي الصافي</span>
+          <span className="num font-mono text-lg font-black text-foreground">{money(total)} <span className="text-xs font-sans text-muted-foreground font-normal">ج.م</span></span>
         </div>
-        <Button
-          className="tactile-btn shadow-md"
-          disabled={!cart.length || shiftMissing || shift.isLoading}
-          onClick={() => openPaymentModal(false)}
-        >
-          <span>إتمام الدفع</span>
-          <Kbd className="ms-1">F2</Kbd>
-        </Button>
+        <div className="flex items-center gap-2">
+          {cart.length > 0 && (
+            <Button
+              variant="outline"
+              className="tactile-btn h-10 px-3 text-xs"
+              onClick={handleHoldBill}
+              title="تعليق الفاتورة"
+            >
+              <Pause size={14} />
+              <span>تعليق</span>
+            </Button>
+          )}
+          <Button
+            className="tactile-btn h-10 px-4 font-bold text-sm shadow-md"
+            disabled={!cart.length || shiftMissing || shift.isLoading}
+            onClick={() => openPaymentModal(false)}
+          >
+            <span>إتمام الدفع</span>
+            <Kbd className="ms-1.5 hidden sm:inline-flex">F2</Kbd>
+          </Button>
+        </div>
       </div>
 
       {/* ── High-Velocity Payment Modal with Cash Tender Numpad ── */}
@@ -894,13 +907,27 @@ export default function PosPage() {
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between text-xs">
                   <label className="font-bold">المبلغ المستلم نقداً</label>
-                  <button
-                    type="button"
-                    onClick={() => handleQuickTender(total.toNumber())}
-                    className="text-xs font-bold text-primary hover:underline"
-                  >
-                    استلام المبلغ بالكامل
-                  </button>
+                  <div className="flex items-center gap-2.5">
+                    {cashInput && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          sound.click();
+                          setCashInput("");
+                        }}
+                        className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        مسح
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => handleQuickTender(total.toNumber())}
+                      className="text-xs font-bold text-primary hover:underline"
+                    >
+                      استلام المبلغ بالكامل
+                    </button>
+                  </div>
                 </div>
                 <InputGroup className="h-11 bg-card border-line focus-within:border-primary">
                   <InputGroupInput
@@ -943,14 +970,14 @@ export default function PosPage() {
 
                 {/* Tactile Virtual Numpad for Touch Terminals */}
                 <div className="grid grid-cols-3 gap-1.5 pt-2 max-w-[280px] mx-auto">
-                  {["1", "2", "3", "4", "5", "6", "7", "8", "9", "C", "0", "DEL"].map((key) => (
+                  {["1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "0", "DEL"].map((key) => (
                     <button
                       key={key}
                       type="button"
                       onClick={() => handleNumpadPress(key)}
-                      className="tactile-btn flex h-9 items-center justify-center rounded-lg border border-line bg-secondary/40 font-mono text-sm font-bold hover:bg-primary/10 hover:border-primary/40 active:scale-95 transition"
+                      className="tactile-btn flex h-11 items-center justify-center rounded-xl border border-line bg-secondary/50 font-mono text-base font-bold hover:bg-primary/10 hover:border-primary/40 active:scale-95 transition-all shadow-xs"
                     >
-                      {key === "DEL" ? "⌫" : key === "C" ? "مسح" : key}
+                      {key === "DEL" ? "⌫" : key}
                     </button>
                   ))}
                 </div>
@@ -1053,10 +1080,10 @@ export default function PosPage() {
 
           {checkout.isError && <ErrorBox message={(checkout.error as Error).message} />}
 
-          {/* Action triggers */}
-          <div className="flex gap-2 pt-2">
+          {/* Action triggers - Sticky pinned at bottom */}
+          <div className="sticky bottom-0 -mx-5 -mb-4 mt-2 flex gap-2 border-t border-border/80 bg-card/95 px-5 py-3.5 backdrop-blur shadow-lg">
             <Button
-              className="tactile-btn flex-1 py-3 text-sm font-bold shadow-md"
+              className="tactile-btn flex-1 h-11 text-sm font-bold shadow-md"
               disabled={checkout.isPending || (isCredit && !customerId)}
               onClick={() => checkout.mutate()}
             >
@@ -1064,7 +1091,7 @@ export default function PosPage() {
             </Button>
             <Button
               variant="outline"
-              className="tactile-btn flex-initial text-xs"
+              className="tactile-btn flex-initial h-11 px-4 text-xs font-medium"
               disabled={saveQuotation.isPending}
               onClick={() => saveQuotation.mutate()}
               title="عرض سعر — لا يخصم من المخزون"

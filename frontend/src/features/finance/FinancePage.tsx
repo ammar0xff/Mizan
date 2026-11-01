@@ -123,10 +123,16 @@ function ExpensesTab() {
       {approve.isError && <ErrorBox message={(approve.error as Error).message} />}
 
       <Modal open={creating} onClose={() => setCreating(false)} title="مصروف جديد">
-        <div className="flex flex-col gap-3">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (!create.isPending && form.amount && form.description) create.mutate();
+          }}
+          className="flex flex-col gap-3"
+        >
           <div>
             <label className="mb-1 block text-sm font-medium">الوصف *</label>
-            <Input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+            <Input autoFocus value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -170,10 +176,10 @@ function ExpensesTab() {
             </Select>
           )}
           {create.isError && <ErrorBox message={(create.error as Error).message} />}
-          <Button className="w-full" disabled={create.isPending || !form.amount || !form.description} onClick={() => create.mutate()}>
+          <Button type="submit" className="w-full h-10 font-bold" disabled={create.isPending || !form.amount || !form.description}>
             {create.isPending ? <Spinner /> : "حفظ المصروف"}
           </Button>
-        </div>
+        </form>
       </Modal>
     </div>
   );
@@ -243,7 +249,13 @@ function CashTab() {
 
       <Modal open={!!modal} onClose={() => setModal(null)}
         title={modal?.kind === "deposit" ? `إيداع في ${modal.target.name}` : modal?.kind === "withdraw" ? `سحب من ${modal?.target.name}` : `تحويل من ${modal?.target.name} إلى خزنة`}>
-        <div className="flex flex-col gap-3">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (!act.isPending && amount && (modal?.kind !== "transfer" || toSafe)) act.mutate();
+          }}
+          className="flex flex-col gap-3"
+        >
           {modal?.kind === "transfer" && (
             <div>
               <label className="mb-1 block text-sm font-medium">إلى خزنة</label>
@@ -255,7 +267,7 @@ function CashTab() {
           )}
           <div>
             <label className="mb-1 block text-sm font-medium">المبلغ</label>
-            <Input className="num text-lg" inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} />
+            <Input autoFocus className="num text-lg font-bold" inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} />
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium">ملاحظة</label>
@@ -263,13 +275,13 @@ function CashTab() {
           </div>
           {act.isError && <ErrorBox message={(act.error as Error).message} />}
           <Button
-            className="w-full"
+            type="submit"
+            className="w-full h-10 font-bold"
             disabled={act.isPending || !amount || (modal?.kind === "transfer" && !toSafe)}
-            onClick={() => act.mutate()}
           >
             {act.isPending ? <Spinner /> : "تنفيذ"}
           </Button>
-        </div>
+        </form>
       </Modal>
     </div>
   );

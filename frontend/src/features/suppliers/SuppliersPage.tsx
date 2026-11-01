@@ -102,25 +102,37 @@ export default function SuppliersPage() {
       )}
 
       <Modal open={creating} onClose={() => setCreating(false)} title="مورد جديد">
-        <div className="flex flex-col gap-3">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (!create.isPending && form.name) create.mutate();
+          }}
+          className="flex flex-col gap-3"
+        >
           <div>
             <label className="mb-1 block text-sm font-medium">الاسم *</label>
-            <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+            <Input autoFocus value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium">الهاتف</label>
             <Input className="num" dir="ltr" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
           </div>
           {create.isError && <ErrorBox message={(create.error as Error).message} />}
-          <Button className="w-full" disabled={create.isPending || !form.name} onClick={() => create.mutate()}>
-            {create.isPending ? <Spinner /> : "حفظ"}
+          <Button type="submit" className="w-full h-10 font-bold" disabled={create.isPending || !form.name}>
+            {create.isPending ? <Spinner /> : "حفظ المورد"}
           </Button>
-        </div>
+        </form>
       </Modal>
 
       <Modal open={!!txFor} onClose={() => setTxFor(null)} title={`حركة حساب — ${txFor?.name ?? ""}`}>
-        <div className="flex flex-col gap-3">
-          <p className="text-sm text-muted">الرصيد: <span className="num font-bold text-ink">{moneyEGP(txFor?.balance ?? 0)}</span></p>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (!tx.isPending && txAmount) tx.mutate();
+          }}
+          className="flex flex-col gap-3"
+        >
+          <p className="text-sm text-muted-foreground">الرصيد: <span className="num font-bold text-foreground">{moneyEGP(txFor?.balance ?? 0)}</span></p>
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="mb-1 block text-sm font-medium">النوع</label>
@@ -131,14 +143,14 @@ export default function SuppliersPage() {
             </div>
             <div>
               <label className="mb-1 block text-sm font-medium">المبلغ</label>
-              <Input className="num text-lg" inputMode="decimal" value={txAmount} onChange={(e) => setTxAmount(e.target.value)} />
+              <Input autoFocus className="num text-lg font-bold" inputMode="decimal" value={txAmount} onChange={(e) => setTxAmount(e.target.value)} />
             </div>
           </div>
           {tx.isError && <ErrorBox message={(tx.error as Error).message} />}
-          <Button className="w-full" disabled={tx.isPending || !txAmount} onClick={() => tx.mutate()}>
+          <Button type="submit" className="w-full h-10 font-bold" disabled={tx.isPending || !txAmount}>
             {tx.isPending ? <Spinner /> : "تسجيل الحركة"}
           </Button>
-        </div>
+        </form>
       </Modal>
 
       <Modal open={!!ledgerFor} onClose={() => setLedgerFor(null)} title={`كشف حساب — ${ledgerFor?.name ?? ""}`} wide>
@@ -149,26 +161,28 @@ export default function SuppliersPage() {
         ) : !ledger.data?.length ? (
           <Empty text="لا توجد حركات" />
         ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-line text-xs text-muted">
-                <th className="p-2 text-start">التاريخ</th>
-                <th className="p-2 text-start">البيان</th>
-                <th className="p-2 text-start">مدين</th>
-                <th className="p-2 text-start">دائن</th>
-              </tr>
-            </thead>
-            <tbody>
-              {ledger.data.slice(0, 50).map((l, i) => (
-                <tr key={l.id ?? i} className="border-b border-line/60 last:border-0">
-                  <td className="p-2 text-xs text-muted">{dateTime(l.date ?? l.created_at)}</td>
-                  <td className="p-2">{l.description ?? l.notes ?? "—"}</td>
-                  <td className="num p-2">{l.debit ? moneyEGP(l.debit) : "—"}</td>
-                  <td className="num p-2 text-success">{l.credit ? moneyEGP(l.credit) : "—"}</td>
+          <div className="overflow-x-auto rounded-xl border border-line">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-line text-xs text-muted-foreground bg-secondary/30">
+                  <th className="p-2.5 text-start font-semibold">التاريخ</th>
+                  <th className="p-2.5 text-start font-semibold">البيان</th>
+                  <th className="p-2.5 text-start font-semibold">مدين</th>
+                  <th className="p-2.5 text-start font-semibold">دائن</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {ledger.data.slice(0, 50).map((l, i) => (
+                  <tr key={l.id ?? i} className="border-b border-line/60 last:border-0 hover:bg-secondary/20 transition-colors">
+                    <td className="p-2.5 text-xs text-muted-foreground">{dateTime(l.date ?? l.created_at)}</td>
+                    <td className="p-2.5 font-medium">{l.description ?? l.notes ?? "—"}</td>
+                    <td className="num p-2.5 font-bold">{l.debit ? moneyEGP(l.debit) : "—"}</td>
+                    <td className="num p-2.5 font-bold text-success">{l.credit ? moneyEGP(l.credit) : "—"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </Modal>
     </div>

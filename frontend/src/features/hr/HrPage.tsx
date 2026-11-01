@@ -95,10 +95,16 @@ function EmployeesTab() {
         </div>
       )}
       <Modal open={creating} onClose={() => setCreating(false)} title="موظف جديد">
-        <div className="flex flex-col gap-3">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (!create.isPending && form.name) create.mutate();
+          }}
+          className="flex flex-col gap-3"
+        >
           <div>
             <label className="mb-1 block text-sm font-medium">الاسم *</label>
-            <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+            <Input autoFocus value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -115,10 +121,10 @@ function EmployeesTab() {
             <Input className="num" inputMode="decimal" value={form.monthly_salary} onChange={(e) => setForm({ ...form, monthly_salary: e.target.value })} />
           </div>
           {create.isError && <ErrorBox message={(create.error as Error).message} />}
-          <Button className="w-full" disabled={create.isPending || !form.name} onClick={() => create.mutate()}>
-            {create.isPending ? <Spinner /> : "حفظ"}
+          <Button type="submit" className="w-full h-10 font-bold" disabled={create.isPending || !form.name}>
+            {create.isPending ? <Spinner /> : "حفظ الموظف"}
           </Button>
-        </div>
+        </form>
       </Modal>
     </div>
   );
@@ -188,8 +194,14 @@ function AttendanceTab() {
         </div>
       )}
       <Modal open={adding} onClose={() => setAdding(false)} title="تسجيل حضور">
-        <div className="flex flex-col gap-3">
-          <Select value={form.employee_id} onChange={(e) => setForm({ ...form, employee_id: e.target.value })}>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (!add.isPending && form.employee_id && form.work_date) add.mutate();
+          }}
+          className="flex flex-col gap-3"
+        >
+          <Select autoFocus value={form.employee_id} onChange={(e) => setForm({ ...form, employee_id: e.target.value })}>
             <option value="">— اختر الموظف —</option>
             {employees.data?.map((e) => <option key={e.id} value={e.id}>{e.name}</option>)}
           </Select>
@@ -204,10 +216,10 @@ function AttendanceTab() {
             <option value="absent">غائب</option>
           </Select>
           {add.isError && <ErrorBox message={(add.error as Error).message} />}
-          <Button className="w-full" disabled={add.isPending || !form.employee_id || !form.work_date} onClick={() => add.mutate()}>
-            {add.isPending ? <Spinner /> : "حفظ"}
+          <Button type="submit" className="w-full h-10 font-bold" disabled={add.isPending || !form.employee_id || !form.work_date}>
+            {add.isPending ? <Spinner /> : "حفظ الحضور"}
           </Button>
-        </div>
+        </form>
       </Modal>
     </div>
   );
@@ -266,24 +278,30 @@ function AdvancesTab() {
         </div>
       )}
       <Modal open={creating} onClose={() => setCreating(false)} title="سلفة جديدة">
-        <div className="flex flex-col gap-3">
-          <Select value={form.employee_id} onChange={(e) => setForm({ ...form, employee_id: e.target.value })}>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (!create.isPending && form.employee_id && form.amount) create.mutate();
+          }}
+          className="flex flex-col gap-3"
+        >
+          <Select autoFocus value={form.employee_id} onChange={(e) => setForm({ ...form, employee_id: e.target.value })}>
             <option value="">— اختر الموظف —</option>
             {employees.data?.map((e) => <option key={e.id} value={e.id}>{e.name}</option>)}
           </Select>
           <div>
             <label className="mb-1 block text-sm font-medium">المبلغ</label>
-            <Input className="num text-lg" inputMode="decimal" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} />
+            <Input className="num text-lg font-bold" inputMode="decimal" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} />
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium">ملاحظة</label>
             <Input value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} />
           </div>
           {create.isError && <ErrorBox message={(create.error as Error).message} />}
-          <Button className="w-full" disabled={create.isPending || !form.employee_id || !form.amount} onClick={() => create.mutate()}>
-            {create.isPending ? <Spinner /> : "حفظ"}
+          <Button type="submit" className="w-full h-10 font-bold" disabled={create.isPending || !form.employee_id || !form.amount}>
+            {create.isPending ? <Spinner /> : "حفظ السلفة"}
           </Button>
-        </div>
+        </form>
       </Modal>
     </div>
   );

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { PackageCheck, Plus, Trash2, X } from "lucide-react";
+import { PackageCheck, Plus, X } from "lucide-react";
 import { Skeleton } from "@/components/kit/skeleton";
 import { api } from "@/lib/api";
 import { dateTime, D, money, moneyEGP } from "@/lib/format";
@@ -217,14 +217,14 @@ export default function PurchasesPage() {
             </div>
           )}
 
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-muted">الإجمالي</span>
-            <span className="num text-xl font-black text-brand">{money(total)} ج.م</span>
+          <div className="flex items-center justify-between border-t border-border/60 pt-3">
+            <span className="text-sm font-semibold text-muted-foreground">الإجمالي الكلي لأمر الشراء</span>
+            <span className="num text-xl font-black text-primary">{money(total)} <span className="text-sm font-sans font-normal text-muted-foreground">ج.م</span></span>
           </div>
 
           {create.isError && <ErrorBox message={(create.error as Error).message} />}
-          <Button className="w-full" disabled={create.isPending || !items.length} onClick={() => create.mutate()}>
-            {create.isPending ? <Spinner /> : <><Trash2 className="hidden" /> حفظ أمر الشراء</>}
+          <Button className="w-full h-11 font-bold text-sm shadow-md" disabled={create.isPending || !items.length} onClick={() => create.mutate()}>
+            {create.isPending ? <Spinner /> : "حفظ أمر الشراء"}
           </Button>
         </div>
       </Modal>

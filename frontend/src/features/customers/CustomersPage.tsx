@@ -103,11 +103,18 @@ export default function CustomersPage() {
       )}
 
       {/* Create */}
+      {/* Create */}
       <Modal open={creating} onClose={() => setCreating(false)} title="عميل جديد">
-        <div className="flex flex-col gap-3">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (!create.isPending && form.name) create.mutate();
+          }}
+          className="flex flex-col gap-3"
+        >
           <div>
             <label className="mb-1 block text-sm font-medium">الاسم *</label>
-            <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+            <Input autoFocus value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -120,25 +127,31 @@ export default function CustomersPage() {
             </div>
           </div>
           {create.isError && <ErrorBox message={(create.error as Error).message} />}
-          <Button className="w-full" disabled={create.isPending || !form.name} onClick={() => create.mutate()}>
-            {create.isPending ? <Spinner /> : "حفظ"}
+          <Button type="submit" className="w-full h-10 font-bold" disabled={create.isPending || !form.name}>
+            {create.isPending ? <Spinner /> : "حفظ العميل"}
           </Button>
-        </div>
+        </form>
       </Modal>
 
       {/* Payment */}
       <Modal open={!!payFor} onClose={() => setPayFor(null)} title={`تحصيل دفعة — ${payFor?.name ?? ""}`}>
-        <div className="flex flex-col gap-3">
-          <p className="text-sm text-muted">الرصيد الحالي: <span className="num font-bold text-ink">{moneyEGP(payFor?.balance ?? 0)}</span></p>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (!pay.isPending && payAmount) pay.mutate();
+          }}
+          className="flex flex-col gap-3"
+        >
+          <p className="text-sm text-muted-foreground">الرصيد الحالي: <span className="num font-bold text-foreground">{moneyEGP(payFor?.balance ?? 0)}</span></p>
           <div>
             <label className="mb-1 block text-sm font-medium">المبلغ المحصّل</label>
-            <Input className="num text-lg" inputMode="decimal" value={payAmount} onChange={(e) => setPayAmount(e.target.value)} />
+            <Input autoFocus className="num text-lg font-bold" inputMode="decimal" value={payAmount} onChange={(e) => setPayAmount(e.target.value)} />
           </div>
           {pay.isError && <ErrorBox message={(pay.error as Error).message} />}
-          <Button className="w-full" disabled={pay.isPending || !payAmount} onClick={() => pay.mutate()}>
+          <Button type="submit" className="w-full h-10 font-bold" disabled={pay.isPending || !payAmount}>
             {pay.isPending ? <Spinner /> : "تسجيل الدفعة"}
           </Button>
-        </div>
+        </form>
       </Modal>
 
       {/* Ledger */}
@@ -150,26 +163,28 @@ export default function CustomersPage() {
         ) : !ledger.data?.length ? (
           <Empty text="لا توجد حركات" />
         ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-line text-xs text-muted">
-                <th className="p-2 text-start">التاريخ</th>
-                <th className="p-2 text-start">البيان</th>
-                <th className="p-2 text-start">مدين</th>
-                <th className="p-2 text-start">دائن</th>
-              </tr>
-            </thead>
-            <tbody>
-              {ledger.data.slice(0, 50).map((l) => (
-                <tr key={l.id} className="border-b border-line/60 last:border-0">
-                  <td className="p-2 text-xs text-muted">{dateTime(l.created_at)}</td>
-                  <td className="p-2">{l.description ?? "—"}</td>
-                  <td className="num p-2">{l.debit ? moneyEGP(l.debit) : "—"}</td>
-                  <td className="num p-2 text-success">{l.credit ? moneyEGP(l.credit) : "—"}</td>
+          <div className="overflow-x-auto rounded-xl border border-line">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-line text-xs text-muted-foreground bg-secondary/30">
+                  <th className="p-2.5 text-start font-semibold">التاريخ</th>
+                  <th className="p-2.5 text-start font-semibold">البيان</th>
+                  <th className="p-2.5 text-start font-semibold">مدين</th>
+                  <th className="p-2.5 text-start font-semibold">دائن</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {ledger.data.slice(0, 50).map((l) => (
+                  <tr key={l.id} className="border-b border-line/60 last:border-0 hover:bg-secondary/20 transition-colors">
+                    <td className="p-2.5 text-xs text-muted-foreground">{dateTime(l.created_at)}</td>
+                    <td className="p-2.5 font-medium">{l.description ?? "—"}</td>
+                    <td className="num p-2.5 font-bold">{l.debit ? moneyEGP(l.debit) : "—"}</td>
+                    <td className="num p-2.5 font-bold text-success">{l.credit ? moneyEGP(l.credit) : "—"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </Modal>
     </div>

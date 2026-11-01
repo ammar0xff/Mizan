@@ -148,10 +148,16 @@ export default function ProductsPage() {
       />
 
       <Modal open={!!editing} onClose={() => setEditing(null)} title={editing?.id ? "تعديل منتج" : "منتج جديد"}>
-        <div className="flex flex-col gap-3">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (!save.isPending && form.name && form.retail_price) save.mutate();
+          }}
+          className="flex flex-col gap-3"
+        >
           <div>
             <label className="mb-1 block text-sm font-medium">الاسم *</label>
-            <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+            <Input autoFocus value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -186,13 +192,13 @@ export default function ProductsPage() {
           </div>
           {save.isError && <ErrorBox message={(save.error as Error).message} />}
           <Button
-            className="w-full"
+            type="submit"
+            className="w-full h-10 font-bold"
             disabled={save.isPending || !form.name || !form.retail_price}
-            onClick={() => save.mutate()}
           >
-            {save.isPending ? <Spinner /> : "حفظ"}
+            {save.isPending ? <Spinner /> : "حفظ المنتج"}
           </Button>
-        </div>
+        </form>
       </Modal>
     </div>
   );

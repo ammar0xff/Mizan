@@ -95,15 +95,21 @@ export default function ShiftsPage() {
       ) : !shift ? (
         <Card className="space-y-4">
           <p className="flex items-center gap-2 font-bold"><Unlock size={18} /> لا توجد وردية مفتوحة</p>
-          <div className="flex flex-wrap items-end gap-3">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!openShift.isPending && wid) openShift.mutate();
+            }}
+            className="flex flex-wrap items-end gap-3"
+          >
             <div>
               <label className="mb-1 block text-sm font-medium">العهدة الافتتاحية</label>
-              <Input className="num w-40" inputMode="decimal" value={openAmount} onChange={(e) => setOpenAmount(e.target.value)} />
+              <Input autoFocus className="num w-40 font-bold" inputMode="decimal" value={openAmount} onChange={(e) => setOpenAmount(e.target.value)} />
             </div>
-            <Button onClick={() => openShift.mutate()} disabled={openShift.isPending || !wid}>
+            <Button type="submit" className="h-10 font-bold" disabled={openShift.isPending || !wid}>
               {openShift.isPending ? <Spinner /> : "فتح الوردية"}
             </Button>
-          </div>
+          </form>
           {openShift.isError && <ErrorBox message={(openShift.error as Error).message} />}
         </Card>
       ) : (
@@ -127,18 +133,24 @@ export default function ShiftsPage() {
 
           <div className="rounded-xl border border-line p-3">
             <p className="mb-2 text-sm font-bold">حركة درج جديدة</p>
-            <div className="flex flex-wrap items-end gap-2">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!addTx.isPending && txAmount) addTx.mutate();
+              }}
+              className="flex flex-wrap items-end gap-2"
+            >
               <Select value={txType} onChange={(e) => setTxType(e.target.value)} className="w-auto">
                 <option value="deposit">إيداع</option>
                 <option value="withdrawal">سحب</option>
                 <option value="expense">مصروف</option>
               </Select>
-              <Input className="num w-32" inputMode="decimal" placeholder="المبلغ" value={txAmount} onChange={(e) => setTxAmount(e.target.value)} />
+              <Input className="num w-32 font-bold" inputMode="decimal" placeholder="المبلغ" value={txAmount} onChange={(e) => setTxAmount(e.target.value)} />
               <Input className="w-48" placeholder="ملاحظة" value={txNote} onChange={(e) => setTxNote(e.target.value)} />
-              <Button variant="outline" onClick={() => addTx.mutate()} disabled={addTx.isPending || !txAmount}>
+              <Button type="submit" variant="outline" disabled={addTx.isPending || !txAmount}>
                 {addTx.isPending ? <Spinner /> : "إضافة"}
               </Button>
-            </div>
+            </form>
             {addTx.isError && <p className="mt-2 text-sm text-danger">{(addTx.error as Error).message}</p>}
           </div>
 
@@ -159,15 +171,21 @@ export default function ShiftsPage() {
 
           <div className="rounded-xl border border-warning/40 bg-warning/10 p-3">
             <p className="mb-2 flex items-center gap-2 text-sm font-bold"><LockKeyhole size={16} /> إغلاق الوردية</p>
-            <div className="flex flex-wrap items-end gap-3">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!closeShift.isPending && closeAmount !== "") closeShift.mutate();
+              }}
+              className="flex flex-wrap items-end gap-3"
+            >
               <div>
                 <label className="mb-1 block text-sm font-medium">الرصيد الفعلي المعدود</label>
-                <Input className="num w-40" inputMode="decimal" value={closeAmount} onChange={(e) => setCloseAmount(e.target.value)} />
+                <Input className="num w-40 font-bold" inputMode="decimal" value={closeAmount} onChange={(e) => setCloseAmount(e.target.value)} />
               </div>
-              <Button variant="danger" onClick={() => closeShift.mutate()} disabled={closeShift.isPending || closeAmount === ""}>
+              <Button type="submit" variant="danger" className="h-10 font-bold" disabled={closeShift.isPending || closeAmount === ""}>
                 {closeShift.isPending ? <Spinner /> : "إغلاق الوردية"}
               </Button>
-            </div>
+            </form>
             {closeShift.isError && <p className="mt-2 text-sm text-danger">{(closeShift.error as Error).message}</p>}
           </div>
         </Card>

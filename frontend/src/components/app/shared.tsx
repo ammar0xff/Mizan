@@ -1,6 +1,6 @@
 
 import type { LucideIcon } from 'lucide-react'
-import { AlertTriangle, Inbox, RotateCcw, Search } from 'lucide-react'
+import { AlertTriangle, Inbox, RotateCcw, Search, X } from 'lucide-react'
 import { Button } from '@/components/kit/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/kit/card'
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/kit/empty'
@@ -8,6 +8,7 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/kit/i
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/kit/select'
 import { Skeleton } from '@/components/kit/skeleton'
 import { formatMoney, formatNumber } from '@/lib/format'
+import { sound } from '@/lib/sound'
 import { cn } from '@/lib/utils'
 
 export function Money({ value, className, currency = true }: { value: number; className?: string; currency?: boolean }) {
@@ -179,7 +180,21 @@ export function SearchField({
         onChange={(e) => onChange(e.target.value)}
       />
       <InputGroupAddon>
-        <Search />
+        {value ? (
+          <button
+            type="button"
+            onClick={() => {
+              sound.click();
+              onChange('');
+            }}
+            className="text-muted-foreground hover:text-foreground transition-colors p-0.5 rounded cursor-pointer"
+            aria-label="مسح البحث"
+          >
+            <X className="size-3.5" />
+          </button>
+        ) : (
+          <Search />
+        )}
       </InputGroupAddon>
     </InputGroup>
   )
@@ -360,25 +375,50 @@ export function TablePagination({
   onPageSize: (n: number) => void
 }) {
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground">
+    <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground pt-1">
       <span>
-        صفحة <span className="num font-semibold text-foreground">{page}</span> من <span className="num">{Math.max(pages, 1)}</span>
+        صفحة <span className="num font-semibold text-foreground">{page}</span> من <span className="num font-semibold">{Math.max(pages, 1)}</span>
       </span>
       <div className="flex items-center gap-3">
-        <label className="flex items-center gap-2">
-          صفوف لكل صفحة
+        <label className="flex items-center gap-2 text-xs">
+          <span>صفوف لكل صفحة:</span>
           <select
-            className="h-8 rounded-md border bg-card px-2 text-sm"
+            className="h-8 rounded-md border border-input bg-card px-2 text-xs font-mono font-medium outline-none focus-visible:ring-2 focus-visible:ring-ring"
             value={pageSize}
-            onChange={(e) => onPageSize(Number(e.target.value))}
+            onChange={(e) => {
+              sound.click();
+              onPageSize(Number(e.target.value));
+            }}
             aria-label="عدد الصفوف في الصفحة"
           >
-            {[10, 25, 50].map((n) => <option key={n} value={n} className="num">{n}</option>)}
+            {[10, 25, 50, 100].map((n) => <option key={n} value={n} className="num">{n}</option>)}
           </select>
         </label>
-        <div className="flex items-center gap-1">
-          <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => onPage(page - 1)}>السابق</Button>
-          <Button variant="outline" size="sm" disabled={page >= pages} onClick={() => onPage(page + 1)}>التالي</Button>
+        <div className="flex items-center gap-1.5">
+          <Button
+            variant="outline"
+            size="sm"
+            className="tactile-btn h-8 px-3 text-xs"
+            disabled={page <= 1}
+            onClick={() => {
+              sound.click();
+              onPage(page - 1);
+            }}
+          >
+            السابق
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="tactile-btn h-8 px-3 text-xs"
+            disabled={page >= pages}
+            onClick={() => {
+              sound.click();
+              onPage(page + 1);
+            }}
+          >
+            التالي
+          </Button>
         </div>
       </div>
     </div>
