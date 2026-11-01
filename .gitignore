@@ -45,3 +45,12 @@ frontend/node_modules/
 frontend/dist/
 vendora-erp-design.zip
 request.txt
+
+# secrets & local artifacts
+firebase-service-account.json
+backups/
+ssl/
+.vercel/
+*.zip
+request.txt
+deploy-logs/

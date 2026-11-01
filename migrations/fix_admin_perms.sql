@@ -1,1 +1,0 @@
-UPDATE users SET permissions = '["pos","sales","quotations","inventory","operations","customers","reports","archive","payroll","users","settings","shifts","finance","admin"]'::jsonb WHERE role = 'admin';

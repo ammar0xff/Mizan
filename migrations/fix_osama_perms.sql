@@ -1,1 +1,0 @@
-UPDATE users SET permissions = '["pos","sales","quotations","inventory","operations","customers","reports","archive","payroll","users","settings","shifts","finance","admin"]'::jsonb WHERE permissions IS NULL OR permissions::text NOT LIKE '%shifts%' OR permissions::text NOT LIKE '%finance%';
