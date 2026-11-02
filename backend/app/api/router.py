@@ -70,3 +70,15 @@ router.include_router(admoon.router)
 from app.modules.pharmacy.router import router as pharmacy_router
 router.include_router(pharmacy_router)
 
+from app.modules.restaurant.router import router as restaurant_router
+router.include_router(restaurant_router, prefix="/restaurant")
+
+from app.modules.school.router import router as school_router
+router.include_router(school_router, prefix="/school")
+
+from app.modules.services.router import router as services_router
+router.include_router(services_router, prefix="/services")
+
+
+
+

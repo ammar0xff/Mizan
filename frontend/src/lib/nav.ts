@@ -4,6 +4,7 @@ import {
   BarChart3,
   Blocks,
   Boxes,
+  Briefcase,
   ChefHat,
   Clock,
   Contact,
@@ -47,6 +48,9 @@ export const NAV_ITEMS: NavItem[] = [
 
   // School & Education Specialized Injections
   { to: "/school/students", label: "شؤون الطلاب والأقساط", perm: "customers", module: "school", icon: GraduationCap, group: "main" },
+
+  // Consulting & Professional Services
+  { to: "/services", label: "الخدمات والاستشارات", perm: "customers", module: "services", icon: Briefcase, group: "main" },
 
   // Stock & Inventory
   { to: "/products", label: "المنتجات", perm: "inventory", module: "inventory", icon: Package, group: "stock" },

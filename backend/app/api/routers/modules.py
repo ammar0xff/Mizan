@@ -173,9 +173,49 @@ import io
 import json
 import zipfile
 from fastapi import File, UploadFile
-from app.modules.restaurant.router import get_restaurant_tables as db_get_tables, update_table_status as db_update_table, UpdateTableStatusRequest
+from app.modules.restaurant.router import (
+    get_restaurant_tables as db_get_tables,
+    update_table_status as db_update_table,
+    UpdateTableStatusRequest,
+    get_restaurant_recipes as db_get_recipes,
+    create_restaurant_recipe as db_create_recipe,
+    CreateRecipeRequest,
+    backflush_deplete_order_ingredients as db_deplete_order,
+    DepleteOrderRequest,
+    get_food_waste_logs as db_get_waste,
+    record_food_waste as db_record_waste,
+    RecordWasteRequest,
+    get_restaurant_summary as db_get_summary,
+)
 from app.modules.kitchen_display.router import get_kitchen_orders as db_get_kitchen_orders, update_kitchen_ticket_status as db_update_ticket, UpdateTicketStatusRequest
-from app.modules.school.router import get_school_students as db_get_students, pay_student_installment as db_pay_installment, PayInstallmentRequest
+from app.modules.school.router import (
+    get_school_students as db_get_students,
+    pay_student_installment as db_pay_installment,
+    PayInstallmentRequest,
+    get_attendance_records as db_get_attendance,
+    record_attendance as db_record_attendance,
+    RecordAttendanceRequest,
+    get_grade_records as db_get_grades,
+    record_grade as db_record_grade,
+    RecordGradeRequest,
+    get_school_summary as db_get_school_summary,
+)
+from app.modules.services.router import (
+    get_engagements as db_get_engagements,
+    create_engagement as db_create_engagement,
+    CreateEngagementRequest,
+    execute_retainer_drawdown as db_execute_drawdown,
+    DrawdownRequest,
+    get_timesheets as db_get_timesheets,
+    create_timesheet_entry as db_create_timesheet,
+    CreateTimesheetRequest,
+    get_statutory_deadlines as db_get_deadlines,
+    create_statutory_deadline as db_create_deadline,
+    CreateDeadlineRequest,
+    update_deadline_status as db_update_deadline_status,
+    UpdateDeadlineStatusRequest,
+    get_consulting_summary as db_get_consulting_summary,
+)
 
 
 @router.post("/upload")
@@ -275,6 +315,69 @@ async def update_kitchen_ticket_status(
     return await db_update_ticket(ticket_id=ticket_id, data=data, db=db, _user=_user)
 
 
+@router.get("/restaurant/recipes")
+async def get_restaurant_recipes(
+    db: AsyncSession = Depends(get_db),
+    _mod=Depends(require_module("restaurant")),
+    _user=Depends(get_current_user),
+):
+    """Retrieve menu recipes with BOM and food cost analysis."""
+    return await db_get_recipes(db=db, _user=_user)
+
+
+@router.post("/restaurant/recipes")
+async def create_restaurant_recipe(
+    data: CreateRecipeRequest,
+    db: AsyncSession = Depends(get_db),
+    _mod=Depends(require_module("restaurant")),
+    _user=Depends(get_current_user),
+):
+    """Create a new recipe with BOM ingredients."""
+    return await db_create_recipe(data=data, db=db, _user=_user)
+
+
+@router.post("/restaurant/recipes/deplete")
+async def backflush_deplete_order_ingredients(
+    data: DepleteOrderRequest,
+    db: AsyncSession = Depends(get_db),
+    _mod=Depends(require_module("restaurant")),
+    _user=Depends(get_current_user),
+):
+    """Backflushing stock depletion based on recipe BOM."""
+    return await db_deplete_order(data=data, db=db, _user=_user)
+
+
+@router.get("/restaurant/waste")
+async def get_food_waste_logs(
+    db: AsyncSession = Depends(get_db),
+    _mod=Depends(require_module("restaurant")),
+    _user=Depends(get_current_user),
+):
+    """Retrieve food waste and spoilage records."""
+    return await db_get_waste(db=db, _user=_user)
+
+
+@router.post("/restaurant/waste")
+async def record_food_waste(
+    data: RecordWasteRequest,
+    db: AsyncSession = Depends(get_db),
+    _mod=Depends(require_module("restaurant")),
+    _user=Depends(get_current_user),
+):
+    """Record a food waste or spoilage event."""
+    return await db_record_waste(data=data, db=db, _user=_user)
+
+
+@router.get("/restaurant/summary")
+async def get_restaurant_summary(
+    db: AsyncSession = Depends(get_db),
+    _mod=Depends(require_module("restaurant")),
+    _user=Depends(get_current_user),
+):
+    """Summary dashboard metrics for restaurant management."""
+    return await db_get_summary(db=db, _user=_user)
+
+
 @router.get("/school/students")
 async def get_school_students(
     db: AsyncSession = Depends(get_db),
@@ -295,3 +398,156 @@ async def pay_school_student_installment(
 ):
     """Record a student tuition installment payment in PostgreSQL."""
     return await db_pay_installment(student_id=student_id, data=data, db=db, _user=_user)
+
+
+@router.get("/school/attendance")
+async def get_school_attendance(
+    date: str | None = None,
+    grade: str | None = None,
+    db: AsyncSession = Depends(get_db),
+    _mod=Depends(require_module("school")),
+    _user=Depends(get_current_user),
+):
+    """Retrieve student attendance and absence records."""
+    return await db_get_attendance(date=date, grade=grade, db=db, _user=_user)
+
+
+@router.post("/school/attendance")
+async def record_school_attendance(
+    data: RecordAttendanceRequest,
+    db: AsyncSession = Depends(get_db),
+    _mod=Depends(require_module("school")),
+    _user=Depends(get_current_user),
+):
+    """Record student daily or period attendance."""
+    return await db_record_attendance(data=data, db=db, _user=_user)
+
+
+@router.get("/school/grades")
+async def get_school_grades(
+    db: AsyncSession = Depends(get_db),
+    _mod=Depends(require_module("school")),
+    _user=Depends(get_current_user),
+):
+    """Retrieve school gradebook and exam results."""
+    return await db_get_grades(db=db, _user=_user)
+
+
+@router.post("/school/grades")
+async def record_school_grade(
+    data: RecordGradeRequest,
+    db: AsyncSession = Depends(get_db),
+    _mod=Depends(require_module("school")),
+    _user=Depends(get_current_user),
+):
+    """Record exam score in gradebook."""
+    return await db_record_grade(data=data, db=db, _user=_user)
+
+
+@router.get("/school/summary")
+async def get_school_summary(
+    db: AsyncSession = Depends(get_db),
+    _mod=Depends(require_module("school")),
+    _user=Depends(get_current_user),
+):
+    """School executive KPIs summary."""
+    return await db_get_school_summary(db=db, _user=_user)
+
+
+@router.get("/services/engagements")
+async def get_services_engagements(
+    db: AsyncSession = Depends(get_db),
+    _mod=Depends(require_module("services")),
+    _user=Depends(get_current_user),
+):
+    """Retrieve professional services engagements and retainers."""
+    return await db_get_engagements(db=db, _user=_user)
+
+
+@router.post("/services/engagements")
+async def create_services_engagement(
+    data: CreateEngagementRequest,
+    db: AsyncSession = Depends(get_db),
+    _mod=Depends(require_module("services")),
+    _user=Depends(get_current_user),
+):
+    """Create a new client engagement."""
+    return await db_create_engagement(data=data, db=db, _user=_user)
+
+
+@router.post("/services/engagements/{engagement_id}/drawdown")
+async def execute_services_drawdown(
+    engagement_id: str,
+    data: DrawdownRequest,
+    db: AsyncSession = Depends(get_db),
+    _mod=Depends(require_module("services")),
+    _user=Depends(get_current_user),
+):
+    """Draw down deliverable value from client retainer balance."""
+    return await db_execute_drawdown(engagement_id=engagement_id, data=data, db=db, _user=_user)
+
+
+@router.get("/services/timesheets")
+async def get_services_timesheets(
+    db: AsyncSession = Depends(get_db),
+    _mod=Depends(require_module("services")),
+    _user=Depends(get_current_user),
+):
+    """Retrieve consultant timesheets and billable totals."""
+    return await db_get_timesheets(db=db, _user=_user)
+
+
+@router.post("/services/timesheets")
+async def create_services_timesheet(
+    data: CreateTimesheetRequest,
+    db: AsyncSession = Depends(get_db),
+    _mod=Depends(require_module("services")),
+    _user=Depends(get_current_user),
+):
+    """Log a consultant billable timesheet entry."""
+    return await db_create_timesheet(data=data, db=db, _user=_user)
+
+
+@router.get("/services/deadlines")
+async def get_services_deadlines(
+    db: AsyncSession = Depends(get_db),
+    _mod=Depends(require_module("services")),
+    _user=Depends(get_current_user),
+):
+    """Retrieve compliance and statutory filing deadlines."""
+    return await db_get_deadlines(db=db, _user=_user)
+
+
+@router.post("/services/deadlines")
+async def create_services_deadline(
+    data: CreateDeadlineRequest,
+    db: AsyncSession = Depends(get_db),
+    _mod=Depends(require_module("services")),
+    _user=Depends(get_current_user),
+):
+    """Add a new statutory compliance deadline."""
+    return await db_create_deadline(data=data, db=db, _user=_user)
+
+
+@router.post("/services/deadlines/{deadline_id}/status")
+async def update_services_deadline_status(
+    deadline_id: str,
+    data: UpdateDeadlineStatusRequest,
+    db: AsyncSession = Depends(get_db),
+    _mod=Depends(require_module("services")),
+    _user=Depends(get_current_user),
+):
+    """Update statutory filing status."""
+    return await db_update_deadline_status(deadline_id=deadline_id, data=data, db=db, _user=_user)
+
+
+@router.get("/services/summary")
+async def get_services_summary(
+    db: AsyncSession = Depends(get_db),
+    _mod=Depends(require_module("services")),
+    _user=Depends(get_current_user),
+):
+    """Executive KPIs summary for professional services."""
+    return await db_get_consulting_summary(db=db, _user=_user)
+
+

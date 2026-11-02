@@ -51,6 +51,7 @@ import app.modules.kitchen_display.models
 import app.modules.restaurant.models
 import app.modules.school.models
 import app.modules.pharmacy.models
+import app.modules.services.models
 from app.api.router import router
 from app.core.config import settings
 from app.core.tenancy import install_tenancy_events

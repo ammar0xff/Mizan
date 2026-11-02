@@ -20,6 +20,7 @@ const ModulesPage = lazy(() => import("@/features/modules/ModulesPage"));
 const RestaurantTablesPage = lazy(() => import("@/features/restaurant/RestaurantTablesPage"));
 const SchoolStudentsPage = lazy(() => import("@/features/school/SchoolStudentsPage"));
 const PharmacyPage = lazy(() => import("@/features/pharmacy/PharmacyPage"));
+const ServicesConsultingPage = lazy(() => import("@/features/services/ServicesConsultingPage"));
 const TenantScopeLayout = lazy(() => import("@/features/marketing/TenantScopeLayout"));
 
 // Admoon SaaS Control Plane Pages
@@ -141,6 +142,7 @@ function renderErpChildRoutes() {
       <Route path="restaurant/kitchen" element={<Guard perm="" module="restaurant"><RestaurantTablesPage /></Guard>} />
       <Route path="school/students" element={<Guard perm="" module="school"><SchoolStudentsPage /></Guard>} />
       <Route path="pharmacy" element={<Guard perm="" module="pharmacy"><PharmacyPage /></Guard>} />
+      <Route path="services" element={<Guard perm="" module="services"><ServicesConsultingPage /></Guard>} />
       <Route path="login" element={<LoginPage />} />
     </>
   );
