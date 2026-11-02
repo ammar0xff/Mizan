@@ -19,6 +19,7 @@ const OperationsPage = lazy(() => import("@/features/operations/OperationsPage")
 const ModulesPage = lazy(() => import("@/features/modules/ModulesPage"));
 const RestaurantTablesPage = lazy(() => import("@/features/restaurant/RestaurantTablesPage"));
 const SchoolStudentsPage = lazy(() => import("@/features/school/SchoolStudentsPage"));
+const PharmacyPage = lazy(() => import("@/features/pharmacy/PharmacyPage"));
 const TenantScopeLayout = lazy(() => import("@/features/marketing/TenantScopeLayout"));
 
 // Admoon SaaS Control Plane Pages
@@ -139,6 +140,7 @@ function renderErpChildRoutes() {
       <Route path="restaurant/tables" element={<Guard perm="" module="restaurant"><RestaurantTablesPage /></Guard>} />
       <Route path="restaurant/kitchen" element={<Guard perm="" module="restaurant"><RestaurantTablesPage /></Guard>} />
       <Route path="school/students" element={<Guard perm="" module="school"><SchoolStudentsPage /></Guard>} />
+      <Route path="pharmacy" element={<Guard perm="" module="pharmacy"><PharmacyPage /></Guard>} />
       <Route path="login" element={<LoginPage />} />
     </>
   );
@@ -187,8 +189,14 @@ export default function App() {
         {renderErpChildRoutes()}
       </Route>
 
-      {/* Pattern 2: Direct Tenant Root at /:tenantSlug/* (e.g. /monset-gym/pos) */}
-      <Route path="/:tenantSlug" element={<Page><TenantScopeLayout /></Page>}>
+      {/* Direct top-level routes when authenticated without slug (e.g. desktop offline .exe, direct nav) */}
+      <Route
+        element={
+          <Guard perm="">
+            <Shell />
+          </Guard>
+        }
+      >
         {renderErpChildRoutes()}
       </Route>
 
@@ -200,14 +208,8 @@ export default function App() {
         <Route index element={<Page><DashboardPage /></Page>} />
       </Route>
 
-      {/* Direct top-level routes when authenticated without slug (e.g. desktop offline .exe) */}
-      <Route
-        element={
-          <Guard perm="">
-            <Shell />
-          </Guard>
-        }
-      >
+      {/* Pattern 2: Direct Tenant Company Root at /:tenantSlug/* (e.g. /monset-gym/pos) */}
+      <Route path="/:tenantSlug" element={<Page><TenantScopeLayout /></Page>}>
         {renderErpChildRoutes()}
       </Route>
 

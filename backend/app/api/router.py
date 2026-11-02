@@ -67,3 +67,6 @@ router.include_router(updater_router.router)
 router.include_router(modules.router)
 router.include_router(admoon.router)
 
+from app.modules.pharmacy.router import router as pharmacy_router
+router.include_router(pharmacy_router)
+

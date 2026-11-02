@@ -1,0 +1,43 @@
+{
+  "id": "pharmacy",
+  "name": "إدارة الصيدليات والأدوية والروشتات",
+  "name_en": "Pharmacy & Medication Dispensing",
+  "category": "vertical_sectors",
+  "version": "1.0.0",
+  "icon": "Pill",
+  "description": "منظومة صيدلانية متكاملة: دليل الأدوية بالاسم العلمي والتجاري، تتبع الصلاحيات والتشغيلات (FEFO)، صرف الروشتات، التأمين الطبي، وسجل الأدوية المراقبة (جدول).",
+  "target_business_types": ["pharmacy", "healthcare", "hospital"],
+  "dependencies": ["inventory", "invoicing"],
+  "is_core": false,
+  "badge": "Phase 1 Core",
+  "nav_items": [
+    {
+      "label": "الصيدلية والروشتات",
+      "path": "/pharmacy",
+      "icon": "Pill"
+    }
+  ],
+  "settings_schema": [
+    {
+      "key": "fefo_enforced",
+      "label": "إلزام الصرف بنظام الأسبق انتهاءً أولاً (FEFO)",
+      "type": "boolean",
+      "default": true,
+      "description": "إلزام نقاط البيع بصرف التشغيلة الأقرب لتاريخ الانتهاء وتنبيه الكاشير"
+    },
+    {
+      "key": "near_expiry_days",
+      "label": "حد تنبيه قرب انتهاء الصلاحية (أيام)",
+      "type": "number",
+      "default": 90,
+      "description": "عدد الأيام المتبقية قبل الانتهاء لإظهار تنبيه برتقالي في المخزن ونقاط البيع"
+    },
+    {
+      "key": "controlled_requires_nid",
+      "label": "إلزام تسجيل الرقم القومي في أدوية الجدول",
+      "type": "boolean",
+      "default": true,
+      "description": "منع صرف الأدوية المراقبة وجدول المخدرات بدون بطاقة الرقم القومي ورقم ترخيص الطبيب"
+    }
+  ]
+}

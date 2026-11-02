@@ -140,6 +140,17 @@ MODULE_CATALOG: dict[str, ModuleManifest] = {
         description="عروض الأسعار، عقود المشاريع، المطالبات والفوترة الزمنية، ومتابعة تسليمات العملاء.",
         dependencies=["core", "finance"],
     ),
+    "pharmacy": ModuleManifest(
+        id="pharmacy",
+        name="الصيدليات وصرف الأدوية",
+        name_en="Pharmacy & Dispensing",
+        category="healthcare",
+        version="1.0.0",
+        icon="Pill",
+        badge="جديد",
+        description="دليل الأدوية والبدائل التكافؤية (INN)، صرف الروشتات والتأمين الطبي، تتبع الصلاحيات (FEFO)، ودفتر الأدوية المراقبة.",
+        dependencies=["core", "inventory", "pos", "finance"],
+    ),
 }
 
 # Pre-packaged Business Vertical Bundles
@@ -179,6 +190,15 @@ BUSINESS_PRESETS: dict[str, BusinessPreset] = {
         badge="مخصص للمشاريع",
         description="إصدار عروض الأسعار والمطالبات، تتبع عقود المشاريع والخدمات الاستشارية، وإدارة فريق العمل.",
         modules=["core", "services", "finance", "hr"],
+    ),
+    "pharmacy": BusinessPreset(
+        id="pharmacy",
+        name="صيدليات، مستودعات أدوية، ومراكز صرف",
+        name_en="Pharmacy & Pharmaceuticals",
+        icon="Pill",
+        badge="مخصص للصيدليات",
+        description="إدارة صرف الروشتات، حساب نسب التأمين، تتبع تواريخ الصلاحية والتشغيلات (FEFO)، وبدائل الأدوية العلمية، ودفتر السموم والمخدرات.",
+        modules=["core", "inventory", "pos", "finance", "pharmacy"],
     ),
 }
 

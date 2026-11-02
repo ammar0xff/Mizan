@@ -30,7 +30,7 @@ async function request<T>(
 ): Promise<T> {
   const token = useAuth.getState().token;
   const headers: Record<string, string> = {};
-  if (token && !isSameOrigin()) headers["Authorization"] = `Bearer ${token}`;
+  if (token) headers["Authorization"] = `Bearer ${token}`;
 
   let body: string | FormData | undefined;
   if (opts.json !== undefined) {

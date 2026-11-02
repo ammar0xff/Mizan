@@ -11,6 +11,7 @@ import {
   LayoutDashboard,
   LayoutGrid,
   Package,
+  Pill,
   Receipt,
   Settings,
   ShieldCheck,
@@ -36,6 +37,9 @@ export const NAV_ITEMS: NavItem[] = [
   { to: "/pos", label: "نقطة البيع", perm: "pos", module: "pos", icon: ShoppingCart, group: "main" },
   { to: "/sales", label: "المبيعات", perm: "sales", module: "pos", icon: Receipt, group: "main" },
   { to: "/shifts", label: "الورديات", perm: "shifts", module: "pos", icon: Clock, group: "main" },
+
+  // Pharmacy & Dispensing Specialized Injections
+  { to: "/pharmacy", label: "الصيدلية والروشتات", perm: "pos", module: "pharmacy", icon: Pill, group: "main" },
 
   // Restaurant & Hospitality Specialized Injections
   { to: "/restaurant/tables", label: "إدارة الطاولات والصالة", perm: "pos", module: "restaurant", icon: LayoutGrid, group: "main" },
