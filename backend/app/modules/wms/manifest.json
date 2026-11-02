@@ -1,0 +1,36 @@
+{
+  "id": "wms",
+  "name": "المستودعات والخدمات اللوجستية للغير (3PL WMS)",
+  "name_en": "3PL & Warehouse Management System",
+  "category": "distribution_logistics",
+  "target_business_types": ["wms_3pl", "wholesale", "logistics", "fulfillment"],
+  "version": "1.0.0",
+  "icon": "Warehouse",
+  "badge": "جديد",
+  "description": "إدارة مستودعات العملاء المتعددين وتتبع ملكية المخزون لكل عميل، المواقع التخزينية المرمزة (Zone-Aisle-Rack-Shelf-Bin)، خوارزميات التخزين الذكي (Putaway)، موجات الجمع والانتقاء (Wave & Batch Picking)، استلام البضائع وفروقات الفحص (OS&D)، العبور السريع (Cross-Docking)، والفوترة الشهرية لرسوم التخزين والمناولة.",
+  "dependencies": ["core", "inventory", "finance"],
+  "is_core": false,
+  "nav_items": [
+    {
+      "label": "إدارة المستودعات 3PL",
+      "path": "/wms",
+      "icon": "Warehouse"
+    }
+  ],
+  "settings_schema": [
+    {
+      "key": "strict_client_isolation",
+      "label": "عزل بيانات مخزون العملاء الصارم",
+      "type": "boolean",
+      "default": true,
+      "description": "منع أي عامل مستودع أو نظام من صرف مخزون يخص عميل لحساب طلبية عميل آخر."
+    },
+    {
+      "key": "default_pallet_daily_storage_rate",
+      "label": "سعر التخزين اليومي الافتراضي للباليتة (EGP)",
+      "type": "number",
+      "default": 15.0,
+      "description": "التعرفة اليومية لاحتساب رسوم إشغال المواقع التخزينية للباليت الواحد."
+    }
+  ]
+}

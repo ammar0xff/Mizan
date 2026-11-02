@@ -79,6 +79,14 @@ router.include_router(school_router, prefix="/school")
 from app.modules.services.router import router as services_router
 router.include_router(services_router, prefix="/services")
 
+from app.modules.wholesale.router import router as wholesale_router
+router.include_router(wholesale_router)
 
+from app.modules.logistics.router import router as logistics_router
+router.include_router(logistics_router)
 
+from app.modules.wms.router import router as wms_router
+router.include_router(wms_router)
 
+from app.modules.ecommerce.router import router as ecommerce_router
+router.include_router(ecommerce_router)

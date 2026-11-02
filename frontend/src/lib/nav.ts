@@ -20,6 +20,8 @@ import {
   Truck,
   UserCog,
   Wallet,
+  Globe,
+  Warehouse,
   type LucideIcon,
 } from "lucide-react";
 
@@ -51,6 +53,12 @@ export const NAV_ITEMS: NavItem[] = [
 
   // Consulting & Professional Services
   { to: "/services", label: "الخدمات والاستشارات", perm: "customers", module: "services", icon: Briefcase, group: "main" },
+
+  // Distribution & Supply Chain (Phase 2)
+  { to: "/wholesale", label: "تجارة الجملة والتوزيع", perm: "sales", module: "wholesale", icon: Boxes, group: "stock" },
+  { to: "/logistics", label: "الشحن والأسطول", perm: "operations", module: "logistics", icon: Truck, group: "main" },
+  { to: "/wms", label: "مستودعات 3PL", perm: "inventory", module: "wms", icon: Warehouse, group: "stock" },
+  { to: "/ecommerce", label: "المتجر الإلكتروني", perm: "sales", module: "ecommerce", icon: Globe, group: "main" },
 
   // Stock & Inventory
   { to: "/products", label: "المنتجات", perm: "inventory", module: "inventory", icon: Package, group: "stock" },

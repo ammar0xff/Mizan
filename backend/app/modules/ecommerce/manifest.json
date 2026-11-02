@@ -1,0 +1,36 @@
+{
+  "id": "ecommerce",
+  "name": "التجارة الإلكترونية والربط متعدد القنوات",
+  "name_en": "Omnichannel E-commerce & Fulfillment",
+  "category": "distribution_logistics",
+  "target_business_types": ["ecommerce", "retail", "wholesale"],
+  "version": "1.0.0",
+  "icon": "Globe",
+  "badge": "جديد",
+  "description": "ربط ومزامنة منصات المتاجر الرقمية (Shopify, WooCommerce, Amazon, Noon, Salla, Zid)، إدارة مخزون الأمان العازل لمنع الإفراط في البيع، خط سير تجهيز الشحنات Pick-Pack-Ship وتوليد بوالص الشحن، تسوية بوابات الدفع الإلكتروني، إدارة متحصلات الدفع عند الاستلام (COD)، طلبات الاسترجاع والاستبدال (RMA)، واسترجاع السلات المتروكة.",
+  "dependencies": ["core", "inventory", "finance"],
+  "is_core": false,
+  "nav_items": [
+    {
+      "label": "إدارة التجارة الإلكترونية",
+      "path": "/ecommerce",
+      "icon": "Globe"
+    }
+  ],
+  "settings_schema": [
+    {
+      "key": "inventory_buffer_percent",
+      "label": "نسبة مخزون الأمان العازل للمنصات الرقمية (%)",
+      "type": "number",
+      "default": 10,
+      "description": "حجز نسبة مئوية من الرصيد الفعلي كمخزون أمان لحماية المتجر من البيع الزائد عبر المنصات المتعددة."
+    },
+    {
+      "key": "auto_abandoned_cart_reminder",
+      "label": "إرسال تذكيرات آلية بالسلات المتروكة",
+      "type": "boolean",
+      "default": true,
+      "description": "تفعيل التنبيهات الآلية عبر الواتساب أو البريد الإلكتروني مع كوبون خصم لاستعادة العملاء."
+    }
+  ]
+}

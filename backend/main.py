@@ -52,6 +52,10 @@ import app.modules.restaurant.models
 import app.modules.school.models
 import app.modules.pharmacy.models
 import app.modules.services.models
+import app.modules.wholesale.models
+import app.modules.logistics.models
+import app.modules.wms.models
+import app.modules.ecommerce.models
 from app.api.router import router
 from app.core.config import settings
 from app.core.tenancy import install_tenancy_events

@@ -1,0 +1,36 @@
+{
+  "id": "logistics",
+  "name": "الشحن والخدمات اللوجستية وإدارة الأساطيل",
+  "name_en": "Logistics & Fleet Transportation",
+  "category": "distribution_logistics",
+  "target_business_types": ["logistics", "freight", "transportation", "courier"],
+  "version": "1.0.0",
+  "icon": "Truck",
+  "badge": "جديد",
+  "description": "تتبع دورة حياة الشحنات وبوالص الشحن (AWB / BoL)، تخطيط المسارات وإدارة أساطيل المركبات، امتثال السائقين، تسعير الشحن والرسوم التكميلية، إثبات التسليم الرقمي (e-POD)، ومصاريف التشغيل والوقود.",
+  "dependencies": ["core", "finance"],
+  "is_core": false,
+  "nav_items": [
+    {
+      "label": "إدارة الشحن والأسطول",
+      "path": "/logistics",
+      "icon": "Truck"
+    }
+  ],
+  "settings_schema": [
+    {
+      "key": "volumetric_divisor",
+      "label": "معامل الوزن الحجمي القياسي للشحن البري",
+      "type": "number",
+      "default": 3000,
+      "description": "معامل قسمة الحجم (سم³) لاحتساب الوزن الحجمي المفوتر (3000 للنقل البري، 5000 للنقل الجوي)."
+    },
+    {
+      "key": "require_driver_epod",
+      "label": "إلزام السائق بإثبات التسليم الرقمي e-POD",
+      "type": "boolean",
+      "default": true,
+      "description": "منع تحويل حالة الشحنة إلى (تم التسليم) دون توقيع العميل وصورة إثبات الاستلام."
+    }
+  ]
+}
