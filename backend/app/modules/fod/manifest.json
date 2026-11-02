@@ -1,0 +1,26 @@
+{
+  "id": "fod",
+  "name": "الصناعات الغذائية والمشروبات (HACCP/FEFO)",
+  "name_en": "Food & Beverage Process Manufacturing",
+  "version": "1.0.0",
+  "description": "إدارة وصفات الخلط والتصنيع المستمر، تتبع التشغيلات العكسي والتصاعدي، نقاط التحكم الحرجة (HACCP)، إدارة تواريخ الصلاحية (FEFO)، واختبارات الاستدعاء التجريبي Mock Recall",
+  "category": "industry",
+  "author": "Vendora Industrial Solutions",
+  "dependencies": ["core", "inventory", "purchases"],
+  "permissions": [
+    "fod.view",
+    "fod.batches.create",
+    "fod.batches.execute",
+    "fod.recipes.manage",
+    "fod.haccp.log",
+    "fod.recall.simulate"
+  ],
+  "routes": [
+    {
+      "path": "/fod",
+      "label": "الصناعات الغذائية (HACCP/FEFO)",
+      "icon": "Utensils",
+      "permission": "fod.view"
+    }
+  ]
+}

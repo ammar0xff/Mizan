@@ -30,6 +30,10 @@ import {
   Scissors,
   Stethoscope,
   Wrench,
+  Factory,
+  Utensils,
+  FlaskConical,
+  Printer,
   type LucideIcon,
 } from "lucide-react";
 
@@ -77,6 +81,12 @@ export const NAV_ITEMS: NavItem[] = [
   { to: "/salon", label: "الصالون والتجميل والسبا", perm: "pos", module: "salon", icon: Scissors, group: "main" },
   { to: "/agency", label: "الدعاية والإعلام والترجمة", perm: "operations", module: "agency", icon: Palette, group: "main" },
   { to: "/field-service", label: "الصيانة الميدانية (FSM)", perm: "operations", module: "field_service", icon: Wrench, group: "stock" },
+
+  // Manufacturing & Industrial (Phase 4)
+  { to: "/mfg", label: "التصنيع الميكانيكي (BOM/MRP)", perm: "operations", module: "mfg", icon: Factory, group: "stock" },
+  { to: "/fod", label: "الصناعات الغذائية (HACCP)", perm: "operations", module: "fod", icon: Utensils, group: "stock" },
+  { to: "/phm", label: "التصنيع الدوائي (cGMP)", perm: "operations", module: "phm", icon: FlaskConical, group: "stock" },
+  { to: "/prn", label: "الطباعة والتغليف (Job Dockets)", perm: "operations", module: "prn", icon: Printer, group: "stock" },
 
   // Stock & Inventory
   { to: "/products", label: "المنتجات", perm: "inventory", module: "inventory", icon: Package, group: "stock" },

@@ -1,0 +1,26 @@
+{
+  "id": "prn",
+  "name": "الطباعة والتغليف والكرتون (Job Dockets/MHR)",
+  "name_en": "Printing & Packaging ERP",
+  "version": "1.0.0",
+  "description": "تذاكر الشغل والطباعة Job Dockets، تخطيط المونتاج وتوزيع الصفحات Imposition، جدولة ماكينات الطباعة وتغيير الأحبار، تكلفة ساعات التشغيل الميكانيكية MHR، ومخزون الورق والكرتون بالجراماج GSM",
+  "category": "industry",
+  "author": "Vendora Industrial Solutions",
+  "dependencies": ["core", "inventory", "purchases", "mfg"],
+  "permissions": [
+    "prn.view",
+    "prn.jobs.create",
+    "prn.jobs.execute",
+    "prn.imposition.manage",
+    "prn.finishing.track",
+    "prn.mhr.cost"
+  ],
+  "routes": [
+    {
+      "path": "/prn",
+      "label": "الطباعة والتغليف (Job Dockets)",
+      "icon": "Printer",
+      "permission": "prn.view"
+    }
+  ]
+}

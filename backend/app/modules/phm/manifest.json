@@ -1,0 +1,26 @@
+{
+  "id": "phm",
+  "name": "التصنيع الدوائي والكيميائي (cGMP / 21 CFR Part 11)",
+  "name_en": "Pharmaceutical & Chemical GMP Manufacturing",
+  "version": "1.0.0",
+  "description": "سجلات التشغيل الإلكترونية (EBR)، الإفراج الدوائي QP Batch Release، إدارة الحيود والإجراءات التصحيحية (CAPA)، التوقيعات الرقمية 21 CFR Part 11، واختبارات الثباتية والتأهيل",
+  "category": "industry",
+  "author": "Vendora LifeSciences Solutions",
+  "dependencies": ["core", "inventory", "purchases", "pharmacy"],
+  "permissions": [
+    "phm.view",
+    "phm.ebr.sign",
+    "phm.qp.release",
+    "phm.deviations.manage",
+    "phm.capa.manage",
+    "phm.calibration.manage"
+  ],
+  "routes": [
+    {
+      "path": "/phm",
+      "label": "التصنيع الدوائي (cGMP)",
+      "icon": "ShieldCheck",
+      "permission": "phm.view"
+    }
+  ]
+}

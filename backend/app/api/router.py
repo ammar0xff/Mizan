@@ -115,3 +115,15 @@ router.include_router(agency_router)
 from app.modules.field_service.router import router as field_service_router
 router.include_router(field_service_router)
 
+from app.modules.mfg.router import router as mfg_router
+router.include_router(mfg_router)
+
+from app.modules.fod.router import router as fod_router
+router.include_router(fod_router)
+
+from app.modules.phm.router import router as phm_router
+router.include_router(phm_router)
+
+from app.modules.prn.router import router as prn_router
+router.include_router(prn_router)
+

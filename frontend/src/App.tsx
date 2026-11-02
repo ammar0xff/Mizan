@@ -33,6 +33,10 @@ const GymFitnessPage = lazy(() => import("@/features/gym/GymFitnessPage"));
 const SalonSpaPage = lazy(() => import("@/features/salon/SalonSpaPage"));
 const CreativeAgencyPage = lazy(() => import("@/features/agency/CreativeAgencyPage"));
 const FieldServicePage = lazy(() => import("@/features/field_service/FieldServicePage"));
+const DiscreteManufacturingPage = lazy(() => import("@/features/mfg/DiscreteManufacturingPage"));
+const FoodProcessingPage = lazy(() => import("@/features/fod/FoodProcessingPage"));
+const PharmaGmpPage = lazy(() => import("@/features/phm/PharmaGmpPage"));
+const PrintingPackagingPage = lazy(() => import("@/features/prn/PrintingPackagingPage"));
 const TenantScopeLayout = lazy(() => import("@/features/marketing/TenantScopeLayout"));
 
 // Admoon SaaS Control Plane Pages
@@ -167,6 +171,10 @@ function renderErpChildRoutes() {
       <Route path="salon" element={<Guard perm="" module="salon"><SalonSpaPage /></Guard>} />
       <Route path="agency" element={<Guard perm="" module="agency"><CreativeAgencyPage /></Guard>} />
       <Route path="field-service" element={<Guard perm="" module="field_service"><FieldServicePage /></Guard>} />
+      <Route path="mfg" element={<Guard perm="" module="mfg"><DiscreteManufacturingPage /></Guard>} />
+      <Route path="fod" element={<Guard perm="" module="fod"><FoodProcessingPage /></Guard>} />
+      <Route path="phm" element={<Guard perm="" module="phm"><PharmaGmpPage /></Guard>} />
+      <Route path="prn" element={<Guard perm="" module="prn"><PrintingPackagingPage /></Guard>} />
       <Route path="login" element={<LoginPage />} />
     </>
   );
