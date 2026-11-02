@@ -20,8 +20,16 @@ import {
   Truck,
   UserCog,
   Wallet,
-  Globe,
   Warehouse,
+  Globe,
+  Compass,
+  Dumbbell,
+  Hotel,
+  Palette,
+  Scale,
+  Scissors,
+  Stethoscope,
+  Wrench,
   type LucideIcon,
 } from "lucide-react";
 
@@ -59,6 +67,16 @@ export const NAV_ITEMS: NavItem[] = [
   { to: "/logistics", label: "الشحن والأسطول", perm: "operations", module: "logistics", icon: Truck, group: "main" },
   { to: "/wms", label: "مستودعات 3PL", perm: "inventory", module: "wms", icon: Warehouse, group: "stock" },
   { to: "/ecommerce", label: "المتجر الإلكتروني", perm: "sales", module: "ecommerce", icon: Globe, group: "main" },
+
+  // Service-Based Systems (Phase 3)
+  { to: "/clinic", label: "العيادات والمستشفيات", perm: "customers", module: "clinic", icon: Stethoscope, group: "main" },
+  { to: "/law", label: "المحاماة والقضايا", perm: "customers", module: "law", icon: Scale, group: "main" },
+  { to: "/travel", label: "السياحة وحجوزات السفر", perm: "sales", module: "travel", icon: Compass, group: "main" },
+  { to: "/hospitality", label: "الفنادق والضيافة (PMS)", perm: "operations", module: "hospitality", icon: Hotel, group: "main" },
+  { to: "/gym", label: "الجيم واللياقة البدنية", perm: "customers", module: "gym", icon: Dumbbell, group: "main" },
+  { to: "/salon", label: "الصالون والتجميل والسبا", perm: "pos", module: "salon", icon: Scissors, group: "main" },
+  { to: "/agency", label: "الدعاية والإعلام والترجمة", perm: "operations", module: "agency", icon: Palette, group: "main" },
+  { to: "/field-service", label: "الصيانة الميدانية (FSM)", perm: "operations", module: "field_service", icon: Wrench, group: "stock" },
 
   // Stock & Inventory
   { to: "/products", label: "المنتجات", perm: "inventory", module: "inventory", icon: Package, group: "stock" },

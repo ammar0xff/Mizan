@@ -1,0 +1,13 @@
+{
+  "id": "salon",
+  "name": "إدارة صالونات التجميل والسبا والعناية الشخصية",
+  "name_en": "Salon, Spa & Personal Care Management",
+  "category": "sports_wellness",
+  "version": "1.0.0",
+  "icon": "Scissors",
+  "badge": "Phase 3",
+  "description": "دليل الخدمات وفترات التنفيذ (Duration Matrix)، أجندة مصففي الشعر والغرف، تتبع تركيبات الصبغة وسجل العميلات، محرك عمولات المصففين، واستهلاك المواد الخام.",
+  "dependencies": ["core", "finance", "inventory"],
+  "business_types": ["salon", "spa", "beauty_center", "barbershop"],
+  "required_permissions": ["salon:view", "salon:manage", "salon:stylist", "salon:cashier"]
+}

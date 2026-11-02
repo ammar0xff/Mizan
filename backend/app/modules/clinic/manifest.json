@@ -1,29 +1,13 @@
 {
   "id": "clinic",
-  "name": "العيادات والمراكز الطبية",
-  "name_en": "Clinics & Healthcare",
+  "name": "العيادات والمراكز الطبية والمستشفيات",
+  "name_en": "Healthcare & Clinic/Hospital ERP",
   "category": "healthcare",
-  "target_business_types": ["clinic", "medical_center", "dental", "lab", "polyclinic"],
   "version": "1.0.0",
   "icon": "Stethoscope",
-  "badge": "قريباً",
-  "description": "سجلات المرضى الطبية، حجز المواعيد والكشوفات، الروشتات، وصرف الأدوية والمستلزمات الطبية.",
+  "badge": "Phase 3",
+  "description": "السجلات الطبية الإلكترونية (EMR)، حجز المواعيد والكشوفات، الروشتات الرقمية (e-Rx)، الفحوصات والتحاليل، وإدارة غرف وأسِرّة التنويم والمطالبات التأمينية.",
   "dependencies": ["core", "inventory", "finance"],
-  "is_core": false,
-  "settings_schema": [
-    {
-      "key": "slot_duration_minutes",
-      "label": "المدة الافتراضية للكشف الطبي (دقائق)",
-      "type": "number",
-      "default": 20,
-      "description": "الفترة المحجوزة في جدول الطبيب لكل مريض بشكل افتراضي."
-    },
-    {
-      "key": "require_patient_phone",
-      "label": "إلزام تسجيل رقم هاتف المريض",
-      "type": "boolean",
-      "default": true,
-      "description": "اشتراط وجود رقم جوال لإتمام حجز الكشف لإرسال رسائل التذكير."
-    }
-  ]
+  "business_types": ["clinic", "hospital", "polyclinic", "dental_center"],
+  "required_permissions": ["clinic:view", "clinic:manage", "clinic:doctor", "clinic:nurse"]
 }

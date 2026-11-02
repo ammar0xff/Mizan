@@ -38,6 +38,14 @@ export const RESERVED_ROOT_PATHS = new Set([
   "logistics",
   "wms",
   "ecommerce",
+  "clinic",
+  "law",
+  "travel",
+  "hospitality",
+  "gym",
+  "salon",
+  "agency",
+  "field-service",
 ]);
 
 export interface TenantRouteInfo {

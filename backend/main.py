@@ -56,6 +56,14 @@ import app.modules.wholesale.models
 import app.modules.logistics.models
 import app.modules.wms.models
 import app.modules.ecommerce.models
+import app.modules.clinic.models
+import app.modules.law.models
+import app.modules.travel.models
+import app.modules.hospitality.models
+import app.modules.gym.models
+import app.modules.salon.models
+import app.modules.agency.models
+import app.modules.field_service.models
 from app.api.router import router
 from app.core.config import settings
 from app.core.tenancy import install_tenancy_events

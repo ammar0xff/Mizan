@@ -1,0 +1,13 @@
+{
+  "id": "hospitality",
+  "name": "إدارة الفنادق والمنتجعات ونظام الضيافة (PMS)",
+  "name_en": "Hotel Property Management System (PMS)",
+  "category": "tourism_hospitality",
+  "version": "1.0.0",
+  "icon": "Building",
+  "badge": "Phase 3",
+  "description": "إدارة الغرف الفندقية، الحجوزات والتسكين (Check-in/Check-out)، فواتير النزلاء (Folio)، مهام التدبير المنزلي (Housekeeping)، والتدقيق الليلي (Night Audit).",
+  "dependencies": ["core", "finance", "restaurant"],
+  "business_types": ["hotel", "resort", "boutique_hotel", "serviced_apartments"],
+  "required_permissions": ["hotel:view", "hotel:manage", "hotel:frontdesk", "hotel:housekeeper"]
+}

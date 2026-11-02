@@ -25,6 +25,14 @@ const WholesaleDistributionPage = lazy(() => import("@/features/wholesale/Wholes
 const LogisticsFleetPage = lazy(() => import("@/features/logistics/LogisticsFleetPage"));
 const WmsWarehousePage = lazy(() => import("@/features/wms/WmsWarehousePage"));
 const EcommerceHubPage = lazy(() => import("@/features/ecommerce/EcommerceHubPage"));
+const ClinicHealthcarePage = lazy(() => import("@/features/clinic/ClinicHealthcarePage"));
+const LawPracticePage = lazy(() => import("@/features/law/LawPracticePage"));
+const TravelTourismPage = lazy(() => import("@/features/travel/TravelTourismPage"));
+const HospitalityPmsPage = lazy(() => import("@/features/hospitality/HospitalityPmsPage"));
+const GymFitnessPage = lazy(() => import("@/features/gym/GymFitnessPage"));
+const SalonSpaPage = lazy(() => import("@/features/salon/SalonSpaPage"));
+const CreativeAgencyPage = lazy(() => import("@/features/agency/CreativeAgencyPage"));
+const FieldServicePage = lazy(() => import("@/features/field_service/FieldServicePage"));
 const TenantScopeLayout = lazy(() => import("@/features/marketing/TenantScopeLayout"));
 
 // Admoon SaaS Control Plane Pages
@@ -151,6 +159,14 @@ function renderErpChildRoutes() {
       <Route path="logistics" element={<Guard perm="" module="logistics"><LogisticsFleetPage /></Guard>} />
       <Route path="wms" element={<Guard perm="" module="wms"><WmsWarehousePage /></Guard>} />
       <Route path="ecommerce" element={<Guard perm="" module="ecommerce"><EcommerceHubPage /></Guard>} />
+      <Route path="clinic" element={<Guard perm="" module="clinic"><ClinicHealthcarePage /></Guard>} />
+      <Route path="law" element={<Guard perm="" module="law"><LawPracticePage /></Guard>} />
+      <Route path="travel" element={<Guard perm="" module="travel"><TravelTourismPage /></Guard>} />
+      <Route path="hospitality" element={<Guard perm="" module="hospitality"><HospitalityPmsPage /></Guard>} />
+      <Route path="gym" element={<Guard perm="" module="gym"><GymFitnessPage /></Guard>} />
+      <Route path="salon" element={<Guard perm="" module="salon"><SalonSpaPage /></Guard>} />
+      <Route path="agency" element={<Guard perm="" module="agency"><CreativeAgencyPage /></Guard>} />
+      <Route path="field-service" element={<Guard perm="" module="field_service"><FieldServicePage /></Guard>} />
       <Route path="login" element={<LoginPage />} />
     </>
   );

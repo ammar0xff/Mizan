@@ -90,3 +90,28 @@ router.include_router(wms_router)
 
 from app.modules.ecommerce.router import router as ecommerce_router
 router.include_router(ecommerce_router)
+
+from app.modules.clinic.router import router as clinic_router
+router.include_router(clinic_router)
+
+from app.modules.law.router import router as law_router
+router.include_router(law_router)
+
+from app.modules.travel.router import router as travel_router
+router.include_router(travel_router)
+
+from app.modules.hospitality.router import router as hospitality_router
+router.include_router(hospitality_router)
+
+from app.modules.gym.router import router as gym_router
+router.include_router(gym_router)
+
+from app.modules.salon.router import router as salon_router
+router.include_router(salon_router)
+
+from app.modules.agency.router import router as agency_router
+router.include_router(agency_router)
+
+from app.modules.field_service.router import router as field_service_router
+router.include_router(field_service_router)
+

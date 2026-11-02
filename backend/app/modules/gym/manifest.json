@@ -1,0 +1,13 @@
+{
+  "id": "gym",
+  "name": "إدارة الأندية الصحية والجيم والأنشطة الرياضية",
+  "name_en": "Gym & Fitness Sports Club Management",
+  "category": "sports_wellness",
+  "version": "1.0.0",
+  "icon": "Dumbbell",
+  "badge": "Phase 3",
+  "description": "إدارة عضويات الجيم واشتراكات اللياقة، بوابات العبور الإلكترونية (Turnstiles)، باقات التدريب الخاص (PT)، جداول الحصص الجماعية، وقياسات InBody والتقييم البدني.",
+  "dependencies": ["core", "finance"],
+  "business_types": ["gym", "sports_club", "fitness_center", "crossfit_box"],
+  "required_permissions": ["gym:view", "gym:manage", "gym:trainer", "gym:frontdesk"]
+}

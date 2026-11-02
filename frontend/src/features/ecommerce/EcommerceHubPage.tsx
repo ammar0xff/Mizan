@@ -15,7 +15,6 @@ import {
   ShoppingCart,
   DollarSign,
   Search,
-  CheckCircle2,
   RefreshCw,
   Send,
   Truck,

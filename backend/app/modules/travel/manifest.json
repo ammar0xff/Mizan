@@ -1,0 +1,13 @@
+{
+  "id": "travel",
+  "name": "إدارة شركات السياحة ووكالات السفر والحجوزات",
+  "name_en": "Travel & Tourism Agency Management",
+  "category": "tourism_hospitality",
+  "version": "1.0.0",
+  "icon": "Plane",
+  "badge": "Phase 3",
+  "description": "بناء وتصميم البرامج السياحية (Itinerary Builder)، حجوزات الطيران والفنادق ومنافست الركاب، محرك العمولات والهوامش، وخزينة الجوازات والتأشيرات.",
+  "dependencies": ["core", "finance"],
+  "business_types": ["travel_agency", "tour_operator", "hajj_umrah_agency"],
+  "required_permissions": ["travel:view", "travel:manage", "travel:ticketing", "travel:coordinator"]
+}

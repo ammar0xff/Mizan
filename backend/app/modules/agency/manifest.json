@@ -1,0 +1,13 @@
+{
+  "id": "agency",
+  "name": "إدارة وكالات الدعاية والإعلام والترجمة المعتمدة",
+  "name_en": "Creative, Media & Translation Agency Management",
+  "category": "professional_services",
+  "version": "1.0.0",
+  "icon": "Palette",
+  "badge": "Phase 3",
+  "description": "إدارة المشاريع الإبداعية ومراحل التسليم (Deliverables & Sprints)، سعة وإشغال فريق العمل (Resource Capacity)، تتبع استهلاك ساعات العقود الشهرية (Retainers) وتنبيهات تجاوز النطاق، والترجمة المعتمدة وحساب الكلمات.",
+  "dependencies": ["core", "finance"],
+  "business_types": ["creative_agency", "translation_bureau", "media_house", "digital_marketing"],
+  "required_permissions": ["agency:view", "agency:manage", "agency:pm", "agency:creative"]
+}

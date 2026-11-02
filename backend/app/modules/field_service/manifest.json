@@ -1,0 +1,13 @@
+{
+  "id": "field_service",
+  "name": "إدارة الصيانة الميدانية والتشغيل والخدمات الفنية (FSM)",
+  "name_en": "Field Service & Maintenance Management",
+  "category": "services",
+  "version": "1.0.0",
+  "icon": "Wrench",
+  "badge": "Phase 3",
+  "description": "أوامر العمل الميدانية وبلاغات الأعطال، تتبع الفنيين ومواقع العمل (GPS Dispatch)، مخزون سيارات الصيانة (Van Inventory)، اتفاقيات مستوى الخدمة (SLA)، وسجل صيانة المعدات.",
+  "dependencies": ["core", "inventory", "finance"],
+  "business_types": ["field_service", "hvac_maintenance", "elevator_service", "appliance_repair"],
+  "required_permissions": ["fsm:view", "fsm:manage", "fsm:dispatcher", "fsm:technician"]
+}
