@@ -1,0 +1,11 @@
+{
+  "id": "agr",
+  "name": "الزراعة التجارية وإدارة المزارع والمحاصيل (Agriculture & Livestock)",
+  "name_en": "Commercial Agriculture & Farm Management ERP",
+  "category": "infrastructure_projects",
+  "version": "1.0.0",
+  "icon": "Tractor",
+  "badge": "Phase 5",
+  "description": "هيكل الأراضي والبيفوتات الزراعية بالمعيار الفداني، تخطيط المواسم والمحاصيل، برامج التسميد والمكافحة وفترات الأمان (PHI)، دورات الري وعدادات الآبار، تتبع الحصاد والتصدير (GlobalG.A.P.)، والإنتاج الحيواني.",
+  "dependencies": ["core", "inventory", "purchases", "finance"]
+}

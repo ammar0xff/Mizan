@@ -34,6 +34,10 @@ import {
   Utensils,
   FlaskConical,
   Printer,
+  HardHat,
+  Building2,
+  Tractor,
+  Zap,
   type LucideIcon,
 } from "lucide-react";
 
@@ -87,6 +91,12 @@ export const NAV_ITEMS: NavItem[] = [
   { to: "/fod", label: "الصناعات الغذائية (HACCP)", perm: "operations", module: "fod", icon: Utensils, group: "stock" },
   { to: "/phm", label: "التصنيع الدوائي (cGMP)", perm: "operations", module: "phm", icon: FlaskConical, group: "stock" },
   { to: "/prn", label: "الطباعة والتغليف (Job Dockets)", perm: "operations", module: "prn", icon: Printer, group: "stock" },
+
+  // Projects & Infrastructure (Phase 5)
+  { to: "/cst", label: "المقاولات العامة والإنشاءات", perm: "operations", module: "cst", icon: HardHat, group: "stock" },
+  { to: "/rec", label: "التطوير العقاري وإدارة الأملاك", perm: "operations", module: "rec", icon: Building2, group: "main" },
+  { to: "/agr", label: "الزراعة وإدارة المزارع", perm: "operations", module: "agr", icon: Tractor, group: "stock" },
+  { to: "/eng", label: "محطات الطاقة وتوليد الكهرباء", perm: "operations", module: "eng", icon: Zap, group: "stock" },
 
   // Stock & Inventory
   { to: "/products", label: "المنتجات", perm: "inventory", module: "inventory", icon: Package, group: "stock" },

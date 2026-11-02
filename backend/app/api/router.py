@@ -127,3 +127,15 @@ router.include_router(phm_router)
 from app.modules.prn.router import router as prn_router
 router.include_router(prn_router)
 
+from app.modules.cst.router import router as cst_router
+router.include_router(cst_router)
+
+from app.modules.rec.router import router as rec_router
+router.include_router(rec_router)
+
+from app.modules.agr.router import router as agr_router
+router.include_router(agr_router)
+
+from app.modules.eng.router import router as eng_router
+router.include_router(eng_router)
+

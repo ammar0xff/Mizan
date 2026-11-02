@@ -1,0 +1,11 @@
+{
+  "id": "cst",
+  "name": "المقاولات العامة والإنشاءات الهندسية (Construction & Contracting)",
+  "name_en": "Construction & Contracting ERP",
+  "category": "infrastructure_projects",
+  "version": "1.0.0",
+  "icon": "HardHat",
+  "badge": "Phase 5",
+  "description": "إدارة المشروعات الإنشائية وهيكل تجزئة العمل (WBS)، جداول الكميات (BOQ)، مستخلصات التنفيذ (IPC) ونسب الاستقطاع وحسن التنفيذ، أوامر التغيير والمطالبات، وتتبع المعدات الثقيلة وعمالة الموقع.",
+  "dependencies": ["core", "inventory", "purchases", "finance", "hr"]
+}

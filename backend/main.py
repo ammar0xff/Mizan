@@ -68,6 +68,10 @@ import app.modules.mfg.models
 import app.modules.fod.models
 import app.modules.phm.models
 import app.modules.prn.models
+import app.modules.cst.models
+import app.modules.rec.models
+import app.modules.agr.models
+import app.modules.eng.models
 from app.api.router import router
 from app.core.config import settings
 from app.core.tenancy import install_tenancy_events
