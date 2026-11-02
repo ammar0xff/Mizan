@@ -38,6 +38,11 @@ import {
   Building2,
   Tractor,
   Zap,
+  Landmark,
+  Shield,
+  Building,
+  Ticket,
+  Flame,
   type LucideIcon,
 } from "lucide-react";
 
@@ -97,6 +102,13 @@ export const NAV_ITEMS: NavItem[] = [
   { to: "/rec", label: "التطوير العقاري وإدارة الأملاك", perm: "operations", module: "rec", icon: Building2, group: "main" },
   { to: "/agr", label: "الزراعة وإدارة المزارع", perm: "operations", module: "agr", icon: Tractor, group: "stock" },
   { to: "/eng", label: "محطات الطاقة وتوليد الكهرباء", perm: "operations", module: "eng", icon: Zap, group: "stock" },
+
+  // Specialized & Public Sector (Phase 6)
+  { to: "/bnk", label: "البنوك والمؤسسات المصرفية", perm: "finance", module: "bnk", icon: Landmark, group: "money" },
+  { to: "/ins", label: "التأمين وإدارة المطالبات", perm: "finance", module: "ins", icon: Shield, group: "money" },
+  { to: "/gov", label: "القطاع الحكومي والمنظمات", perm: "operations", module: "gov", icon: Building, group: "main" },
+  { to: "/ent", label: "الترفيه والفعاليات والملاهي", perm: "operations", module: "ent", icon: Ticket, group: "main" },
+  { to: "/oil", label: "عمليات البترول والغاز", perm: "operations", module: "oil", icon: Flame, group: "stock" },
 
   // Stock & Inventory
   { to: "/products", label: "المنتجات", perm: "inventory", module: "inventory", icon: Package, group: "stock" },

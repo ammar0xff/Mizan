@@ -1,0 +1,16 @@
+{
+  "id": "bnk",
+  "name": "الأنظمة المصرفية والتمويل (Banking & Financial Institutions)",
+  "description": "الحسابات المصرفية الموحدة (CIF)، سجل العمليات اللحظية، محرك الإقراض والتقييم الائتماني (I-Score)، مراقبة غسيل الأموال (AML) وتطبيق معايير بازل III و IFRS 9.",
+  "version": "1.0.0",
+  "category": "specialized",
+  "dependencies": ["core", "finance"],
+  "routes_prefix": "/bnk",
+  "features": [
+    "unified_customer_cif",
+    "core_transaction_ledger",
+    "loan_underwriting_ecl",
+    "aml_transaction_monitoring",
+    "treasury_forex_trading"
+  ]
+}

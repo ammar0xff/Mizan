@@ -54,6 +54,11 @@ export const RESERVED_ROOT_PATHS = new Set([
   "rec",
   "agr",
   "eng",
+  "bnk",
+  "ins",
+  "gov",
+  "ent",
+  "oil",
 ]);
 
 export interface TenantRouteInfo {

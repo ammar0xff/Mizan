@@ -1,0 +1,16 @@
+{
+  "id": "gov",
+  "name": "القطاع الحكومي والمنظمات غير الهادفة للربح (Government & NGOs)",
+  "description": "محاسبة الصناديق والمخصصات (Fund Accounting)، الارتباط المالي وحجز الموازنة (Encumbrance)، إدارة المنح والجهات المانحة، سجل المستفيدين وتوزيع المساعدات، والمناقصات العامة.",
+  "version": "1.0.0",
+  "category": "specialized",
+  "dependencies": ["core", "finance"],
+  "routes_prefix": "/gov",
+  "features": [
+    "fund_accounting_restrictions",
+    "budget_encumbrance_control",
+    "donor_grant_lifecycle",
+    "beneficiary_aid_distribution",
+    "public_tenders_procurement"
+  ]
+}

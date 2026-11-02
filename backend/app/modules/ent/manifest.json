@@ -1,0 +1,16 @@
+{
+  "id": "ent",
+  "name": "الترفيه والفعاليات والملاهي (Entertainment & Events)",
+  "description": "كتالوج الفعاليات والعروض، حجز المقاعد المدرجة (VIP / Gold)، بوابات الدخول السريع (Turnstiles)، بطاقات الألعاب الإلكترونية (RFID Arcade)، ومنافذ بيع الأغذية (Concessions POS).",
+  "version": "1.0.0",
+  "category": "specialized",
+  "dependencies": ["core", "pos"],
+  "routes_prefix": "/ent",
+  "features": [
+    "event_session_catalog",
+    "tiered_seat_ticketing",
+    "turnstile_barcode_scanning",
+    "rfid_arcade_game_cards",
+    "concessions_kds_sync"
+  ]
+}

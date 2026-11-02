@@ -139,3 +139,18 @@ router.include_router(agr_router)
 from app.modules.eng.router import router as eng_router
 router.include_router(eng_router)
 
+from app.modules.bnk.router import router as bnk_router
+router.include_router(bnk_router)
+
+from app.modules.ins.router import router as ins_router
+router.include_router(ins_router)
+
+from app.modules.gov.router import router as gov_router
+router.include_router(gov_router)
+
+from app.modules.ent.router import router as ent_router
+router.include_router(ent_router)
+
+from app.modules.oil.router import router as oil_router
+router.include_router(oil_router)
+

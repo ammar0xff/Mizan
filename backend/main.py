@@ -72,6 +72,11 @@ import app.modules.cst.models
 import app.modules.rec.models
 import app.modules.agr.models
 import app.modules.eng.models
+import app.modules.bnk.models
+import app.modules.ins.models
+import app.modules.gov.models
+import app.modules.ent.models
+import app.modules.oil.models
 from app.api.router import router
 from app.core.config import settings
 from app.core.tenancy import install_tenancy_events
