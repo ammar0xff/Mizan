@@ -1,15 +1,15 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CalendarSync, Plus, Upload, UserPlus, Usb } from "lucide-react";
+import { Plus, UserPlus } from "lucide-react";
 import { Skeleton } from "@/components/kit/skeleton";
 import { api } from "@/lib/api";
-import { D, date as fmtDate, dateTime, money, moneyEGP } from "@/lib/format";
-import { Badge, Button, Card, Empty, ErrorBox, Input, Modal, Select, Spinner } from "@/components/ui";
+import { D, date as fmtDate, money, moneyEGP } from "@/lib/format";
+import { Badge, Button, Empty, ErrorBox, Input, Modal, Select, Spinner } from "@/components/ui";
+import { BiometricDevicesManager } from "./components/BiometricDevicesManager";
 
 interface Employee { id: string; emp_code: string | null; name: string; position: string | null; monthly_salary: string; is_active: boolean }
 interface Attendance { id: string; employee_id: string; work_date: string; check_in: string | null; check_out: string | null; status: string }
 interface Advance { id: string; employee_id: string; amount: string; date: string; note: string | null }
-interface SyncLog { id: string; synced_at: string; status: string; fetched: number; added: number; updated: number; message: string | null }
 
 export default function HrPage() {
   const [tab, setTab] = useState("employees");
@@ -35,7 +35,7 @@ export default function HrPage() {
       {tab === "employees" && <EmployeesTab />}
       {tab === "attendance" && <AttendanceTab />}
       {tab === "advances" && <AdvancesTab />}
-      {tab === "sync" && <SyncTab />}
+      {tab === "sync" && <BiometricDevicesManager />}
     </div>
   );
 }
@@ -307,92 +307,4 @@ function AdvancesTab() {
   );
 }
 
-function SyncTab() {
-  const qc = useQueryClient();
-  const fileRef = useState<HTMLInputElement | null>(null)[0];
-  const inputRef = { current: fileRef } as React.RefObject<HTMLInputElement | null>;
 
-  const log = useQuery({ queryKey: ["hr-sync-log"], queryFn: () => api.get<SyncLog[]>("/hr/sync-log") });
-
-  const sync = useMutation({
-    mutationFn: () => api.post("/hr/sync-device", {}),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["hr-sync-log"] }),
-  });
-  const importCsv = useMutation({
-    mutationFn: (file: File) => {
-      const fd = new FormData();
-      fd.append("file", file);
-      return api.postForm("/hr/attendance/import-csv", fd);
-    },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["hr-attendance"] }); },
-  });
-
-  return (
-    <div className="flex flex-col gap-6">
-      <Card className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <p className="flex items-center gap-2 font-bold"><Usb size={18} /> جهاز البصمة (ZK)</p>
-          <p className="text-sm text-muted">يزامن سجلات الحضور من جهاز ZK المتصل بالشبكة المحلية</p>
-        </div>
-        <Button onClick={() => sync.mutate()} disabled={sync.isPending}>
-          {sync.isPending ? <Spinner /> : <><CalendarSync size={16} /> مزامنة الآن</>}
-        </Button>
-      </Card>
-      {sync.isError && <ErrorBox message={(sync.error as Error).message} />}
-      {sync.isSuccess && (
-        <Card className="border-success/40 bg-success/10 p-4 text-sm">
-          تمت المحاولة — راجع السجل بالأسفل. (إذا فشل الاتصال بالجهاز سيظهر خطأ 502 وهو متوقع عند عدم توفر الجهاز)
-        </Card>
-      )}
-
-      <Card className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <p className="flex items-center gap-2 font-bold"><Upload size={18} /> استيراد حضور من ملف CSV</p>
-          <p className="text-sm text-muted">يدعم ملفات الحضور التصديرية (Jibble وغيرها)</p>
-        </div>
-        <input
-          ref={inputRef}
-          type="file"
-          accept=".csv"
-          className="hidden"
-          onChange={(e) => { const f = e.target.files?.[0]; if (f) importCsv.mutate(f); }}
-        />
-        <Button variant="outline" onClick={() => inputRef.current?.click()} disabled={importCsv.isPending}>
-          {importCsv.isPending ? <Spinner /> : "اختر ملف CSV"}
-        </Button>
-      </Card>
-      {importCsv.isError && <ErrorBox message={(importCsv.error as Error).message} />}
-      {importCsv.isSuccess && <Card className="border-success/40 bg-success/10 p-4 text-sm">تم الاستيراد بنجاح</Card>}
-
-      <Card>
-        <h2 className="mb-3 font-bold">سجل المزامنة</h2>
-        {log.isLoading ? <div className="grid place-items-center p-6"><Spinner /></div>
-        : !log.data?.length ? <Empty text="لا يوجد سجل" />
-        : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-line text-xs text-muted">
-                <th className="p-2 text-start">الوقت</th>
-                <th className="p-2 text-start">الحالة</th>
-                <th className="p-2 text-start">جُلب</th>
-                <th className="p-2 text-start">أُضيف</th>
-                <th className="p-2 text-start">حُدّث</th>
-              </tr>
-            </thead>
-            <tbody>
-              {log.data.slice(0, 15).map((l) => (
-                <tr key={l.id} className="border-b border-line/60 last:border-0">
-                  <td className="p-2 text-xs text-muted">{dateTime(l.synced_at)}</td>
-                  <td className="p-2"><Badge tone={l.status === "success" ? "success" : "danger"}>{l.status}</Badge></td>
-                  <td className="num p-2">{l.fetched}</td>
-                  <td className="num p-2">{l.added}</td>
-                  <td className="num p-2">{l.updated}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </Card>
-    </div>
-  );
-}

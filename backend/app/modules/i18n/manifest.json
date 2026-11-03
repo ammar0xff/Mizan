@@ -1,0 +1,12 @@
+{
+  "id": "i18n",
+  "name": "تعدد اللغات والترجمة الدولية",
+  "name_en": "Internationalization & Multi-language",
+  "category": "system",
+  "version": "1.0.0",
+  "icon": "Languages",
+  "description": "التبديل بين العربية والإنجليزية مع التكييف الديناميكي لاتجاه الواجهة (RTL / LTR) والخطوط.",
+  "target_business_types": ["all"],
+  "dependencies": ["core"],
+  "is_core": true
+}

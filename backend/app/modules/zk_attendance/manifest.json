@@ -1,0 +1,35 @@
+{
+  "id": "zk_attendance",
+  "name": "ربط أجهزة البصمة والحضور الذكي",
+  "name_en": "Biometric Attendance & ZK Device Sync",
+  "category": "hr",
+  "version": "1.0.0",
+  "icon": "Fingerprint",
+  "description": "ربط أجهزة تسجيل الحضور بالبصمة والوجه (ZK Teco وغيرها)، فحص الاتصال بالشبكة المحلية، ومزامنة سجلات الحضور والانصراف تلقائياً مع استيراد ملفات CSV.",
+  "target_business_types": ["all"],
+  "dependencies": ["hr"],
+  "is_core": false,
+  "settings_schema": [
+    {
+      "key": "default_device_port",
+      "label": "منفذ اتصال ZK الافتراضي",
+      "type": "number",
+      "default": 4370,
+      "description": "منفذ الاتصال القياسي لأجهزة ZKTeco عبر الشبكة المحلية (UDP/TCP 4370)"
+    },
+    {
+      "key": "auto_sync_interval_mins",
+      "label": "المزامنة التلقائية كل (بالدقائق)",
+      "type": "number",
+      "default": 60,
+      "description": "الفترة الزمنية بين كل عملية سحب تلقائية لسجلات البصمة"
+    },
+    {
+      "key": "allow_manual_csv_import",
+      "label": "السماح بالاستيراد اليدوي عبر ملفات CSV/Excel",
+      "type": "boolean",
+      "default": true,
+      "description": "إمكانية رفع ملفات البصمة المستخرجة بالفلاشة USB مباشرة"
+    }
+  ]
+}

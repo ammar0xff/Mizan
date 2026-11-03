@@ -25,6 +25,7 @@ import {
   Trash2,
   TriangleAlert,
   X,
+  Keyboard,
 } from "lucide-react";
 import { Skeleton } from "@/components/kit/skeleton";
 import { api, ApiError, openPrintDoc } from "@/lib/api";
@@ -36,6 +37,9 @@ import { Kbd } from "@/components/kit/kbd";
 import { enqueueSale, listQueue, replayQueue, removeSale, type QueuedSale } from "@/lib/offline";
 import { sound } from "@/lib/sound";
 import { useBranch } from "@/components/AppShell";
+import { useBarcodeScanner } from "./hooks/useBarcodeScanner";
+import { ThermalReceiptSettingsModal } from "./components/ThermalReceiptSettingsModal";
+import { PosKeyboardShortcutsModal } from "./components/PosKeyboardShortcutsModal";
 
 interface Warehouse { id: string; name: string }
 interface Product {
@@ -172,6 +176,18 @@ export default function PosPage() {
     barcodeRef.current?.focus();
   }
 
+  const [hardwareModalOpen, setHardwareModalOpen] = useState(false);
+  const [shortcutsModalOpen, setShortcutsModalOpen] = useState(false);
+
+  // Global continuous hardware barcode gun scanner listener
+  useBarcodeScanner({
+    onScan: (code) => {
+      scanBarcode(code);
+    },
+    playSound: true,
+    enabled: !payOpen && !resumeOpen && !confirmClear && !hardwareModalOpen && !shortcutsModalOpen,
+  });
+
   const unitPrice = (p: Product) => D(mode === "wholesale" ? p.wholesale_price : p.retail_price);
   const total = useMemo(
     () => cart.reduce((s, i) => s.plus(unitPrice(i.product).times(i.qty).minus(D(i.discount))), D(0)),
@@ -259,8 +275,14 @@ export default function PosPage() {
           sound.click();
           setConfirmClear(true);
         }
+      } else if (e.key === "F10") {
+        e.preventDefault();
+        sound.click();
+        setHardwareModalOpen(true);
       } else if (e.key === "Escape") {
-        if (payOpen) setPayOpen(false);
+        if (hardwareModalOpen) setHardwareModalOpen(false);
+        else if (shortcutsModalOpen) setShortcutsModalOpen(false);
+        else if (payOpen) setPayOpen(false);
         else if (resumeOpen) setResumeOpen(false);
         else if (confirmClear) setConfirmClear(false);
         else if (!typing && cart.length) {
@@ -270,7 +292,7 @@ export default function PosPage() {
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [cart, payOpen, resumeOpen, confirmClear, shiftMissing, shift.isLoading, total, isCredit, customerId]);
+  }, [cart, payOpen, resumeOpen, confirmClear, hardwareModalOpen, shortcutsModalOpen, shiftMissing, shift.isLoading, total, isCredit, customerId]);
 
   const body = () =>
     buildSaleBody({
@@ -400,6 +422,24 @@ export default function PosPage() {
           </span>
           <span className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground transition cursor-pointer" onClick={() => cart.length && setConfirmClear(true)}>
             <Kbd>F9</Kbd> تفريغ
+          </span>
+          <span className="text-border">|</span>
+          <span className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground transition cursor-pointer" onClick={() => { sound.click(); setHardwareModalOpen(true); }}>
+            <Kbd>F10</Kbd> <Printer size={12} /> الطابعة والورق
+          </span>
+          <button
+            onClick={() => { sound.click(); setShortcutsModalOpen(true); }}
+            className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground transition px-1.5 py-0.5 rounded hover:bg-white/5"
+            title="دليل اختصارات الكاشير"
+          >
+            <Keyboard size={12} /> الاختصارات
+          </button>
+          <span
+            className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
+            title="القارئ يعمل باستمرار في الخلفية"
+          >
+            <span className="size-1.5 rounded-full bg-emerald-500 animate-ping" />
+            القارئ نشط
           </span>
         </div>
 
@@ -1253,6 +1293,18 @@ export default function PosPage() {
           </div>
         </div>
       </Modal>
+
+      {/* POS Thermal Hardware & Paper Config Modal */}
+      <ThermalReceiptSettingsModal
+        isOpen={hardwareModalOpen}
+        onClose={() => setHardwareModalOpen(false)}
+      />
+
+      {/* Cashier Velocity Keyboard Shortcuts Cheat Sheet */}
+      <PosKeyboardShortcutsModal
+        isOpen={shortcutsModalOpen}
+        onClose={() => setShortcutsModalOpen(false)}
+      />
     </div>
   );
 }

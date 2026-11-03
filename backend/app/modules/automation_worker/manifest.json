@@ -1,0 +1,35 @@
+{
+  "id": "automation_worker",
+  "name": "محرك الأتمتة والمهام الخلفية",
+  "name_en": "Background Automation & Cron Worker",
+  "category": "system",
+  "version": "1.0.0",
+  "icon": "Cpu",
+  "description": "جدولة وأتمتة العمليات اليومية: إغلاق الورديات التلقائي منتصف الليل، متابعة اشتراكات المستأجرين، وإنشاء التقارير والتنبيهات الدورية.",
+  "target_business_types": ["all"],
+  "dependencies": ["core"],
+  "is_core": false,
+  "settings_schema": [
+    {
+      "key": "auto_close_shifts_enabled",
+      "label": "إغلاق الورديات التلقائي منتصف الليل",
+      "type": "boolean",
+      "default": true,
+      "description": "إغلاق الورديات المفتوحة لأكثر من 24 ساعة آلياً مع تقرير Z"
+    },
+    {
+      "key": "subscription_enforcement_enabled",
+      "label": "المتابعة التلقائية لصلاحية الاشتراكات",
+      "type": "boolean",
+      "default": true,
+      "description": "التحقق من انتهاء فترات التجربة أو التجديد وإرسال التنبيهات"
+    },
+    {
+      "key": "daily_digest_enabled",
+      "label": "ملخص العمليات والتنبيهات اليومي",
+      "type": "boolean",
+      "default": true,
+      "description": "إنشاء إشعار يومي بملخص الإيرادات والنواقص"
+    }
+  ]
+}

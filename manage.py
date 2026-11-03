@@ -153,6 +153,22 @@ class Docker:
             desc=f"Running on db: {' '.join(cmd)}",
         )
 
+    def exec_backend(
+        self,
+        cmd: list[str],
+        *,
+        input_data: str | None = None,
+        capture: bool = False,
+        check: bool = True,
+    ) -> subprocess.CompletedProcess:
+        return self._run(
+            ["exec", "-T", self.settings.backend_service, *cmd],
+            input_data=input_data,
+            capture=capture,
+            check=check,
+            desc=f"Running on backend: {' '.join(cmd)}",
+        )
+
     def pg_dump(self, extra_args: list[str] | None = None) -> bytes:
         result = self._run(
             [
@@ -514,6 +530,34 @@ def cmd_build_exe(settings: Settings, docker: Docker, opts: argparse.Namespace) 
     cmd_build_appimage(settings, docker, opts)
 
 
+def cmd_cron(settings: Settings, docker: Docker, opts: argparse.Namespace) -> None:
+    """Run scheduled background automation jobs."""
+    job = getattr(opts, "job", None)
+    lines = [
+        "import asyncio",
+        "import main",
+        "from app.db.base import AsyncSessionLocal",
+        "from app.modules.automation_worker.runner import run_all_jobs, run_job",
+        "",
+        "async def run():",
+        "    async with AsyncSessionLocal() as db:",
+    ]
+    if job:
+        lines.append(f"        res = await run_job('{job}', db)")
+        lines.append("        print('Job Result:', res)")
+    else:
+        lines.append("        results = await run_all_jobs(db)")
+        lines.append("        for r in results:")
+        lines.append("            msg = r.get('message') or r.get('error')")
+        lines.append("            print(f'[{r[\"status\"].upper()}] {r[\"title\"]} ({r[\"duration_ms\"]}ms): {msg}')")
+    lines.append("")
+    lines.append("asyncio.run(run())")
+    script = "\n".join(lines)
+    log.info("⚡ Executing background automation jobs in backend container...")
+    docker.exec_backend(["python3", "-c", script])
+
+
+
 # ─── Internal helpers ──────────────────────────────────────────────────────
 
 
@@ -640,6 +684,9 @@ def _build_parser() -> argparse.ArgumentParser:
             sub.add_argument("--release", action="store_true", help="Build release APK (requires signing)")
         if cmd_name in ("build-apk", "build-appimage", "build-exe"):
             sub.add_argument("--no-icons", action="store_true", help="Skip icon generation from settings")
+        if cmd_name == "cron":
+            sub.add_argument("--job", help="Specific automation job to execute (e.g. auto_close_shifts, generate_daily_metrics_digest)")
+            sub.add_argument("--run-all", action="store_true", help="Execute all registered background jobs")
 
     return parser
 
@@ -676,6 +723,7 @@ COMMANDS: dict[str, dict] = {
     "build-apk":     {"fn": cmd_build_apk,     "help": "Build Android APK via Capacitor + Gradle"},
     "build-appimage":{"fn": cmd_build_appimage,"help": "Build Linux AppImage via Tauri"},
     "build-exe":     {"fn": cmd_build_exe,     "help": "Build Windows EXE via Tauri"},
+    "cron":          {"fn": cmd_cron,          "help": "Execute background automation & cron jobs"},
 }
 
 

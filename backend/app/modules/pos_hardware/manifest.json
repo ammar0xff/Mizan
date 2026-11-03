@@ -1,0 +1,64 @@
+{
+  "id": "pos_hardware",
+  "name": "عتاد نقاط البيع والطباعة الحرارية",
+  "name_en": "POS Hardware & Thermal Printing",
+  "category": "pos",
+  "version": "1.0.0",
+  "icon": "Printer",
+  "description": "إدارة أجهزة نقاط البيع، قارئ الباركود اللاسلكي والسلكي، طابعات الفواتير الحرارية 80mm و 58mm، ودرج النقدية.",
+  "target_business_types": ["retail", "restaurant", "pharmacy", "wholesale", "grocery"],
+  "dependencies": ["pos"],
+  "is_core": false,
+  "settings_schema": [
+    {
+      "key": "paper_width",
+      "label": "عرض ورق الطباعة الحرارية",
+      "type": "select",
+      "default": "80mm",
+      "options": ["80mm", "58mm"],
+      "description": "80 مم قياسي مع رمز الاستجابة الضريبي أو 58 مم محمول مدمج"
+    },
+    {
+      "key": "auto_print_on_sale",
+      "label": "طباعة تلقائية عند إتمام البيع",
+      "type": "boolean",
+      "default": true,
+      "description": "فتح أمر الطباعة فوراً بمجرد تأكيد الفاتورة"
+    },
+    {
+      "key": "show_tax_qr",
+      "label": "إظهار QR الفاتورة الإلكترونية والضريبية",
+      "type": "boolean",
+      "default": true,
+      "description": "طباعة رمز الاستجابة السريعة متوافق مع الفاتورة الإلكترونية وهيئة الزكاة والضرائب"
+    },
+    {
+      "key": "cash_drawer_pulse",
+      "label": "نبضة فتح درج النقدية التلقائي",
+      "type": "boolean",
+      "default": true,
+      "description": "إرسال إشارة فتح الدرج عند الدفع النقدي"
+    },
+    {
+      "key": "scanner_beep",
+      "label": "صوت تأكيد قراءة الباركود",
+      "type": "boolean",
+      "default": true,
+      "description": "تشغيل صوت تنبيه مميز عند التقاط الباركود"
+    },
+    {
+      "key": "header_note",
+      "label": "ترويسة مخصصة للإيصال",
+      "type": "string",
+      "default": "أهلاً وسهلاً بكم — نسعد بخدمتكم دائماً",
+      "description": "نص يظهر في أعلى الفاتورة الحرارية"
+    },
+    {
+      "key": "footer_note",
+      "label": "تذييل مخصص للإيصال",
+      "type": "string",
+      "default": "البضاعة المباعة ترد وتستبدل خلال 14 يوماً بموجب الفاتورة",
+      "description": "نص يظهر في أسفل الفاتورة الحرارية"
+    }
+  ]
+}

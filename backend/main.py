@@ -79,6 +79,9 @@ import app.modules.gov.models
 import app.modules.ent.models
 import app.modules.oil.models
 import app.modules.storefront.models
+import app.modules.pos_hardware.models
+import app.modules.automation_worker.models
+import app.modules.zk_attendance.models
 from app.api.router import router
 from app.core.config import settings
 from app.core.tenancy import install_tenancy_events

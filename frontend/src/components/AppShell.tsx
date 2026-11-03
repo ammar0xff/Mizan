@@ -17,12 +17,16 @@ import {
   ChevronDown,
   Volume2,
   VolumeX,
+  Cpu,
+  Globe,
 } from "lucide-react";
 import { api } from "@/lib/api";
 import { NAV_GROUPS, NAV_ITEMS, type NavItem } from "@/lib/nav";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/stores/auth";
 import { useModulesStore } from "@/stores/modules";
+import { useI18nStore } from "@/i18n";
+import { AutomationWorkerModal } from "@/features/automation/AutomationWorkerModal";
 import { Avatar, AvatarFallback } from "@/components/kit/avatar";
 import { Badge } from "@/components/kit/badge";
 import { Button } from "@/components/kit/button";
@@ -319,6 +323,8 @@ function AppTopbar({ onOpenMenu, onOpenSearch }: { onOpenMenu: () => void; onOpe
   const { user, tenant, logout } = useAuth();
   const { warehouses, branchId, branchName, setBranchId } = useBranch();
   const { density, toggleDensity, soundMuted, toggleSound, setAppearanceModalOpen } = useUiStore();
+  const { locale, toggleLocale } = useI18nStore();
+  const [automationOpen, setAutomationOpen] = useState(false);
 
   const shift = useQuery({
     queryKey: ["shift", "topbar", branchId],
@@ -462,6 +468,33 @@ function AppTopbar({ onOpenMenu, onOpenSearch }: { onOpenMenu: () => void; onOpe
           <span className="hidden sm:inline">المظهر</span>
         </Button>
 
+        {/* Background Automation & Cron Worker Trigger */}
+        <button
+          onClick={() => {
+            sound.click();
+            setAutomationOpen(true);
+          }}
+          title="محرك الأتمتة وجدولة المهام (Cron Worker)"
+          className="flex h-8 w-8 items-center justify-center rounded-md border border-border/80 text-muted-foreground transition hover:bg-accent hover:text-foreground"
+        >
+          <Cpu className="size-4 text-indigo-400" />
+        </button>
+
+        {/* Internationalization (i18n) Locale Switcher */}
+        <button
+          onClick={() => {
+            sound.click();
+            toggleLocale();
+          }}
+          title={locale === "ar" ? "التبديل إلى الإنجليزية (Switch to English)" : "التبديل إلى العربية (Switch to Arabic)"}
+          className="flex h-8 items-center gap-1.5 rounded-md border border-border/80 px-2 text-xs font-semibold text-muted-foreground transition hover:bg-accent hover:text-foreground"
+        >
+          <Globe className="size-3.5 text-primary" />
+          <span className="font-mono text-[11px] font-bold uppercase">
+            {locale === "ar" ? "EN" : "عربي"}
+          </span>
+        </button>
+
         {/* User Menu */}
         <DropdownMenu>
           <DropdownMenuTrigger render={<Button variant="ghost" className="h-8 gap-2 px-1.5" />} aria-label="قائمة المستخدم">
@@ -498,6 +531,7 @@ function AppTopbar({ onOpenMenu, onOpenSearch }: { onOpenMenu: () => void; onOpe
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+      <AutomationWorkerModal isOpen={automationOpen} onClose={() => setAutomationOpen(false)} />
     </header>
   );
 }

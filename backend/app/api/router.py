@@ -159,3 +159,15 @@ router.include_router(oil_router)
 from app.modules.storefront.router import router as storefront_module_router
 router.include_router(storefront_module_router)
 
+from app.modules.pos_hardware.router import router as pos_hardware_router
+router.include_router(pos_hardware_router)
+
+from app.modules.automation_worker.router import router as automation_worker_router
+router.include_router(automation_worker_router)
+
+from app.modules.zk_attendance.router import router as zk_attendance_router
+router.include_router(zk_attendance_router)
+
+
+
+
