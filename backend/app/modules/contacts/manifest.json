@@ -1,0 +1,20 @@
+{
+  "id": "contacts",
+  "name": "جهات الاتصال والعملاء والموردين",
+  "name_en": "Contacts & Partners",
+  "category": "crm",
+  "version": "3.0.0",
+  "icon": "Contact",
+  "description": "سجل الموردين والعملاء، كشوف الحسابات التفصيلية، حدود الائتمان وسقوف المديونية، وأرصدة الذمم.",
+  "dependencies": ["core"],
+  "is_core": true,
+  "settings_schema": [
+    {
+      "key": "default_credit_limit",
+      "label": "حد الائتمان الافتراضي للعملاء الجدد",
+      "type": "number",
+      "default": 10000,
+      "description": "الحد الأقصى للمديونية المسموح بها للعميل قبل تنبيه الكاشير"
+    }
+  ]
+}

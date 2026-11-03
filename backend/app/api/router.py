@@ -168,6 +168,30 @@ router.include_router(automation_worker_router)
 from app.modules.zk_attendance.router import router as zk_attendance_router
 router.include_router(zk_attendance_router)
 
+from app.modules.core.router import router as core_module_router
+router.include_router(core_module_router)
+
+from app.modules.inventory.router import router as inventory_module_router
+router.include_router(inventory_module_router)
+
+from app.modules.pos.router import router as pos_module_router
+router.include_router(pos_module_router)
+
+from app.modules.sales.router import router as sales_module_router
+router.include_router(sales_module_router)
+
+from app.modules.purchases.router import router as purchases_module_router
+router.include_router(purchases_module_router)
+
+from app.modules.finance.router import router as finance_module_router
+router.include_router(finance_module_router)
+
+from app.modules.contacts.router import router as contacts_module_router
+router.include_router(contacts_module_router)
+
+from app.modules.hr.router import router as hr_module_router
+router.include_router(hr_module_router)
+
 
 
 

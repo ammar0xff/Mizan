@@ -82,6 +82,14 @@ import app.modules.storefront.models
 import app.modules.pos_hardware.models
 import app.modules.automation_worker.models
 import app.modules.zk_attendance.models
+import app.modules.core.models
+import app.modules.inventory.models
+import app.modules.pos.models
+import app.modules.sales.models
+import app.modules.purchases.models
+import app.modules.finance.models
+import app.modules.contacts.models
+import app.modules.hr.models
 from app.api.router import router
 from app.core.config import settings
 from app.core.tenancy import install_tenancy_events

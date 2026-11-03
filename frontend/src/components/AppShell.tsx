@@ -27,6 +27,7 @@ import { useAuth } from "@/stores/auth";
 import { useModulesStore } from "@/stores/modules";
 import { useI18nStore } from "@/i18n";
 import { AutomationWorkerModal } from "@/features/automation/AutomationWorkerModal";
+import { OdooAppLauncher } from "@/components/OdooAppLauncher";
 import { Avatar, AvatarFallback } from "@/components/kit/avatar";
 import { Badge } from "@/components/kit/badge";
 import { Button } from "@/components/kit/button";
@@ -354,6 +355,9 @@ function AppTopbar({ onOpenMenu, onOpenSearch }: { onOpenMenu: () => void; onOpe
       <Button variant="ghost" size="icon" className="lg:hidden" onClick={onOpenMenu} aria-label="فتح القائمة">
         <Menu className="size-4" />
       </Button>
+
+      {/* Odoo-style App Launcher */}
+      <OdooAppLauncher />
 
       {/* Branch selector with tactile badge */}
       <DropdownMenu>

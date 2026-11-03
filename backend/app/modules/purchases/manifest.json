@@ -1,0 +1,20 @@
+{
+  "id": "purchases",
+  "name": "المشتريات وإدارة الموردين",
+  "name_en": "Purchases & Procurement",
+  "category": "purchases",
+  "version": "3.0.0",
+  "icon": "Truck",
+  "description": "أوامر الشراء، استلام البضائع، سجل أسعار الموردين التاريخية، ومتابعة فواتير الشراء.",
+  "dependencies": ["core", "inventory"],
+  "is_core": true,
+  "settings_schema": [
+    {
+      "key": "auto_update_purchase_price",
+      "label": "تحديث سعر تكلفة الشراء تلقائياً",
+      "type": "boolean",
+      "default": true,
+      "description": "تحديث سعر تكلفة الصنف في بطاقة المنتج فور تسجيل فاتورة شراء جديدة"
+    }
+  ]
+}

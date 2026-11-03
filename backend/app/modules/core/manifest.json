@@ -1,0 +1,27 @@
+{
+  "id": "core",
+  "name": "النواة الأساسية",
+  "name_en": "Base & Core System",
+  "category": "core",
+  "version": "3.0.0",
+  "icon": "Layers",
+  "description": "المحرك الأساسي للنظام، إدارة المستأجرين، المستخدمين، الصلاحيات، الإعدادات، وسجل التدقيق الرقابي.",
+  "dependencies": [],
+  "is_core": true,
+  "settings_schema": [
+    {
+      "key": "app_name",
+      "label": "اسم المنشأة التجاري",
+      "type": "string",
+      "default": "Vendora ERP",
+      "description": "الاسم الظاهر في ترويسة النظام والفواتير الرسمية"
+    },
+    {
+      "key": "currency",
+      "label": "العملة الافتراضية",
+      "type": "string",
+      "default": "EGP",
+      "description": "رمز العملة المستخدمة في كافة المعاملات المالية"
+    }
+  ]
+}

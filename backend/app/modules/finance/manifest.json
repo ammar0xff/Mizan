@@ -1,0 +1,20 @@
+{
+  "id": "finance",
+  "name": "المالية والحسابات والخزائن",
+  "name_en": "Accounting & Finance",
+  "category": "finance",
+  "version": "3.0.0",
+  "icon": "Wallet",
+  "description": "إدارة الخزائن النقدية، المحافظ الإلكترونية، المصروفات، بنود الصرف، وسجل القيود المحاسبية.",
+  "dependencies": ["core"],
+  "is_core": true,
+  "settings_schema": [
+    {
+      "key": "strict_safe_balance",
+      "label": "حظر المصروفات التي تتجاوز رصيد الخزينة",
+      "type": "boolean",
+      "default": true,
+      "description": "منع تسجيل أي حركة صرف إذا كان رصيد الخزينة المحددة غير كافٍ"
+    }
+  ]
+}

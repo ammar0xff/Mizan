@@ -1,0 +1,27 @@
+{
+  "id": "sales",
+  "name": "إدارة المبيعات والفوترة",
+  "name_en": "Sales & Invoicing",
+  "category": "sales",
+  "version": "3.0.0",
+  "icon": "Receipt",
+  "description": "إصدار أوامر البيع وعروض الأسعار، الفواتير الضريبية، المرتجعات، وتتبع مدفوعات العملاء.",
+  "dependencies": ["core", "inventory"],
+  "is_core": true,
+  "settings_schema": [
+    {
+      "key": "default_tax_rate",
+      "label": "نسبة ضريبة القيمة المضافة الافتراضية (%)",
+      "type": "number",
+      "default": 14,
+      "description": "نسبة الضريبة المحتسبة تلقائياً على فواتير المبيعات"
+    },
+    {
+      "key": "allow_manual_discount",
+      "label": "السماح بالخصم اليدوي عند البيع",
+      "type": "boolean",
+      "default": true,
+      "description": "تمكين الكاشير أو مسؤول المبيعات من تطبيق خصم مباشر على الفاتورة"
+    }
+  ]
+}

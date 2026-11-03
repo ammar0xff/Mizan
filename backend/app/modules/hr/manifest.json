@@ -1,0 +1,20 @@
+{
+  "id": "hr",
+  "name": "الموارد البشرية والرواتب",
+  "name_en": "Human Resources & Payroll",
+  "category": "hr",
+  "version": "3.0.0",
+  "icon": "UserCog",
+  "description": "سجلات الموظفين، مسيرات الرواتب الشهرية، الحضور والانصراف، والسلف والخصومات.",
+  "dependencies": ["core", "finance"],
+  "is_core": false,
+  "settings_schema": [
+    {
+      "key": "standard_work_hours",
+      "label": "ساعات العمل الرسمية اليومية",
+      "type": "number",
+      "default": 8,
+      "description": "عدد ساعات الدوام القياسي لاحتساب ساعات الإضافي والغياب"
+    }
+  ]
+}
