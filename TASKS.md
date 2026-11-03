@@ -19,8 +19,8 @@ is shipped and CI-green; everything below is what remains.
       "Mizan" name collision with an unrelated UAE legal product).
 - [ ] **Rotate credentials** — the Vercel token shared in chat (2026-11-01) and the Neon
       API key pasted earlier; both are treated as burned.
-- [ ] **Tenant storefronts** — `/api/storefront` currently serves the founding tenant only;
-      per-tenant slugs + themed storefronts.
+- [x] **Tenant storefronts** — per-tenant slugs + themed storefronts, customer ordering web app, and back-office dispatch hub (v35).
+- [x] **In-App Notification Center & Live Alerts Hub** — TopNav bell popover, live unread badges, automated system alert triggers (storefront web orders, low stock, trial expiry), filter pills, and read/unread state management (v36).
 - [ ] Background jobs off serverless (shift auto-close, notification digests).
 
 ## Product surface
@@ -36,8 +36,6 @@ is shipped and CI-green; everything below is what remains.
 
 ## Known quirks (documented, low priority)
 
-- `notifications` router exists; no surfaced notification center yet (bell is data-driven
-  from low stock + credit invoices).
 - `vendora` Vercel project (`vendora-self-xi.vercel.app`) is a stale auto-deploy of the old
   frontend — candidates for deletion from the Vercel dashboard.
 - GitHub Pages mirror still deploys on `frontend/**` pushes; keep until the Vercel domain

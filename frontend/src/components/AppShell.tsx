@@ -15,6 +15,8 @@ import {
   Blocks,
   Palette,
   ChevronDown,
+  Volume2,
+  VolumeX,
 } from "lucide-react";
 import { api } from "@/lib/api";
 import { NAV_GROUPS, NAV_ITEMS, type NavItem } from "@/lib/nav";
@@ -42,6 +44,7 @@ import { useUiStore } from "@/stores/ui";
 import { sound } from "@/lib/sound";
 import { Kbd } from "@/components/kit/kbd";
 import { AppearanceSettingsModal } from "@/components/AppearanceSettingsModal";
+import { NotificationCenter } from "@/components/NotificationCenter";
 import { useTenantNav } from "@/lib/tenant";
 
 interface Warehouse {
@@ -435,11 +438,14 @@ function AppTopbar({ onOpenMenu, onOpenSearch }: { onOpenMenu: () => void; onOpe
         >
           <span className="sr-only">الأصوات</span>
           {soundMuted ? (
-            <span className="font-mono text-[11px] opacity-60">🔇</span>
+            <VolumeX className="size-4 opacity-70" />
           ) : (
-            <span className="font-mono text-[11px]">🔔</span>
+            <Volume2 className="size-4" />
           )}
         </button>
+
+        {/* Live In-App Notification Center */}
+        <NotificationCenter />
 
         {/* Appearance & Themes Modal Switcher */}
         <Button

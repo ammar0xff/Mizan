@@ -435,6 +435,30 @@ async def storefront_checkout(
         )
         db.add(item_obj)
 
+    # Trigger In-App Notification for Merchant ERP
+    try:
+        from app.models.notification import Notification
+
+        notif = Notification(
+            id=uuid.uuid4(),
+            tenant_id=tenant.id,
+            type="storefront_order",
+            severity="info",
+            title=f"طلب متجر إلكتروني جديد ({order_number})",
+            body=f"قام العميل «{order.customer_name}» بإرسال طلب جديد بقيمة {total_amount} ج.م بانتظار التجهيز.",
+            link="/storefront",
+            data_json={
+                "order_number": order_number,
+                "order_id": str(order.id),
+                "customer_name": order.customer_name,
+                "total_amount": total_amount,
+            },
+            is_read=False,
+        )
+        db.add(notif)
+    except Exception as e:
+        logger.warning("Could not create storefront notification: %s", e)
+
     await db.commit()
 
     return {
