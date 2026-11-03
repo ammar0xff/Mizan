@@ -1,932 +1,586 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
+import { motion, AnimatePresence } from "motion/react";
 import {
   Check,
-  Server,
   ShieldCheck,
   Printer,
-  Laptop,
-  Network,
-  Dumbbell,
-  UtensilsCrossed,
-  ShoppingBag,
-  GraduationCap,
-  Stethoscope,
-  Briefcase,
-  ArrowLeft,
-  Layers,
-  Search,
+  Barcode,
+  ArrowRight,
   Cpu,
+  Sparkles,
+  ChevronDown,
+  TrendingUp,
+  Lock,
 } from "lucide-react";
-import { PLANS, DEPLOYMENT_MODES } from "./plans";
-import { Button } from "@/components/kit/button";
 import { Badge } from "@/components/kit/badge";
-
-/* Industry vertical data */
-const INDUSTRY_VERTICALS = [
-  {
-    id: "gym",
-    icon: Dumbbell,
-    name: "صالات الجيم واللياقة",
-    subtitle: "إدارة اشتراكات، بوابات دخول، وكافيتيريا رياضية",
-    collection: "gym-pos",
-    badge: "كوليكشن متخصص",
-    description:
-      "منظومة متكاملة لنوادي اللياقة البدنية والكروس فيت، تدمج إدارة الاشتراكات الدورية، ربط بوابات الدخول الإلكترونية، جلسات التدريب الخاص (PT)، ونقاط بيع كافيتيريا المكملات الغذائية.",
-    metrics: [
-      { label: "دقة تجديد العضويات", value: "100%" },
-      { label: "تسجيل دخول المشترك", value: "< ثانية واحدة" },
-      { label: "تقارير الحضور والتردد", value: "لحظية" },
-    ],
-    features: [
-      "إدارة العضويات الشهرية، الربع سنوية، والسنوية مع تنبيهات تلقائية قبل الانتهاء",
-      "إيقاف وتجميد مؤقت للاشتراك (Freeze) وفق سياسات محددة",
-      "كوليكشن Gym-POS سريع للمشروبات والمكملات مع الخصم الفوري من رصيد العضو",
-      "توزيع عمولات المدربين وحصص التدريب الشخصي (PT)",
-      "ربط بوابات الدخول الدوارة وبطاقات RFID / الباركود",
-    ],
-  },
-  {
-    id: "restaurant",
-    icon: UtensilsCrossed,
-    name: "المطاعم والكافيهات",
-    subtitle: "شاشات مطبخ KDS، إدارة صالة، وتجزئة شيكات",
-    collection: "restaurant-pos",
-    badge: "كوليكشن متخصص",
-    description:
-      "شاشات طلبات سريعة للمطاعم والكافيهات، تدعم تنظيم الطاولات، إرسال الطلبات لحظياً لشاشات المطبخ (KDS) وطابعات البون، دليفري وسفري، مع تفكيك المكونات وحساب تكلفة الأطباق.",
-    metrics: [
-      { label: "سرعة ترحيل الطلب للمطبخ", value: "لحظية" },
-      { label: "مرونة تجزئة الفاتورة", value: "طاولة / ضيف" },
-      { label: "دعم طابعات البون", value: "80mm / 58mm" },
-    ],
-    features: [
-      "شاشة مطبخ تفاعلية (KDS) تصنف الطلبات وتتابع توقيت التحضير لكل طاولة",
-      "إدارة خريطة الطاولات وحالة كل طاولة (فارغة، مشغولة، قيد التحاسب)",
-      "تجزئة الشيك (Split Bill) بين رواد الطاولة والدفع بعدة وسائل مقسمة",
-      "إدارة طلبات الدليفري وتعيين الطيارين ومتابعة أوقات التوصيل",
-      "خصم تلقائي لمكونات الوجبات من مستودع الأغذية والمشروبات",
-    ],
-  },
-  {
-    id: "retail",
-    icon: ShoppingBag,
-    name: "محلات التجزئة والسوبرماركت",
-    subtitle: "ماسح باركود، موازين، وجرد لحظي للمخزون",
-    collection: "retail-pos",
-    badge: "كوليكشن متخصص",
-    description:
-      "محطة بيع سريعة مصممة للسوبرماركت، معارض الأدوات، ومحلات التجزئة. استجابة فورية لقوارئ الباركود، ربط الموازين الإلكترونية، فواتير ضريبية سريعة، وتنبيهات نواقص المخزون.",
-    metrics: [
-      { label: "سرعة إصدار الفاتورة", value: "أقل من 3 ثوانٍ" },
-      { label: "مطابقة رصيد المستودع", value: "لحظية بالباركود" },
-      { label: "دعم الأوزان والباركود المتغير", value: "مدعوم بالكامل" },
-    ],
-    features: [
-      "دعم قراءة باركود الأوزان للمواد الطازجة واللحوم والمخبوزات تلقائياً",
-      "بيع آجل، دفع مقسم (نقدي / بطاقة / محفظة إلكترونية)، وعروض أسعار",
-      "تنبيهات حد إعادة الطلب للأصناف الحرجة قبل نفادها من الأرفف",
-      "جرد مخزني دوري باستخدام أجهزة الجرد الكفية والماسح الضوئي",
-      "طباعة بطاقات الأسعار والباركود الحراري للأصناف الجديدة",
-    ],
-  },
-  {
-    id: "school",
-    icon: GraduationCap,
-    name: "المدارس والمراكز التعليمية",
-    subtitle: "شؤون الطلاب، أقساط، ورسوم حافلات",
-    collection: "school",
-    badge: "وحدة أكاديمية",
-    description:
-      "منظومة متخصصة لإدارة شؤون الطلاب، خطط الأقساط الدراسية، متابعة سداد المصروفات، رسوم الزي المدرسي والكتب وحافلات النقل، مع إصدار إيصالات دفع إلكترونية معتمدة.",
-    metrics: [
-      { label: "متابعة متأخرات الأقساط", value: "دقيقة 100%" },
-      { label: "إيصالات رسوم ضريبية", value: "معتمدة فوراً" },
-      { label: "إدارة خطوط الحافلات", value: "منظمة ومحدثة" },
-    ],
-    features: [
-      "سجلات الطلاب الشاملة مع توزيع الصفوف والمراحل الدراسية",
-      "جدولة الأقساط المدرسية على دفعات منتظمة مع كشوف حساب لكل ولي أمر",
-      "إصدار إيصالات قبض الرسوم الدراسية وأنشطة الأكاديمية",
-      "إدارة رسوم النقل المدرسي والحافلات واشتراكات الأنشطة الإضافية",
-      "تقارير التدفق المالي للمصروفات ونسب التحصيل الشهرية والسنوية",
-    ],
-  },
-  {
-    id: "healthcare",
-    icon: Stethoscope,
-    name: "المراكز الطبية والعيادات",
-    subtitle: "ملفات مرضى، حجز مواعيد، وصيدلية العيادة",
-    collection: "healthcare",
-    badge: "وحدة رعاية صحية",
-    description:
-      "نظام لإدارة المراكز الطبية والعيادات التخصصية، يجمع بين سجلات المرضى الإلكترونية، جداول مواعيد الأطباء، روشتات الفحص، وفواتير الخدمات الطبية ومستلزمات الصيدلية.",
-    metrics: [
-      { label: "أمان وسرية ملف المريض", value: "مشفر بالكامل" },
-      { label: "حجز وتنظيم المواعيد", value: "بدون تداخل" },
-      { label: "صرف الروشتات والمستلزمات", value: "مباشر ومترابط" },
-    ],
-    features: [
-      "ملف إلكتروني شامل لكل مريض يتضمن التاريخ المرضي والملاحظات الطبية",
-      "حجز وإدارة مواعيد العيادات مع تصنيف الكشوفات والاستشارات",
-      "إصدار فواتير الخدمات الطبية والفحوصات المعملية",
-      "متابعة صيدلية العيادة والمستهلكات الطبية ومطابقة التواريخ والصلاحية",
-      "تقارير حسابات الأطباء والنسب المالية لكل استشاري",
-    ],
-  },
-  {
-    id: "services",
-    icon: Briefcase,
-    name: "المقاولات وشركات الخدمات",
-    subtitle: "فواتير مشاريع، عقود، وتتبع تكاليف ميدانية",
-    collection: "services",
-    badge: "وحدة خدمات",
-    description:
-      "إدارة عقود المشاريع الخدمية والهندسية، متابعة مراكز التكلفة، أوامر الشغل الميدانية، وتدفق المستخلصات المالية للمشاريع خطوة بخطوة مع تقارير أرباح المشروعات.",
-    metrics: [
-      { label: "مراقبة تكلفة المشروع", value: "مباشرة ولحظية" },
-      { label: "دقة مستخلصات العملاء", value: "معتمدة وشفافة" },
-      { label: "تتبع عقود الصيانة", value: "تنبيهات استباقية" },
-    ],
-    features: [
-      "فتح ملف لكل مشروع وربط المصروفات والمشتريات بمركز تكلفة محدد",
-      "إصدار مستخلصات وفواتير الإنجاز بمراحل تسليم معتمدة",
-      "متابعة عقود الصيانة الدورية وجداول الزيارات الميدانية",
-      "تسجيل ساعات عمل الفنيين وتكاليف المواد المستهلكة في كل موقع",
-      "تحليل صافي ربحية كل مشروع مقارنة بالميزانية التقديرية",
-    ],
-  },
-];
-
-/* Modular architecture categories */
-const MODULE_CATEGORIES = [
-  {
-    id: "pos",
-    name: "نقاط البيع والمبيعات",
-    modules: [
-      { code: "gym-pos", name: "Gym-POS", desc: "كاشير الصالات الرياضية، الاشتراكات والمكملات" },
-      { code: "restaurant-pos", name: "Restaurant-POS", desc: "كاشير المطاعم، الطاولات، وشاشات المطبخ KDS" },
-      { code: "retail-pos", name: "Retail-POS", desc: "كاشير السوبرماركت والتجزئة مع الموازين والباركود" },
-      { code: "invoicing", name: "الفواتير والمبيعات", desc: "عروض أسعار، فواتير ضريبية، مرتجعات، وذمم العملاء" },
-    ],
-  },
-  {
-    id: "inventory",
-    name: "المستودعات والمخزون",
-    modules: [
-      { code: "inventory", name: "إدارة المخزون اللحظي", desc: "أرصدة الفروع، حد الطلب، والتحويلات الداخلية" },
-      { code: "purchases", name: "المشتريات والموردين", desc: "أوامر الشراء، الاستلام المخزني، وسجلات ديون الموردين" },
-    ],
-  },
-  {
-    id: "finance",
-    name: "المالية والخزائن",
-    modules: [
-      { code: "safes", name: "الخزائن والمحافظ", desc: "إدارة السيولة النقدية، الحسابات البنكية، والتحويلات" },
-      { code: "ledger", name: "الدفاتر المحاسبية", desc: "قيود اليومية، ميزان المراجعة، ومراكز التكلفة" },
-    ],
-  },
-  {
-    id: "hr",
-    name: "رأس المال البشري HR",
-    modules: [
-      { code: "employees", name: "الموظفون والورديات", desc: "سجلات العاملين، مناوبات العمل، والحضور والانصراف" },
-      { code: "payroll", name: "مسيرات الأجور والرواتب", desc: "احتساب البدلات والخصومات وصرف الرواتب الشهرية" },
-    ],
-  },
-  {
-    id: "specialized",
-    name: "القطاعات المتخصصة",
-    modules: [
-      { code: "school", name: "المدارس والطلاب", desc: "شؤون الدارسين، جداول الأقساط المدرسية، والحافلات" },
-      { code: "healthcare", name: "العيادات والصحة", desc: "ملفات المرضى، حجز المواعيد، وروشتات الأطباء" },
-      { code: "services", name: "المشاريع والخدمات", desc: "عقود المشروعات، أوامر الشغل، وتكاليف العمليات" },
-    ],
-  },
-];
+import { Button } from "@/components/kit/button";
+import { MarketingLayout } from "./MarketingLayout";
+import { InteractiveProductShowcase } from "./components/InteractiveProductShowcase";
+import { PLANS } from "./plans";
 
 export default function LandingPage() {
-  const navigate = useNavigate();
-  const [selectedIndustry, setSelectedIndustry] = useState<string>("gym");
-  const [selectedDeployment, setSelectedDeployment] = useState<string>("saas");
-  const [selectedCategory, setSelectedCategory] = useState<string>("pos");
-  const [searchSlug, setSearchSlug] = useState("");
-  const [searchError, setSearchError] = useState("");
-  const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("monthly");
+  const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("annual");
+  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
 
-  const activeIndustry =
-    INDUSTRY_VERTICALS.find((v) => v.id === selectedIndustry) ?? INDUSTRY_VERTICALS[0];
-  const activeDeployment =
-    DEPLOYMENT_MODES.find((d) => d.id === selectedDeployment) ?? DEPLOYMENT_MODES[0];
-  const activeCategory =
-    MODULE_CATEGORIES.find((c) => c.id === selectedCategory) ?? MODULE_CATEGORIES[0];
+  const toggleFaq = (index: number) => {
+    setOpenFaqIndex(openFaqIndex === index ? null : index);
+  };
 
-  function handleNavigateSlug(e: React.FormEvent) {
-    e.preventDefault();
-    const clean = searchSlug.trim().toLowerCase().replace(/[^a-z0-9_-]/g, "");
-    if (!clean) {
-      setSearchError("يرجى إدخال اسم المنشأة أو الرابط الخاص بها");
-      return;
-    }
-    navigate(`/${clean}`);
-  }
+  const faqs = [
+    {
+      q: "ما الذي يميز ميزان ERP عن البرامج المحاسبية وأنظمة الـ ERP الأخرى؟",
+      a: "يعتمد ميزان معمارية معيارية بالكامل (Modular Architecture) حيث يحتوي على 47 موديولاً متخصصاً. لا تضطر لدفع تكلفة موديولات لا تحتاجها، ويمكنك تفعيل أو تعطيل أي تطبيق بنقرة زر دون تعديل شفرة النظام. بالإضافة إلى عزل بياناتك أمنياً عبر تقنية PostgreSQL Row-Level Security وسرعة كاشير فائقة تدعم الطباعة الحرارية المباشرة.",
+    },
+    {
+      q: "هل يعمل نظام الكاشير عند انقطاع الإنترنت؟",
+      a: "نعم! تم تصميم تطبيق الكاشير بمفهوم Offline-First، حيث يحتفظ بنسخة مشفرة من الأصناف والأسعار محلياً، ويتيح مسح الباركود وإصدار الفواتير وطباعتها حتى عند انقطاع الإنترنت، ثم يقوم بمزامنة المبيعات تلقائياً مع السحابة فور عودة الاتصال.",
+    },
+    {
+      q: "هل تدعم فواتير ميزان متطلبات هيئة الزكاة والجمارك (ZATCA) ومنظومة الفاتورة الإلكترونية؟",
+      a: "نعم، تتوافق فواتير ميزان مع متطلبات ZATCA Phase 1 & 2 في السعودية ومنظومة الفاتورة الإلكترونية ETA في مصر، حيث يولد النظام تلقائياً رمز الاستجابة السريعة المشفر بصيغة TLV Base64 متضمناً الأختام الرقمية وبيانات الرقم الضريبي.",
+    },
+    {
+      q: "ما هي أنواع الطابعات وأجهزة الكاشير المتوافقة مع النظام؟",
+      a: "يدعم ميزان كافة الطابعات الحرارية القياسية عبر USB أو الشبكة (بمقاسي 80 مم و58 مم)، وقوارئ الباركود السلكية واللاسلكية، شاشات المطبخ اللمسية KDS، أجهزة الحضور البيومترية ZKTeco، وموازين الباركود الإلكترونية.",
+    },
+    {
+      q: "هل يمكنني تجربة المنصة مجاناً قبل الاشتراك؟",
+      a: "بالتأكيد! نوفر فترة تجريبية مجانية لمدة 14 يوماً تشمل كافة الموديولات والوظائف بدون الحاجة لإدخال أي بطاقة دفع ائتمانية. يمكنك إنشاء حسابك والبدء فورياً.",
+    },
+  ];
 
   return (
-    <div className="min-h-svh bg-background text-foreground selection:bg-primary/20" dir="rtl">
-      {/* Official Top Announcement Bar */}
-      <div className="border-b bg-muted/40 px-4 py-2 text-center text-xs font-medium text-muted-foreground">
-        <div className="mx-auto flex max-w-7xl items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="inline-block size-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span>منصة Vendora ERP جاهزة للتشغيل السحابي أو المكتبي المستقل (Offline .exe)</span>
-          </div>
-          <div className="flex items-center gap-4">
-            <Link
-              to="/admoon"
-              className="flex items-center gap-1 font-semibold text-primary hover:underline"
-            >
-              <ShieldCheck className="size-3.5" />
-              <span>بوابة المشرف العام (Admoon)</span>
-            </Link>
-          </div>
-        </div>
-      </div>
+    <MarketingLayout>
+      <div className="space-y-20 sm:space-y-28 py-8 sm:py-12">
+        {/* ==================================================================== */}
+        {/* 1. SIGNATURE HERO SECTION WITH CHOREOGRAPHED ENTRANCE & 3D MOCKUP   */}
+        {/* ==================================================================== */}
+        <section className="relative overflow-hidden pt-6 pb-12 sm:pt-10 sm:pb-16">
+          {/* Subtle Ambient Background Glow */}
+          <div className="pointer-events-none absolute -top-40 start-1/2 -translate-x-1/2 h-[500px] w-[800px] rounded-full bg-gradient-to-tr from-brand/20 via-blue-400/10 to-transparent blur-3xl dark:from-brand/10 dark:via-brand-dark/20" />
 
-      {/* Main Official Header */}
-      <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur-md">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
-          <div className="flex items-center gap-6">
-            <Link to="/" className="flex items-center gap-3">
-              <span className="grid size-10 place-items-center rounded-xl bg-primary text-primary-foreground font-black text-xl shadow-xs">
-                V
-              </span>
-              <div className="flex flex-col">
-                <span className="text-xl font-bold tracking-tight">Vendora ERP</span>
-                <span className="text-[10px] text-muted-foreground font-medium">المنظومة السحابية المتكاملة</span>
-              </div>
-            </Link>
-
-            {/* Nav links */}
-            <nav className="hidden lg:flex items-center gap-1 text-sm font-medium text-muted-foreground">
-              <a href="#industries" className="rounded-lg px-3 py-2 transition hover:text-foreground">
-                حلول القطاعات
-              </a>
-              <a href="#deployments" className="rounded-lg px-3 py-2 transition hover:text-foreground">
-                بيئات الاستضافة
-              </a>
-              <a href="#modules" className="rounded-lg px-3 py-2 transition hover:text-foreground">
-                معمارية الوحدات
-              </a>
-              <a href="#printing" className="rounded-lg px-3 py-2 transition hover:text-foreground">
-                محرك الطباعة
-              </a>
-              <a href="#pricing" className="rounded-lg px-3 py-2 transition hover:text-foreground">
-                الخطط والأسعار
-              </a>
-            </nav>
-          </div>
-
-          <div className="flex items-center gap-2 sm:gap-3">
-            <Link
-              to="/login"
-              className="rounded-lg px-3 py-2 text-sm font-semibold text-muted-foreground transition hover:text-foreground"
-            >
-              تسجيل الدخول
-            </Link>
-            <Button
-              size="sm"
-              nativeButton={false}
-              render={<Link to="/signup" />}
-              className="font-semibold shadow-xs"
-            >
-              <span>ابدأ مساحة عملك</span>
-              <ArrowLeft className="size-4 mr-1.5" />
-            </Button>
-          </div>
-        </div>
-      </header>
-
-      {/* Hero Section */}
-      <section className="relative overflow-hidden border-b bg-gradient-to-b from-muted/30 via-background to-background py-20 lg:py-28">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 text-center">
-          <div className="mx-auto flex justify-center">
-            <Badge variant="secondary" className="mb-6 gap-2 px-3 py-1.5 text-xs font-semibold">
-              <Layers className="size-3.5 text-primary" />
-              <span>منظومة ERP متعددة المستأجرين والصناعات · Multi-Tenant Architecture</span>
-            </Badge>
-          </div>
-
-          <h1 className="mx-auto max-w-4xl text-balance text-4xl font-black tracking-tight sm:text-6xl sm:leading-[1.15]">
-            المنظومة المتكاملة لإدارة وتخطيط الموارد — لكل قطاع ولكل بيئة تشغيل
-          </h1>
-
-          <p className="mx-auto mt-6 max-w-3xl text-pretty text-lg text-muted-foreground leading-relaxed sm:text-xl">
-            سواء كنت تدير نادياً رياضياً، سلسلة مطاعم، مجمع تجزئة وسوبرماركت، أو صرحاً تعليمياً: تمنحك <strong className="text-foreground">Vendora ERP</strong> بنية تشغيل صلبة تعمل سحابياً بالكامل، أو عبر شبكة محلية LAN، أو بتطبيق مكتبي مستقل بلا إنترنت (Offline .exe)، مع عزل تام لقواعد البيانات ومحرك طباعة إيصالات احترافي.
-          </p>
-
-          {/* Quick CTA Actions */}
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
-            <Button
-              size="lg"
-              nativeButton={false}
-              render={<Link to="/signup" />}
-              className="px-6 font-bold shadow-md"
-            >
-              <span>ابدأ تجربتك المجانية (14 يوماً)</span>
-              <ArrowLeft className="size-5 mr-2" />
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              nativeButton={false}
-              render={<a href="#industries" />}
-              className="font-semibold"
-            >
-              استكشف حلول قطاعك
-            </Button>
-            <Button
-              size="lg"
-              variant="ghost"
-              nativeButton={false}
-              render={<Link to="/admoon" />}
-              className="font-semibold text-muted-foreground hover:text-foreground"
-            >
-              <ShieldCheck className="size-4 ml-1.5 text-primary" />
-              <span>لوحة تحكم Admoon</span>
-            </Button>
-          </div>
-
-          {/* Platform Trust Highlights */}
-          <div className="mx-auto mt-12 grid max-w-4xl grid-cols-2 gap-4 text-center sm:grid-cols-4">
-            <div className="rounded-xl border bg-card p-4 shadow-2xs">
-              <div className="num text-2xl font-black text-foreground">14+</div>
-              <div className="mt-1 text-xs text-muted-foreground font-medium">وحدة نمطية قابلة للإضافة</div>
-            </div>
-            <div className="rounded-xl border bg-card p-4 shadow-2xs">
-              <div className="num text-2xl font-black text-foreground">4</div>
-              <div className="mt-1 text-xs text-muted-foreground font-medium">بيئات استضافة ونشر مرنة</div>
-            </div>
-            <div className="rounded-xl border bg-card p-4 shadow-2xs">
-              <div className="num text-2xl font-black text-foreground">5</div>
-              <div className="mt-1 text-xs text-muted-foreground font-medium">محركات قواعد بيانات مدعومة</div>
-            </div>
-            <div className="rounded-xl border bg-card p-4 shadow-2xs">
-              <div className="num text-2xl font-black text-foreground">100%</div>
-              <div className="mt-1 text-xs text-muted-foreground font-medium">عزل أمني تام لبيانات المنشآت</div>
-            </div>
-          </div>
-
-          {/* Direct Tenant Slug Resolver Bar */}
-          <div className="mx-auto mt-14 max-w-2xl rounded-2xl border bg-card p-6 shadow-sm">
-            <div className="flex items-center gap-2 mb-3 text-right">
-              <Search className="size-4 text-primary" />
-              <span className="text-sm font-bold text-foreground">هل تمتلك مساحة عمل مسجلة بالفعل؟</span>
-              <span className="text-xs text-muted-foreground">(ادخل مباشرة عبر رابط منشأتك)</span>
-            </div>
-            <form onSubmit={handleNavigateSlug} className="flex flex-col sm:flex-row items-center gap-2">
-              <div className="relative flex-1 w-full">
-                <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-muted-foreground text-xs font-mono">
-                  vendora.com/
-                </div>
-                <input
-                  type="text"
-                  value={searchSlug}
-                  onChange={(e) => {
-                    setSearchSlug(e.target.value);
-                    setSearchError("");
-                  }}
-                  placeholder="مثال: monset-gym أو albaraka"
-                  className="w-full rounded-xl border bg-background pr-28 pl-4 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 text-left"
-                  dir="ltr"
-                />
-              </div>
-              <Button type="submit" className="w-full sm:w-auto font-semibold shrink-0">
-                <span>دخول مساحة العمل</span>
-                <ArrowLeft className="size-4 mr-1.5" />
-              </Button>
-            </form>
-            {searchError && (
-              <p className="mt-2 text-xs font-medium text-destructive text-right">{searchError}</p>
-            )}
-            <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground justify-start">
-              <span>جرّب مساحات عمل استعراضية:</span>
-              <button
-                type="button"
-                onClick={() => navigate("/monset-gym")}
-                className="rounded-md border bg-muted/40 px-2 py-0.5 font-mono text-[11px] text-foreground hover:bg-muted"
-                dir="ltr"
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="text-center space-y-6 max-w-4xl mx-auto">
+              {/* Trust Badge */}
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4 }}
+                className="inline-flex items-center gap-2 rounded-full border border-brand/30 bg-brand/5 px-3.5 py-1 text-xs font-bold text-brand dark:bg-brand/10 dark:border-brand/40 shadow-xs"
               >
-                monset-gym
-              </button>
-              <button
-                type="button"
-                onClick={() => navigate("/demo-restaurant")}
-                className="rounded-md border bg-muted/40 px-2 py-0.5 font-mono text-[11px] text-foreground hover:bg-muted"
-                dir="ltr"
+                <Sparkles className="h-3.5 w-3.5 text-brand" />
+                <span>الجيل الجديد من أنظمة الـ ERP المعيارية متعددة المنشآت</span>
+                <span className="text-slate-300 dark:text-slate-700">•</span>
+                <span className="font-mono text-[11px]">Mizan 3.0</span>
+              </motion.div>
+
+              {/* Staggered Main Headline */}
+              <motion.h1
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.1 }}
+                className="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 dark:text-white tracking-tight leading-[1.15]"
               >
-                demo-restaurant
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
+                نظام ERP معياري يتكيف مع طريقة عملك الحقيقية
+              </motion.h1>
 
-      {/* Industry Verticals Section */}
-      <section id="industries" className="py-20 lg:py-28 border-b">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6">
-          <div className="text-center max-w-3xl mx-auto">
-            <Badge variant="secondary" className="mb-3 font-semibold">حلول متخصصة لكل صناعة</Badge>
-            <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl">
-              تكيّف حقيقي مع متطلبات مجالك وليس مجرد نموذج افتراضي عام
-            </h2>
-            <p className="mt-3 text-muted-foreground text-sm sm:text-base">
-              تأتي منصة Vendora مزودة بكوليكشنات جاهزة مخصصة لكل نشاط تجاري، تمنحك شاشات واختصارات وسير عمل مفصلاً لطبيعة عملك اليومي.
-            </p>
-          </div>
+              {/* Supporting Value Proposition */}
+              <motion.p
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+                className="text-base sm:text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto leading-relaxed"
+              >
+                منظومة سحابية متكاملة تدعم 47 قطاعاً ونشاطاً متخصصاً. عزل أمني مطلق بقواعد بيانات
+                PostgreSQL RLS، وسرعة كاشير فائقة تدعم كافة أجهزة الباركود والطباعة الحرارية.
+              </motion.p>
 
-          {/* Industry Tabs */}
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-2">
-            {INDUSTRY_VERTICALS.map((ind) => {
-              const Icon = ind.icon;
-              const isSelected = ind.id === selectedIndustry;
-              return (
-                <button
-                  key={ind.id}
-                  type="button"
-                  onClick={() => setSelectedIndustry(ind.id)}
-                  className={`flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition ${
-                    isSelected
-                      ? "border-primary bg-primary text-primary-foreground shadow-xs"
-                      : "border-border bg-card text-muted-foreground hover:text-foreground hover:bg-muted/30"
-                  }`}
+              {/* Dual Action CTAs */}
+              <motion.div
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+                className="flex flex-wrap items-center justify-center gap-3 pt-2"
+              >
+                <Button
+                  size="lg"
+                  className="bg-brand text-white font-bold hover:bg-brand/90 px-8 shadow-md shadow-brand/25 text-sm"
+                  render={<Link to="/signup" />}
+                  nativeButton={false}
                 >
-                  <Icon className="size-4" />
-                  <span>{ind.name}</span>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Active Industry Showcase Card */}
-          <div className="mt-8 rounded-2xl border bg-card p-6 sm:p-10 shadow-sm">
-            <div className="grid gap-8 lg:grid-cols-12 items-start">
-              <div className="lg:col-span-7 space-y-6">
-                <div className="flex items-center gap-3">
-                  <span className="grid size-12 place-items-center rounded-xl bg-primary/10 text-primary">
-                    <activeIndustry.icon className="size-6" />
-                  </span>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h3 className="text-2xl font-black">{activeIndustry.name}</h3>
-                      <Badge variant="outline" className="font-mono text-xs">
-                        {activeIndustry.collection}
-                      </Badge>
-                    </div>
-                    <p className="text-sm text-muted-foreground">{activeIndustry.subtitle}</p>
-                  </div>
-                </div>
-
-                <p className="text-sm leading-relaxed text-foreground/90 text-pretty">
-                  {activeIndustry.description}
-                </p>
-
-                {/* Features checklist */}
-                <div className="space-y-3">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                    المزايا التشغيلية المباشرة في هذا الكوليكشن:
-                  </h4>
-                  <ul className="grid gap-2.5 sm:grid-cols-1">
-                    {activeIndustry.features.map((f) => (
-                      <li key={f} className="flex items-start gap-2.5 text-sm">
-                        <Check className="size-4 shrink-0 text-emerald-600 dark:text-emerald-400 mt-1" />
-                        <span>{f}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div className="pt-4 flex flex-wrap items-center gap-3">
-                  <Button nativeButton={false} render={<Link to="/signup" />} className="font-semibold">
-                    <span>تشغيل مساحة عمل لهذا النشاط</span>
-                    <ArrowLeft className="size-4 mr-1.5" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => navigate(`/${activeIndustry.id === "gym" ? "monset-gym" : "demo"}`)}
-                    className="font-semibold"
-                  >
-                    معاينة تجريبية حية
-                  </Button>
-                </div>
-              </div>
-
-              {/* Metrics sidebar */}
-              <div className="lg:col-span-5 rounded-xl border bg-muted/30 p-6 space-y-6">
-                <h4 className="text-sm font-bold text-foreground">مؤشرات الأداء والكفاءة الميدانية</h4>
-                <div className="grid gap-4">
-                  {activeIndustry.metrics.map((m) => (
-                    <div key={m.label} className="rounded-lg border bg-background p-4 shadow-2xs">
-                      <div className="num text-2xl font-black text-primary">{m.value}</div>
-                      <div className="text-xs text-muted-foreground font-medium mt-1">{m.label}</div>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 text-xs text-muted-foreground leading-relaxed">
-                  <span className="font-bold text-foreground block mb-1">
-                    جاهز مع بيانات افتراضية فورية:
-                  </span>
-                  عند إنشاء حسابك واختيار هذا النشاط، يقوم معالج Vendora بتهيئة شجرة الحسابات، تصنيفات الأصناف، وإعدادات الكاشير المناسبة تلقائياً دون الحاجة لإدخال يدوي مجهد.
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Deployment Modes Section */}
-      <section id="deployments" className="py-20 lg:py-28 border-b bg-muted/15">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6">
-          <div className="text-center max-w-3xl mx-auto">
-            <Badge variant="secondary" className="mb-3 font-semibold">مرونة معمارية لا مثيل لها</Badge>
-            <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl">
-              اختر بيئة الاستضافة التي تلائم ظروف عملك وبنيتك التحتية
-            </h2>
-            <p className="mt-3 text-muted-foreground text-sm sm:text-base">
-              لا نفرض عليك استضافة سحابية إجبارية إذا كانت طبيعة منشأتك تتطلب العمل في بيئة معزولة دون إنترنت أو عبر شبكة محلية LAN خاصة.
-            </p>
-          </div>
-
-          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {DEPLOYMENT_MODES.map((d) => {
-              const isSelected = d.id === selectedDeployment;
-              return (
-                <div
-                  key={d.id}
-                  onClick={() => setSelectedDeployment(d.id)}
-                  className={`cursor-pointer rounded-2xl border bg-card p-6 transition flex flex-col justify-between ${
-                    isSelected ? "border-primary ring-2 ring-primary/20 shadow-md" : "hover:border-primary/50"
-                  }`}
+                  <span>ابدأ تجربة مجانية 14 يوماً</span>
+                  <ArrowRight className="h-4 w-4 ms-2 rtl:rotate-180" />
+                </Button>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="text-xs sm:text-sm font-semibold border-slate-300 dark:border-slate-700"
+                  render={<Link to="/contact" />}
+                  nativeButton={false}
                 >
-                  <div>
-                    <Badge variant={isSelected ? "default" : "outline"} className="mb-3 font-semibold text-xs">
-                      {d.badge}
-                    </Badge>
-                    <h3 className="text-lg font-bold">{d.name}</h3>
-                    <p className="mt-1 text-xs text-muted-foreground min-h-[32px]">{d.tagline}</p>
+                  احجز عرضاً توضيحياً (Demo)
+                </Button>
+              </motion.div>
 
-                    <ul className="mt-6 flex flex-col gap-2 text-xs">
-                      {d.bullets.map((b) => (
-                        <li key={b} className="flex items-start gap-2">
-                          <Check className="size-3.5 shrink-0 text-emerald-600 dark:text-emerald-400 mt-0.5" />
-                          <span>{b}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+              {/* Trust Micro-Bullets */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.6, delay: 0.4 }}
+                className="flex flex-wrap items-center justify-center gap-6 pt-4 text-xs text-slate-500 dark:text-slate-400 font-medium"
+              >
+                <span className="flex items-center gap-1.5">
+                  <Check className="h-4 w-4 text-emerald-500 font-bold" /> بدون بطاقة دفع ائتمانية
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <Check className="h-4 w-4 text-emerald-500 font-bold" /> تفعيل فوري لكافة الموديولات
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <Check className="h-4 w-4 text-emerald-500 font-bold" /> متوافق مع هيئات الزكاة والضرائب
+                </span>
+              </motion.div>
+            </div>
 
-                  <div className="mt-6 pt-4 border-t">
-                    <span className="text-xs font-semibold text-primary flex items-center justify-between">
-                      <span>{isSelected ? "البيئة المحددة حالياً" : "اضغط للمعاينة"}</span>
-                      <ArrowLeft className="size-3.5" />
+            {/* 3D-Perspective ERP Mockup Frame with Layered Floating Pills */}
+            <motion.div
+              initial={{ opacity: 0, y: 30, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 0.7, delay: 0.35, ease: "easeOut" }}
+              className="mt-12 sm:mt-16 relative mx-auto max-w-5xl"
+            >
+              {/* Outer Glow & Shadow Container */}
+              <div className="relative rounded-2xl border border-slate-200/90 bg-white p-2 shadow-2xl shadow-slate-300/60 dark:border-slate-800 dark:bg-slate-900/90 dark:shadow-black/70">
+                {/* Browser Frame Title Bar */}
+                <div className="flex items-center justify-between border-b border-slate-100 px-4 py-2.5 dark:border-slate-800/80">
+                  <div className="flex items-center gap-1.5">
+                    <span className="h-2.5 w-2.5 rounded-full bg-rose-400/80" />
+                    <span className="h-2.5 w-2.5 rounded-full bg-amber-400/80" />
+                    <span className="h-2.5 w-2.5 rounded-full bg-emerald-400/80" />
+                    <span className="ms-2 font-mono text-[11px] text-slate-400">
+                      https://app.mizan.app/c/german-egyptian/pos
                     </span>
                   </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="success" className="text-[10px]">
+                      نظام متصل • سحابي
+                    </Badge>
+                  </div>
                 </div>
-              );
-            })}
-          </div>
 
-          {/* Active Deployment Details Banner */}
-          <div className="mt-8 rounded-2xl border bg-card p-6 shadow-sm">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="flex items-center gap-4">
-                <span className="grid size-12 place-items-center rounded-xl bg-primary/10 text-primary shrink-0">
-                  {selectedDeployment === "offline" ? (
-                    <Laptop className="size-6" />
-                  ) : selectedDeployment === "lan" ? (
-                    <Network className="size-6" />
-                  ) : selectedDeployment === "vps" ? (
-                    <Server className="size-6" />
-                  ) : (
-                    <Cpu className="size-6" />
-                  )}
-                </span>
-                <div>
-                  <h4 className="text-base font-bold">
-                    معمارية النشر: {activeDeployment.name}
-                  </h4>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {activeDeployment.tagline} — مدعومة بالكامل ضمن بروتوكولات تحكم المشرف العام Admoon.
-                  </p>
+                {/* Simulated Real POS & Dashboard Interface */}
+                <div className="p-4 sm:p-6 bg-slate-50/70 dark:bg-slate-950/60 rounded-xl">
+                  {/* Top KPIs Row inside mockup */}
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 mb-4">
+                    <div className="rounded-xl border border-slate-200 bg-white p-3 shadow-2xs dark:border-slate-800 dark:bg-slate-900">
+                      <div className="text-[10px] text-slate-400">مبيعات الوردية اللحظية</div>
+                      <div className="text-base sm:text-lg font-black text-slate-900 dark:text-white font-mono mt-0.5">
+                        24,850.00 ج.م
+                      </div>
+                      <div className="text-[10px] text-emerald-600 font-bold flex items-center gap-0.5 mt-1">
+                        <TrendingUp className="h-3 w-3" /> +14.2% عن أمس
+                      </div>
+                    </div>
+
+                    <div className="rounded-xl border border-slate-200 bg-white p-3 shadow-2xs dark:border-slate-800 dark:bg-slate-900">
+                      <div className="text-[10px] text-slate-400">الفواتير المصدرة اليوم</div>
+                      <div className="text-base sm:text-lg font-black text-slate-900 dark:text-white font-mono mt-0.5">
+                        184 فاتورة
+                      </div>
+                      <div className="text-[10px] text-slate-400 mt-1 font-mono">
+                        متوسط الفاتورة: 135 ج.م
+                      </div>
+                    </div>
+
+                    <div className="rounded-xl border border-slate-200 bg-white p-3 shadow-2xs dark:border-slate-800 dark:bg-slate-900">
+                      <div className="text-[10px] text-slate-400">أرصدة المستودعات النشطة</div>
+                      <div className="text-base sm:text-lg font-black text-brand font-mono mt-0.5">
+                        12,400 قطعة
+                      </div>
+                      <div className="text-[10px] text-slate-400 mt-1">4 مستودعات متزامنة</div>
+                    </div>
+
+                    <div className="rounded-xl border border-slate-200 bg-white p-3 shadow-2xs dark:border-slate-800 dark:bg-slate-900">
+                      <div className="text-[10px] text-slate-400">حالة عزل البيانات (RLS)</div>
+                      <div className="text-base sm:text-lg font-black text-emerald-600 font-mono mt-0.5">
+                        100% معزول
+                      </div>
+                      <div className="text-[10px] text-slate-400 mt-1">PostgreSQL Kernel</div>
+                    </div>
+                  </div>
+
+                  {/* POS Cashier Main Workspace Mockup */}
+                  <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
+                    <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900 lg:col-span-8">
+                      <div className="flex items-center justify-between border-b border-slate-100 pb-2 mb-3 dark:border-slate-800">
+                        <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                          نقطة البيع السريعة • الوردية الصباحية
+                        </span>
+                        <span className="text-xs font-mono text-emerald-600 font-bold">
+                          ● طابعة الكاشير جاهزة (80mm)
+                        </span>
+                      </div>
+                      <div className="space-y-2 text-xs">
+                        <div className="flex items-center justify-between rounded-lg bg-slate-50 p-2.5 dark:bg-slate-800">
+                          <span className="font-medium text-slate-800 dark:text-slate-200">
+                            جبنة بيضاء فيتا 500 جم (باركود: 62210492810)
+                          </span>
+                          <span className="font-bold font-mono">45.00 ج.م</span>
+                        </div>
+                        <div className="flex items-center justify-between rounded-lg bg-slate-50 p-2.5 dark:bg-slate-800">
+                          <span className="font-medium text-slate-800 dark:text-slate-200">
+                            عصير برتقال طبيعي 1L × 2
+                          </span>
+                          <span className="font-bold font-mono">60.00 ج.م</span>
+                        </div>
+                        <div className="flex items-center justify-between rounded-lg bg-slate-50 p-2.5 dark:bg-slate-800">
+                          <span className="font-medium text-slate-800 dark:text-slate-200">
+                            شاي أسود 100 فتلة فاخر
+                          </span>
+                          <span className="font-bold font-mono">85.00 ج.م</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col justify-between rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900 lg:col-span-4">
+                      <div>
+                        <div className="text-xs font-bold text-slate-800 dark:text-slate-200 mb-2">
+                          إجمالي الحساب المستحق
+                        </div>
+                        <div className="text-2xl font-black text-brand font-mono">
+                          216.60 ج.م
+                        </div>
+                        <div className="text-[10px] text-slate-400">
+                          شامل ضريبة القيمة المضافة 14%
+                        </div>
+                      </div>
+                      <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 space-y-2">
+                        <div className="flex items-center justify-between text-xs text-slate-500">
+                          <span>رمز ZATCA QR:</span>
+                          <Badge variant="success" className="text-[9px]">
+                            مضمن بالفاتورة
+                          </Badge>
+                        </div>
+                        <div className="flex items-center justify-between text-xs text-slate-500">
+                          <span>درج النقدية:</span>
+                          <span className="font-mono text-emerald-600 font-bold">نبضة RJ11 ✓</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <Button nativeButton={false} render={<Link to="/signup" />} className="font-semibold shrink-0">
-                طلب تهيئة هذه البيئة
-              </Button>
+
+              {/* Layered Floating Accent Pill 1 (Top Left) */}
+              <motion.div
+                animate={{ y: [0, -6, 0] }}
+                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                className="hidden sm:flex absolute -top-5 -start-6 items-center gap-2.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 shadow-lg dark:border-slate-700 dark:bg-slate-800"
+              >
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600 dark:bg-emerald-950 dark:text-emerald-400">
+                  <Printer className="h-4 w-4" />
+                </div>
+                <div className="text-xs">
+                  <div className="font-bold text-slate-900 dark:text-white">إيصال حراري 80mm</div>
+                  <div className="text-[10px] text-slate-400">طباعة فورية + نبضة الدرج</div>
+                </div>
+              </motion.div>
+
+              {/* Layered Floating Accent Pill 2 (Bottom Right) */}
+              <motion.div
+                animate={{ y: [0, 6, 0] }}
+                transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
+                className="hidden sm:flex absolute -bottom-5 -end-6 items-center gap-2.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 shadow-lg dark:border-slate-700 dark:bg-slate-800"
+              >
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 text-brand dark:bg-blue-950 dark:text-brand-light">
+                  <Lock className="h-4 w-4" />
+                </div>
+                <div className="text-xs">
+                  <div className="font-bold text-slate-900 dark:text-white">PostgreSQL RLS</div>
+                  <div className="text-[10px] text-slate-400">عزل أمني تام للمنشآت</div>
+                </div>
+              </motion.div>
+            </motion.div>
+          </div>
+        </section>
+
+        {/* ==================================================================== */}
+        {/* 2. THE PROBLEM VS. SOLUTION NARRATIVE                                 */}
+        {/* ==================================================================== */}
+        <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="rounded-3xl border border-slate-200 bg-white p-8 sm:p-12 dark:border-slate-800 dark:bg-slate-900 space-y-8">
+            <div className="text-center max-w-2xl mx-auto space-y-2">
+              <Badge variant="outline" className="bg-rose-50 text-rose-700 dark:bg-rose-950/40">
+                المقارنة الهندسية
+              </Badge>
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">
+                لماذا تفشل أنظمة الـ ERP التقليدية؟ وكيف يعالج ميزان هذه المعضلة؟
+              </h2>
+            </div>
+
+            <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+              {/* Problem Column */}
+              <div className="rounded-2xl border border-rose-200 bg-rose-50/40 p-6 dark:border-rose-900/50 dark:bg-rose-950/20 space-y-4">
+                <h3 className="font-bold text-base text-rose-900 dark:text-rose-300 flex items-center gap-2">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-rose-200 text-rose-800 text-xs font-black">
+                    ✕
+                  </span>
+                  الأنظمة الكلاسيكية والبرامج الجامدة
+                </h3>
+                <ul className="space-y-3 text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                  <li className="flex items-start gap-2">
+                    <span className="text-rose-500 font-bold">•</span>
+                    <span>تكلفة تأسيسية باهظة وعقود صيانة معقدة تجبرك على الدفع لميزات لا تستخدمها.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-rose-500 font-bold">•</span>
+                    <span>بطء شديد في شاشات الكاشير وتعطل البيع عند انقطاع كابل الإنترنت.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-rose-500 font-bold">•</span>
+                    <span>تشتت البيانات بين برامج منفصلة لكل فرع وصعوبة مطابقة الخزائن والعهد.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-rose-500 font-bold">•</span>
+                    <span>صعوبة بالغة في التوسع أو إضافة أنشطة جديدة للمنشأة.</span>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Solution Column */}
+              <div className="rounded-2xl border border-emerald-200 bg-emerald-50/40 p-6 dark:border-emerald-900/50 dark:bg-emerald-950/20 space-y-4">
+                <h3 className="font-bold text-base text-emerald-900 dark:text-emerald-300 flex items-center gap-2">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-200 text-emerald-800 text-xs font-black">
+                    ✓
+                  </span>
+                  معمارية ميزان ERP المعيارية الحديثة
+                </h3>
+                <ul className="space-y-3 text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                  <li className="flex items-start gap-2">
+                    <span className="text-emerald-600 font-bold">•</span>
+                    <span>معيارية تامة: 47 موديولاً متخصصاً تفعّل ما تحتاجه فقط بنقرة زر واحدة.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-emerald-600 font-bold">•</span>
+                    <span>سرعة استجابة أقل من 3 ثوانٍ للكاشير مع عمل كامل بدون إنترنت (Offline-First).</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-emerald-600 font-bold">•</span>
+                    <span>شجرة حسابات موحدة وقيد محاسبي مزدوج يرحل العمليات تلقائياً في لحظتها.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-emerald-600 font-bold">•</span>
+                    <span>عزل رياضي بقواعد بيانات PostgreSQL RLS بدون أي مخاطر تسريب.</span>
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Pluggable Modular Architecture Section */}
-      <section id="modules" className="py-20 lg:py-28 border-b">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6">
-          <div className="text-center max-w-3xl mx-auto">
-            <Badge variant="secondary" className="mb-3 font-semibold">بنية التطبيقات المرنة</Badge>
-            <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl">
-              14+ وحدة نمطية تعمل بتناغم تام — فعّل ما تحتاجه فقط
+        {/* ==================================================================== */}
+        {/* 3. INTERACTIVE PRODUCT SHOWCASE COMPONENT (THE CENTERPIECE)          */}
+        {/* ==================================================================== */}
+        <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-6">
+          <div className="text-center max-w-2xl mx-auto space-y-2">
+            <Badge variant="outline" className="bg-brand/10 text-brand">
+              محاكاة تفاعلية حية
+            </Badge>
+            <h2 className="text-2xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight">
+              استكشف الموديول المناسب لنشاطك عملياً
             </h2>
-            <p className="mt-3 text-muted-foreground text-sm sm:text-base">
-              صممت منظومة Vendora Modular Engine لتتيح لكل شركة تشغيل الوحدات النمطية التي تخدم نشاطها فقط، مع الاحتفاظ بإمكانية التوسع والتفعيل بضغطة زر دون إعادة تثبيت النظام.
+            <p className="text-xs sm:text-sm text-slate-500">
+              اختر أي موديول أدناه لتجربة واجهته التفاعلية، مسح الباركود، ومعاينة الفاتورة الحرارية
             </p>
           </div>
 
-          {/* Category Filter Pills */}
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-2">
-            {MODULE_CATEGORIES.map((cat) => (
-              <button
-                key={cat.id}
-                type="button"
-                onClick={() => setSelectedCategory(cat.id)}
-                className={`rounded-xl border px-4 py-2 text-xs font-semibold transition ${
-                  selectedCategory === cat.id
-                    ? "border-primary bg-primary text-primary-foreground shadow-xs"
-                    : "border-border bg-card text-muted-foreground hover:text-foreground"
+          <InteractiveProductShowcase />
+        </section>
+
+        {/* ==================================================================== */}
+        {/* 4. HARDWARE, IOT & AUTOMATION SHOWCASE                                */}
+        {/* ==================================================================== */}
+        <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="rounded-3xl border border-slate-200 bg-white p-8 sm:p-12 dark:border-slate-800 dark:bg-slate-900 space-y-8">
+            <div className="text-center max-w-2xl mx-auto space-y-2">
+              <Badge variant="outline" className="bg-brand/10 text-brand">
+                العتاد وأجهزة الكاشير
+              </Badge>
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">
+                تكامل مباشر مع كافة أجهزة نقاط البيع والطباعة
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-500">
+                لا حاجة لتثبيت برامج تشغيل خارجية أو وسيطة، يتصل ميزان بالأجهزة عبر بروتوكولات معتمدة
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="rounded-2xl border border-slate-200 bg-slate-50/50 p-5 dark:border-slate-800 dark:bg-slate-950/50 space-y-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand text-white shadow-xs">
+                  <Printer className="h-5 w-5" />
+                </div>
+                <h3 className="font-bold text-sm text-slate-900 dark:text-white">
+                  طابعات الإيصالات الحرارية
+                </h3>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  دعم بروتوكول ESC/POS بمقاسي 80mm و58mm عبر USB، الشبكة، أو البلوتوث مع قطع الورق
+                  التلقائي.
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-slate-200 bg-slate-50/50 p-5 dark:border-slate-800 dark:bg-slate-950/50 space-y-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand text-white shadow-xs">
+                  <Barcode className="h-5 w-5" />
+                </div>
+                <h3 className="font-bold text-sm text-slate-900 dark:text-white">
+                  قارئات الباركود السريعة
+                </h3>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  محرك استماع عالي السرعة (useBarcodeScanner) يميز المسح الآلي عن الكتابة اليدوية مع نغمة
+                  تأكيد فورية.
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-slate-200 bg-slate-50/50 p-5 dark:border-slate-800 dark:bg-slate-950/50 space-y-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand text-white shadow-xs">
+                  <ShieldCheck className="h-5 w-5" />
+                </div>
+                <h3 className="font-bold text-sm text-slate-900 dark:text-white">
+                  رمز ZATCA / ETA QR المعتمد
+                </h3>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  توليد كود TLV Base64 مشفر وفق متطلبات هيئة الزكاة والجمارك ومنظومة الفاتورة
+                  الإلكترونية المصرية.
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-slate-200 bg-slate-50/50 p-5 dark:border-slate-800 dark:bg-slate-950/50 space-y-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand text-white shadow-xs">
+                  <Cpu className="h-5 w-5" />
+                </div>
+                <h3 className="font-bold text-sm text-slate-900 dark:text-white">
+                  أجهزة البصمة ZKTeco
+                </h3>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  مزامنة تلقائية لبصمات الحضور والانصراف عبر بروتوكول TCP/IP (منفذ 4370) لترحيلها لمسير
+                  الرواتب.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ==================================================================== */}
+        {/* 5. PRICING PREVIEW SECTION                                           */}
+        {/* ==================================================================== */}
+        <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-8">
+          <div className="text-center max-w-2xl mx-auto space-y-3">
+            <Badge variant="outline" className="bg-brand/10 text-brand">
+              باقات شفافة بلا قيود خفية
+            </Badge>
+            <h2 className="text-2xl sm:text-4xl font-black text-slate-900 dark:text-white">
+              اختر الخطة المناسبة لحجم منشأتك
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-500">
+              ادفع سنوياً ووفر 20%، أو اشترك شهرياً مع إمكانية الإلغاء أو الترقية في أي وقت
+            </p>
+
+            {/* Monthly / Annual Toggle */}
+            <div className="pt-2 flex items-center justify-center gap-3">
+              <span
+                className={`text-xs font-bold ${
+                  billingCycle === "monthly" ? "text-slate-900 dark:text-white" : "text-slate-400"
                 }`}
               >
-                {cat.name}
+                الدفع الشهري
+              </span>
+              <button
+                onClick={() => setBillingCycle(billingCycle === "annual" ? "monthly" : "annual")}
+                className="relative h-6 w-12 rounded-full bg-brand p-1 transition-colors"
+                aria-label="تبديل دورة الدفع"
+              >
+                <div
+                  className={`h-4 w-4 rounded-full bg-white transition-transform ${
+                    billingCycle === "annual" ? "translate-x-6 rtl:-translate-x-6" : "translate-x-0"
+                  }`}
+                />
               </button>
-            ))}
-          </div>
-
-          {/* Module Cards Grid */}
-          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {activeCategory.modules.map((m) => (
-              <div key={m.code} className="rounded-xl border bg-card p-5 shadow-2xs hover:shadow-xs transition">
-                <div className="flex items-center justify-between">
-                  <span className="font-mono text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-md">
-                    {m.code}
-                  </span>
-                  <span className="flex size-2 rounded-full bg-emerald-500" title="جاهز للتشغيل" />
-                </div>
-                <h4 className="mt-3 font-bold text-sm text-foreground">{m.name}</h4>
-                <p className="mt-1 text-xs text-muted-foreground leading-relaxed">{m.desc}</p>
-                <div className="mt-4 pt-3 border-t text-[11px] text-muted-foreground flex items-center justify-between">
-                  <span>التوافق:</span>
-                  <span className="font-medium text-foreground">Cloud / LAN / Offline</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Printing & Hardware Engine Section */}
-      <section id="printing" className="py-20 lg:py-28 border-b bg-muted/15">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6">
-          <div className="grid gap-12 lg:grid-cols-12 items-center">
-            <div className="lg:col-span-6 space-y-6">
-              <Badge variant="secondary" className="gap-1.5 font-semibold">
-                <Printer className="size-3.5 text-primary" />
-                محرك الطباعة والعتاد (Printing Engine)
-              </Badge>
-              <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl">
-                طباعة إيصالات حرارية وفواتير ضريبية بدون وسيط أو تعريفات معقدة
-              </h2>
-              <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-                يحتوي نظام Vendora على محرك طباعة مستقل (<code className="font-mono text-xs bg-muted px-1.5 py-0.5 rounded">engines/printing</code>) مهيأ بالكامل لإصدار إيصالات نقاط البيع الحرارية بمقاسي 80mm و58mm مع محاذاة النص العربي، QR Code، ونبضات فتح درج النقدية التلقائي.
-              </p>
-
-              <div className="space-y-3">
-                <div className="flex items-start gap-3">
-                  <span className="grid size-8 place-items-center rounded-lg bg-primary/10 text-primary shrink-0 mt-0.5">
-                    <Check className="size-4" />
-                  </span>
-                  <div>
-                    <h4 className="text-sm font-bold">دعم طابعات البون الحرارية (ESC/POS)</h4>
-                    <p className="text-xs text-muted-foreground">
-                      ربط مباشر عبر USB، Network (TCP/IP)، أو Bluetooth مع دعم قص الورق وفتح الدرج.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <span className="grid size-8 place-items-center rounded-lg bg-primary/10 text-primary shrink-0 mt-0.5">
-                    <Check className="size-4" />
-                  </span>
-                  <div>
-                    <h4 className="text-sm font-bold">فواتير ضريبية قياس A4 معتمدة</h4>
-                    <p className="text-xs text-muted-foreground">
-                      قوالب فواتير رسمية للشركات والموردين والمستخلصات مزودة ببيانات السجل التجاري والضريبي.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <span className="grid size-8 place-items-center rounded-lg bg-primary/10 text-primary shrink-0 mt-0.5">
-                    <Check className="size-4" />
-                  </span>
-                  <div>
-                    <h4 className="text-sm font-bold">طباعة ملصقات الباركود والأسعار</h4>
-                    <p className="text-xs text-muted-foreground">
-                      توليد وطباعة باركود الأصناف وتواريخ الصلاحية مباشرة على طابعات الملصقات الحرارية.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="pt-2">
-                <Button nativeButton={false} render={<Link to="/signup" />} className="font-semibold">
-                  <span>تجربة محرك الطباعة في نظامك</span>
-                  <ArrowLeft className="size-4 mr-1.5" />
-                </Button>
-              </div>
-            </div>
-
-            {/* Thermal Receipt Visual Preview Box */}
-            <div className="lg:col-span-6 flex justify-center">
-              <div className="w-full max-w-sm rounded-2xl border bg-card p-6 shadow-xl relative overflow-hidden font-mono text-xs">
-                <div className="absolute top-0 inset-x-0 h-2 bg-gradient-to-r from-primary/60 via-primary to-primary/60" />
-                
-                {/* Simulated thermal receipt content */}
-                <div className="text-center pb-4 border-b border-dashed border-border space-y-1">
-                  <div className="text-base font-black tracking-tight text-foreground font-sans">
-                    VENDORA ERP · فندق ومطعم الواحة
-                  </div>
-                  <div className="text-[11px] text-muted-foreground">فرع التجمع الخامس — القاهرة</div>
-                  <div className="text-[11px] text-muted-foreground">الرقم الضريبي: 394-821-492</div>
-                  <div className="text-[10px] text-muted-foreground pt-1">فاتورة ضريبية مبسطة #INV-2026-0814</div>
-                </div>
-
-                <div className="py-3 border-b border-dashed border-border text-[11px] space-y-1">
-                  <div className="flex justify-between">
-                    <span>التاريخ: {new Date().toLocaleDateString("ar-EG")}</span>
-                    <span>الكاشير: عمر محمود</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>النوع: صالة (طاولة 12)</span>
-                    <span>الوقت: 14:32</span>
-                  </div>
-                </div>
-
-                {/* Items */}
-                <div className="py-3 border-b border-dashed border-border space-y-2">
-                  <div className="flex justify-between font-bold text-foreground">
-                    <span>الصنف</span>
-                    <span>الكمية × السعر = الإجمالي</span>
-                  </div>
-                  <div className="flex justify-between text-muted-foreground">
-                    <span>وجبة ميكس جريل عائلي</span>
-                    <span>1 × 450.00 = 450.00</span>
-                  </div>
-                  <div className="flex justify-between text-muted-foreground">
-                    <span>سلطات ومقبلات مشكلة</span>
-                    <span>2 × 45.00 = 90.00</span>
-                  </div>
-                  <div className="flex justify-between text-muted-foreground">
-                    <span>عصير برتقال فريش</span>
-                    <span>3 × 35.00 = 105.00</span>
-                  </div>
-                </div>
-
-                {/* Totals */}
-                <div className="py-3 border-b border-dashed border-border space-y-1.5">
-                  <div className="flex justify-between text-muted-foreground">
-                    <span>المجموع قبل الضريبة:</span>
-                    <span className="font-bold text-foreground">645.00 ج.م</span>
-                  </div>
-                  <div className="flex justify-between text-muted-foreground">
-                    <span>ضريبة القيمة المضافة (14%):</span>
-                    <span className="font-bold text-foreground">90.30 ج.م</span>
-                  </div>
-                  <div className="flex justify-between text-sm font-black text-foreground pt-1 border-t">
-                    <span>الإجمالي النهائي المستحق:</span>
-                    <span className="text-primary font-black">735.30 ج.م</span>
-                  </div>
-                </div>
-
-                {/* Simulated QR Code box */}
-                <div className="pt-4 text-center space-y-2">
-                  <div className="mx-auto size-24 border border-dashed rounded-lg bg-muted/40 grid place-items-center text-[9px] text-muted-foreground">
-                    [ رمز استجابة QR معتمد ]
-                  </div>
-                  <p className="text-[10px] text-muted-foreground">
-                    شكراً لزيارتكم · معتمد لدى هيئة الضرائب العامة
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Pricing Section */}
-      <section id="pricing" className="py-20 lg:py-28 border-b">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6">
-          <div className="text-center max-w-3xl mx-auto">
-            <Badge variant="secondary" className="mb-3 font-semibold">باقات واضحة وبلا مفاجآت</Badge>
-            <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl">
-              استثمر في نظام ينمو مع حجم أرباحك وتوسعك
-            </h2>
-            <p className="mt-3 text-muted-foreground text-sm sm:text-base">
-              ابدأ اليوم بـ <strong className="text-foreground">14 يوماً مجاناً</strong> بدون بطاقة ائتمانية، واختر باقتك وقتما تشاء.
-            </p>
-
-            {/* Billing Switcher */}
-            <div className="mt-8 flex items-center justify-center">
-              <div className="flex items-center rounded-xl border bg-muted/40 p-1">
-                <button
-                  type="button"
-                  onClick={() => setBillingCycle("monthly")}
-                  className={`rounded-lg px-4 py-2 text-xs sm:text-sm font-semibold transition ${
-                    billingCycle === "monthly"
-                      ? "bg-background text-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  الدفع الشهري
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setBillingCycle("annual")}
-                  className={`flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs sm:text-sm font-semibold transition ${
-                    billingCycle === "annual"
-                      ? "bg-background text-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  <span>الدفع السنوي</span>
-                  <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
-                    وفّر شهرين (17%)
-                  </span>
-                </button>
-              </div>
+              <span
+                className={`text-xs font-bold flex items-center gap-1.5 ${
+                  billingCycle === "annual" ? "text-slate-900 dark:text-white" : "text-slate-400"
+                }`}
+              >
+                <span>الدفع السنوي</span>
+                <Badge variant="success" className="text-[10px]">
+                  خصم 20%
+                </Badge>
+              </span>
             </div>
           </div>
 
-          {/* Pricing Grid */}
-          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {PLANS.map((p) => {
-              const price = billingCycle === "monthly" ? p.price_egp : Math.round(p.price_annual_egp / 12);
+          {/* Pricing Cards Grid */}
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+            {PLANS.map((plan) => {
+              const price =
+                billingCycle === "annual"
+                  ? Math.round(plan.price_annual_egp / 12)
+                  : plan.price_egp;
               return (
                 <div
-                  key={p.id}
-                  className={`relative flex flex-col justify-between rounded-2xl border bg-card p-6 transition hover:shadow-md ${
-                    p.popular ? "border-primary ring-2 ring-primary/20 shadow-md" : ""
+                  key={plan.id}
+                  className={`relative flex flex-col justify-between rounded-2xl border p-6 transition-all ${
+                    plan.popular
+                      ? "border-brand bg-white shadow-xl ring-2 ring-brand/30 dark:bg-slate-900"
+                      : "border-slate-200 bg-white/80 dark:border-slate-800 dark:bg-slate-900/60"
                   }`}
                 >
-                  {p.popular && (
-                    <Badge className="absolute -top-3 right-6 bg-primary text-primary-foreground font-semibold text-xs">
+                  {plan.popular && (
+                    <Badge className="absolute -top-3 start-1/2 -translate-x-1/2 bg-brand text-white text-[10px] font-bold">
                       الأكثر طلباً
                     </Badge>
                   )}
 
                   <div>
-                    <h3 className="text-xl font-bold">{p.name}</h3>
-                    <p className="mt-1 text-xs text-muted-foreground min-h-[32px]">{p.tagline}</p>
+                    <h3 className="font-bold text-base text-slate-900 dark:text-white">
+                      {plan.name}
+                    </h3>
+                    <p className="mt-1 text-xs text-slate-500 line-clamp-2">{plan.tagline}</p>
 
-                    <div className="mt-5 border-t border-b py-4">
+                    <div className="mt-4 border-y border-slate-100 py-3 dark:border-slate-800">
                       <div className="flex items-baseline gap-1">
-                        {price === 0 ? (
-                          <span className="text-3xl font-extrabold text-emerald-600 dark:text-emerald-400">
-                            مجاناً
-                          </span>
-                        ) : (
-                          <>
-                            <span className="num text-4xl font-black tracking-tight">{price.toLocaleString("en-US")}</span>
-                            <span className="text-xs font-semibold text-muted-foreground mr-1">ج.م / شهرياً</span>
-                          </>
-                        )}
+                        <span className="text-3xl font-black font-mono text-slate-900 dark:text-white">
+                          {price === 0 ? "مجاناً" : `${price} ج.م`}
+                        </span>
+                        {price > 0 && <span className="text-xs text-slate-400">/ شهرياً</span>}
                       </div>
-                      {billingCycle === "annual" && p.price_annual_egp > 0 && (
-                        <p className="mt-1 text-[11px] text-muted-foreground">
-                          تُدفع سنوياً بقيمة <span className="num font-semibold">{p.price_annual_egp.toLocaleString("en-US")} ج.م</span>
-                        </p>
-                      )}
+                      <div className="text-[11px] text-slate-400 mt-0.5">
+                        {billingCycle === "annual" && price > 0
+                          ? `تدفع ${plan.price_annual_egp} ج.م سنوياً`
+                          : "فاتورة شهرية مرنة"}
+                      </div>
                     </div>
 
-                    {/* Features list */}
-                    <div className="mt-5">
-                      <ul className="flex flex-col gap-2 text-xs">
-                        {p.features.map((f) => (
-                          <li key={f} className="flex items-start gap-2 text-foreground/90">
-                            <Check className="size-4 shrink-0 text-emerald-600 dark:text-emerald-400 mt-0.5" />
-                            <span>{f}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
+                    <ul className="mt-4 space-y-2 text-xs text-slate-600 dark:text-slate-400">
+                      {plan.features.map((feat, fIdx) => (
+                        <li key={fIdx} className="flex items-start gap-2">
+                          <Check className="h-3.5 w-3.5 text-emerald-500 font-bold mt-0.5" />
+                          <span>{feat}</span>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
 
-                  <div className="mt-8 pt-4 border-t">
+                  <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800">
                     <Button
-                      variant={p.popular ? "default" : "outline"}
-                      className="w-full font-semibold"
-                      nativeButton={false}
+                      className={`w-full text-xs font-bold ${
+                        plan.popular
+                          ? "bg-brand text-white hover:bg-brand/90"
+                          : "bg-slate-800 text-white hover:bg-slate-900 dark:bg-slate-700"
+                      }`}
                       render={<Link to="/signup" />}
+                      nativeButton={false}
                     >
-                      <span>ابدأ تجربتك</span>
-                      <ArrowLeft className="size-4 mr-1.5" />
+                      {price === 0 ? "بدء التجربة المجانية" : "اختيار الباقة"}
                     </Button>
                   </div>
                 </div>
@@ -934,153 +588,105 @@ export default function LandingPage() {
             })}
           </div>
 
-          <div className="mt-10 text-center">
+          <div className="text-center pt-2">
             <Link
               to="/pricing"
-              className="text-sm font-semibold text-primary underline underline-offset-4 hover:text-primary/80"
+              className="text-xs font-bold text-brand hover:underline inline-flex items-center gap-1"
             >
-              عرض جدول مقارنة المزايا الكامل وحساب التكاليف المخصصة ←
+              <span>عرض جدول المقارنة التفصيلي لكافة المزايا والحدود</span>
+              <ArrowRight className="h-3.5 w-3.5 rtl:rotate-180" />
             </Link>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Control Plane & Security Spotlight (Admoon) */}
-      <section className="py-16 border-b bg-gradient-to-r from-card via-background to-card">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6">
-          <div className="rounded-2xl border bg-muted/20 p-8 sm:p-12 flex flex-col lg:flex-row items-center justify-between gap-8">
-            <div className="space-y-3 max-w-2xl">
-              <Badge variant="outline" className="gap-1.5 font-semibold text-xs border-primary/40 text-primary">
-                <ShieldCheck className="size-3.5" />
-                مركز تحكم المنصة والمشرف العام (Admoon Control Plane)
+        {/* ==================================================================== */}
+        {/* 6. INTERACTIVE FAQ ACCORDION                                         */}
+        {/* ==================================================================== */}
+        <section className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 space-y-6">
+          <div className="text-center space-y-2">
+            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">
+              الأسئلة الشائعة حول المنظومة
+            </h2>
+            <p className="text-xs text-slate-500">إجابات واضحة ومباشرة لأهم استفساراتك</p>
+          </div>
+
+          <div className="space-y-3">
+            {faqs.map((faq, idx) => {
+              const isOpen = openFaqIndex === idx;
+              return (
+                <div
+                  key={idx}
+                  className="rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 overflow-hidden"
+                >
+                  <button
+                    onClick={() => toggleFaq(idx)}
+                    className="flex w-full items-center justify-between p-5 text-start font-bold text-sm text-slate-900 dark:text-white hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition-colors"
+                  >
+                    <span>{faq.q}</span>
+                    <ChevronDown
+                      className={`h-4 w-4 text-slate-400 transition-transform ${
+                        isOpen ? "rotate-180" : ""
+                      }`}
+                    />
+                  </button>
+                  <AnimatePresence>
+                    {isOpen && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="px-5 pb-5 text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed border-t border-slate-100 dark:border-slate-800/80 pt-3"
+                      >
+                        {faq.a}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* ==================================================================== */}
+        {/* 7. FINAL HIGH-CONVERTING CONVERSION BANNER                            */}
+        {/* ==================================================================== */}
+        <section className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-slate-900 via-brand-dark to-slate-900 p-8 sm:p-14 text-center text-white shadow-2xl">
+            <div className="relative z-10 space-y-6 max-w-2xl mx-auto">
+              <Badge variant="outline" className="border-white/20 bg-white/10 text-white text-xs">
+                انضم إلى الجيل الجديد
               </Badge>
-              <h3 className="text-2xl font-black tracking-tight">
-                أنت تملك السيطرة الكاملة على كافة مستأجري وخوادم المنصة
-              </h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                لوحة تحكم مركزية مخصصة لمديري ومطوري منصة Vendora لإدارة اشتراكات الشركات، مراقبة استهلاك الموارد، مراجعة سجلات التدقيق الأمني (Audit Logs)، وتوليد تراخيص التشغيل المكتبي دون اتصال بضغطة زر.
+              <h2 className="text-3xl sm:text-4xl font-black tracking-tight leading-tight">
+                ابدأ رحلة التحول الرقمي لمنشأتك مع ميزان ERP اليوم
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                14 يوماً تجربة كاملة مجاناً لكافة الموديولات. تهيئة سهلة في 10 دقائق، دعم فني متواصل،
+                وضمان استقرار لا يتوقف.
               </p>
-            </div>
-            <div className="flex flex-wrap items-center gap-3 shrink-0">
-              <Button
-                variant="default"
-                nativeButton={false}
-                render={<Link to="/admoon" />}
-                className="font-bold shadow-md"
-              >
-                <ShieldCheck className="size-4 ml-1.5" />
-                <span>فتح بوابة Admoon</span>
-              </Button>
-              <Button
-                variant="outline"
-                nativeButton={false}
-                render={<Link to="/admoon/tenants" />}
-                className="font-semibold"
-              >
-                إدارة المستأجرين
-              </Button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Final Call to Action */}
-      <section className="py-24 text-center">
-        <div className="mx-auto max-w-3xl px-4 sm:px-6">
-          <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl">
-            جاهز لتحديث منظومة إدارة أعمالك اليوم؟
-          </h2>
-          <p className="mt-4 text-muted-foreground text-sm sm:text-base leading-relaxed">
-            أنشئ مساحة عملك في أقل من دقيقة، اختر نشاطك التجاري، وستجد شاشاتك وبياناتك التجريبية جاهزة للعمل الفوري — بدون بطاقة دفع وبدعم فني كامل.
-          </p>
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-            <Button
-              size="lg"
-              nativeButton={false}
-              render={<Link to="/signup" />}
-              className="px-8 font-bold shadow-md"
-            >
-              <span>ابدأ تجربتك المجانية الآن</span>
-              <ArrowLeft className="size-5 mr-2" />
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              nativeButton={false}
-              render={<Link to="/login" />}
-              className="font-semibold"
-            >
-              تسجيل الدخول للنظام
-            </Button>
-          </div>
-        </div>
-      </section>
-
-      {/* Official Footer */}
-      <footer className="border-t bg-card py-12 text-sm text-muted-foreground">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6">
-          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <span className="grid size-8 place-items-center rounded-lg bg-primary text-primary-foreground font-black text-sm">
-                  V
-                </span>
-                <span className="text-base font-bold text-foreground">Vendora ERP</span>
+              <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+                <Button
+                  size="lg"
+                  className="bg-brand text-white font-bold hover:bg-brand/90 px-8 text-sm shadow-lg"
+                  render={<Link to="/signup" />}
+                  nativeButton={false}
+                >
+                  بدء التجربة المجانية الآن
+                </Button>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="border-white/20 bg-white/10 text-white hover:bg-white/20 text-xs sm:text-sm font-semibold"
+                  render={<Link to="/contact" />}
+                  nativeButton={false}
+                >
+                  طلب استشارة مبيعات
+                </Button>
               </div>
-              <p className="text-xs leading-relaxed text-muted-foreground">
-                منظومة تخطيط موارد المؤسسات المتطورة. تدعم السحابية، الشبكات المحلية، والتشغيل المكتبي المستقل لنوادي الجيم، المطاعم، المتاجر، والمؤسسات.
-              </p>
-            </div>
-
-            <div>
-              <h4 className="text-xs font-bold uppercase tracking-wider text-foreground mb-3">
-                حلول القطاعات
-              </h4>
-              <ul className="space-y-2 text-xs">
-                <li><a href="#industries" className="hover:text-foreground">صالات الجيم واللياقة (Gym-POS)</a></li>
-                <li><a href="#industries" className="hover:text-foreground">المطاعم والكافيهات (Restaurant-POS)</a></li>
-                <li><a href="#industries" className="hover:text-foreground">التجزئة والسوبرماركت (Retail-POS)</a></li>
-                <li><a href="#industries" className="hover:text-foreground">المدارس والأكاديميات التعليمية</a></li>
-                <li><a href="#industries" className="hover:text-foreground">المراكز الطبية والعيادات</a></li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="text-xs font-bold uppercase tracking-wider text-foreground mb-3">
-                المنصة والتقنية
-              </h4>
-              <ul className="space-y-2 text-xs">
-                <li><a href="#deployments" className="hover:text-foreground">بيئات التشغيل (Cloud, LAN, Offline)</a></li>
-                <li><a href="#modules" className="hover:text-foreground">معمارية الوحدات النمطية (14+ Module)</a></li>
-                <li><a href="#printing" className="hover:text-foreground">محرك الطباعة وعتاد الكاشير</a></li>
-                <li><Link to="/pricing" className="hover:text-foreground">الخطط وباقات الاشتراك</Link></li>
-                <li><Link to="/admoon" className="hover:text-foreground">مركز المشرف العام (Admoon)</Link></li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="text-xs font-bold uppercase tracking-wider text-foreground mb-3">
-                الحساب والوصول
-              </h4>
-              <ul className="space-y-2 text-xs">
-                <li><Link to="/signup" className="hover:text-foreground">إنشاء مساحة عمل جديدة</Link></li>
-                <li><Link to="/login" className="hover:text-foreground">تسجيل الدخول</Link></li>
-                <li><Link to="/onboarding" className="hover:text-foreground">معالج تهيئة المنشأة</Link></li>
-                <li><Link to="/admoon/login" className="hover:text-foreground">دخول إدارة المنصة</Link></li>
-              </ul>
             </div>
           </div>
-
-          <div className="mt-12 pt-6 border-t flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
-            <p>© {new Date().getFullYear()} Vendora Multi-Tenant SaaS ERP. جميع الحقوق محفوظة.</p>
-            <div className="flex items-center gap-4">
-              <span>الإصدار 3.2 المستقر</span>
-              <span>·</span>
-              <span className="text-emerald-600 dark:text-emerald-400 font-medium">كافة الخوادم تعمل بكفاءة 100%</span>
-            </div>
-          </div>
-        </div>
-      </footer>
-    </div>
+        </section>
+      </div>
+    </MarketingLayout>
   );
 }

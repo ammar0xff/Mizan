@@ -20,6 +20,7 @@ import { PLANS, Plan } from "./plans";
 import { Button } from "@/components/kit/button";
 import { Badge } from "@/components/kit/badge";
 import { Input } from "@/components/kit/input";
+import { MarketingLayout } from "./MarketingLayout";
 import {
   Dialog,
   DialogContent,
@@ -187,48 +188,8 @@ export default function PricingPage() {
   };
 
   return (
-    <div className="min-h-svh bg-background text-foreground selection:bg-primary/20" dir="rtl">
-      {/* Official Header */}
-      <header className="sticky top-0 z-30 border-b bg-background/90 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
-          <Link to="/" className="flex items-center gap-3">
-            <span className="grid size-10 place-items-center rounded-xl bg-primary text-primary-foreground font-black shadow-sm">
-              V
-            </span>
-            <div className="flex flex-col">
-              <span className="text-lg font-bold tracking-tight">Vendora ERP</span>
-              <span className="text-[10px] text-muted-foreground font-medium">المنظومة السحابية المتكاملة</span>
-            </div>
-          </Link>
-          <div className="flex items-center gap-3">
-            <Link
-              to="/"
-              className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition hover:text-foreground"
-            >
-              الرئيسية
-            </Link>
-            {user ? (
-              <Button variant="outline" nativeButton={false} render={<Link to="/app" />}>
-                الرجوع للنظام
-              </Button>
-            ) : (
-              <>
-                <Link
-                  to="/login"
-                  className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition hover:text-foreground"
-                >
-                  تسجيل الدخول
-                </Link>
-                <Button nativeButton={false} render={<Link to="/signup" />}>
-                  ابدأ مجاناً
-                </Button>
-              </>
-            )}
-          </div>
-        </div>
-      </header>
-
-      <main className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
+    <MarketingLayout>
+      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 space-y-12">
         {/* Hero Section */}
         <div className="mx-auto max-w-3xl text-center">
           <Badge variant="secondary" className="mb-4 gap-1.5 px-3 py-1 font-medium">
@@ -484,7 +445,7 @@ export default function PricingPage() {
             الدخول إلى لوحة قيادة المشرف العام (Admoon Control Plane)
           </Link>
         </div>
-      </main>
+      </div>
 
       {/* Interactive Checkout & Payment Modal */}
       <Dialog open={checkoutModalOpen} onOpenChange={setCheckoutModalOpen}>
@@ -736,10 +697,6 @@ export default function PricingPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      <footer className="mt-20 border-t py-8 text-center text-xs text-muted-foreground">
-        <p>© {new Date().getFullYear()} Vendora SaaS ERP Platform — منظومة تخطيط موارد المؤسسات المتكاملة.</p>
-      </footer>
-    </div>
+    </MarketingLayout>
   );
 }

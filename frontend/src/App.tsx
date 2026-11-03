@@ -69,6 +69,19 @@ const AdmoonMonitoringHealth = lazy(() => import("@/admoon/pages/MonitoringHealt
 const AdmoonAuditLogs = lazy(() => import("@/admoon/pages/AuditLogs"));
 const AdmoonPlatformUsers = lazy(() => import("@/admoon/pages/PlatformUsers"));
 const AdmoonSystemSettings = lazy(() => import("@/admoon/pages/SystemSettings"));
+
+// Marketing Website & Documentation Portal Pages
+const ProductPage = lazy(() => import("@/features/marketing/ProductPage"));
+const FeaturesPage = lazy(() => import("@/features/marketing/FeaturesPage"));
+const IndustriesPage = lazy(() => import("@/features/marketing/IndustriesPage"));
+const AboutPage = lazy(() => import("@/features/marketing/AboutPage"));
+const ContactPage = lazy(() => import("@/features/marketing/ContactPage"));
+const BlogPage = lazy(() => import("@/features/marketing/BlogPage"));
+const BlogPostPage = lazy(() => import("@/features/marketing/BlogPostPage"));
+const DocsLayout = lazy(() => import("@/features/docs/DocsLayout").then((m) => ({ default: m.DocsLayout })));
+const DocsHomePage = lazy(() => import("@/features/docs/DocsHomePage"));
+const DocsArticlePage = lazy(() => import("@/features/docs/DocsArticlePage"));
+
 import { Link, Navigate, Route, Routes } from "react-router-dom";
 import LandingPage from "@/features/marketing/LandingPage";
 import PricingPage from "@/features/marketing/PricingPage";
@@ -144,10 +157,11 @@ function Guard({ perm, module, children }: { perm: string; module?: string; chil
  * Reusable full suite of ERP modules, pages, and operational screens.
  * These are scoped inside the tenant root layout when a tenant prefix is present.
  */
-function renderErpChildRoutes() {
+function renderErpChildRoutes(includeIndex: boolean = true) {
   return (
     <>
-      <Route index element={<Guard perm=""><DashboardPage /></Guard>} />
+      {includeIndex && <Route index element={<Guard perm=""><DashboardPage /></Guard>} />}
+      <Route path="dashboard" element={<Guard perm=""><DashboardPage /></Guard>} />
       <Route path="pos" element={<Guard perm="pos"><PosPage /></Guard>} />
       <Route path="products" element={<Guard perm="inventory"><ProductsPage /></Guard>} />
       <Route path="sales" element={<Guard perm="sales"><SalesPage /></Guard>} />
@@ -235,7 +249,39 @@ export default function App() {
         <Route path="users" element={<AdmoonPlatformUsers />} />
         <Route path="settings" element={<AdmoonSystemSettings />} />
       </Route>
-      <Route path="/pricing" element={<PricingPage />} />
+
+      {/* Official Marketing Website Routes */}
+      <Route path="/product" element={<Page><ProductPage /></Page>} />
+      <Route path="/features" element={<Page><FeaturesPage /></Page>} />
+      <Route path="/industries" element={<Page><IndustriesPage /></Page>} />
+      <Route path="/pricing" element={<Page><PricingPage /></Page>} />
+      <Route path="/about" element={<Page><AboutPage /></Page>} />
+      <Route path="/contact" element={<Page><ContactPage /></Page>} />
+      <Route path="/blog" element={<Page><BlogPage /></Page>} />
+      <Route path="/blog/:slug" element={<Page><BlogPostPage /></Page>} />
+
+      {/* Documentation Portal Routes */}
+      <Route
+        path="/docs"
+        element={
+          <Page>
+            <DocsLayout>
+              <DocsHomePage />
+            </DocsLayout>
+          </Page>
+        }
+      />
+      <Route
+        path="/docs/*"
+        element={
+          <Page>
+            <DocsLayout>
+              <DocsArticlePage />
+            </DocsLayout>
+          </Page>
+        }
+      />
+
       <Route path="/signup" element={token && user ? <Navigate to="/" replace /> : <SignupPage />} />
       <Route path="/onboarding" element={<OnboardingWizard />} />
       <Route path="/login" element={token && user ? <Navigate to="/" replace /> : <LoginPage />} />
@@ -249,6 +295,9 @@ export default function App() {
         {renderErpChildRoutes()}
       </Route>
 
+      {/* Official Marketing Website Landing Page */}
+      <Route path="/" element={<Page><LandingPage /></Page>} />
+
       {/* Direct top-level routes when authenticated without slug (e.g. desktop offline .exe, direct nav) */}
       <Route
         element={
@@ -257,15 +306,7 @@ export default function App() {
           </Guard>
         }
       >
-        {renderErpChildRoutes()}
-      </Route>
-
-      {/* Fallback Root for Standalone Desktop / Subdomain deployments */}
-      <Route
-        path="/"
-        element={token && user ? <Guard perm=""><Shell /></Guard> : <LandingPage />}
-      >
-        <Route index element={<Page><DashboardPage /></Page>} />
+        {renderErpChildRoutes(false)}
       </Route>
 
       {/* Pattern 2: Direct Tenant Company Root at /:tenantSlug/* (e.g. /monset-gym/pos) */}
