@@ -192,7 +192,7 @@ const ALL_SYSTEM_APPS: AppTile[] = [
   },
 ];
 
-export function OdooAppLauncher() {
+export function MizanAppLauncher() {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const { activeModules, hasModule } = useModulesStore();
@@ -220,7 +220,7 @@ export function OdooAppLauncher() {
             variant="ghost"
             size="icon"
             className="h-8 w-8 rounded-lg border border-border/60 text-muted-foreground hover:bg-accent hover:text-foreground transition"
-            title="تطبيقات ميزان (Odoo Apps Launcher)"
+            title="تطبيقات ميزان (Mizan Apps Launcher)"
           />
         }
       >
@@ -240,7 +240,7 @@ export function OdooAppLauncher() {
             </div>
             <div>
               <h3 className="text-xs font-bold text-foreground">
-                تطبيقات المنظومة (Odoo Apps)
+                تطبيقات ميزان (Mizan Apps)
               </h3>
               <p className="text-[10px] text-muted-foreground">
                 {installedApps.length} تطبيق مفعل في المنشأة
@@ -248,7 +248,7 @@ export function OdooAppLauncher() {
             </div>
           </div>
           <Badge variant="outline" className="text-[10px] font-mono">
-            Modulized
+            Mizan Modular
           </Badge>
         </div>
 

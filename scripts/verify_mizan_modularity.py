@@ -5,8 +5,8 @@ from playwright.async_api import async_playwright
 
 SCREENSHOTS_DIR = "/home/ammar/.gemini/antigravity/brain/6d5afa1e-9da9-4298-949d-64f04df6ec73/audit_screens"
 
-async def verify_odoo_modularity():
-    print("=== Testing Odoo-Style Modularity & App Launcher ===")
+async def verify_mizan_modularity():
+    print("=== Testing Mizan-Style Modularity & App Launcher ===")
 
     login_req = urllib.request.Request(
         "http://localhost:8000/auth/login",
@@ -66,38 +66,38 @@ async def verify_odoo_modularity():
             localStorage.setItem("vendora.locale", "ar");
         }}""")
 
-        # 1. Test Odoo App Launcher in TopBar
-        print("\n--- 1. Testing Odoo App Launcher ---")
+        # 1. Test Mizan App Launcher in TopBar
+        print("\n--- 1. Testing Mizan App Launcher ---")
         await page.goto("http://localhost:5173/Vendora/c/german-egyptian/")
         await page.wait_for_load_state("networkidle")
         await asyncio.sleep(2)
 
         # Click the 9-dots App Launcher button
-        launcher_btn = page.locator("button[title*='Odoo Apps Launcher']").first
+        launcher_btn = page.locator("button[title*='Mizan Apps Launcher']").first
         await launcher_btn.click()
-        await page.locator("text=تطبيقات المنظومة").wait_for(state="visible", timeout=10000)
+        await page.locator("text=تطبيقات ميزان").wait_for(state="visible", timeout=10000)
         await asyncio.sleep(1)
-        await page.screenshot(path=f"{SCREENSHOTS_DIR}/216_odoo_style_app_launcher_grid.png")
-        print("✓ Captured 216_odoo_style_app_launcher_grid.png")
+        await page.screenshot(path=f"{SCREENSHOTS_DIR}/216_mizan_style_app_launcher_grid.png")
+        print("✓ Captured 216_mizan_style_app_launcher_grid.png")
 
         # 2. Search inside the App Launcher
         print("\n--- 2. Testing App Launcher Search Filter ---")
         search_input = page.locator("input[placeholder*='ابحث عن تطبيق']").first
         await search_input.fill("نقطة")
         await asyncio.sleep(1)
-        await page.screenshot(path=f"{SCREENSHOTS_DIR}/217_odoo_style_app_launcher_search_filtered.png")
-        print("✓ Captured 217_odoo_style_app_launcher_search_filtered.png")
+        await page.screenshot(path=f"{SCREENSHOTS_DIR}/217_mizan_style_app_launcher_search_filtered.png")
+        print("✓ Captured 217_mizan_style_app_launcher_search_filtered.png")
 
         # 3. Test Modules App Store (/modules)
         print("\n--- 3. Testing Full Modular Catalog (47 Modules) ---")
         await page.goto("http://localhost:5173/Vendora/c/german-egyptian/modules")
         await page.wait_for_load_state("networkidle")
         await asyncio.sleep(2)
-        await page.screenshot(path=f"{SCREENSHOTS_DIR}/218_odoo_modular_apps_catalog_47_modules.png")
-        print("✓ Captured 218_odoo_modular_apps_catalog_47_modules.png")
+        await page.screenshot(path=f"{SCREENSHOTS_DIR}/218_mizan_modular_apps_catalog_47_modules.png")
+        print("✓ Captured 218_mizan_modular_apps_catalog_47_modules.png")
 
         await browser.close()
-        print("\n=== Odoo Modularity Verification Completed Successfully ===")
+        print("\n=== Mizan Modularity Verification Completed Successfully ===")
 
 if __name__ == "__main__":
-    asyncio.run(verify_odoo_modularity())
+    asyncio.run(verify_mizan_modularity())
