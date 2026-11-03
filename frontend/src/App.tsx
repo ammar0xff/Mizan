@@ -46,6 +46,8 @@ const InsurancePage = lazy(() => import("@/features/ins/InsurancePage"));
 const GovernmentPage = lazy(() => import("@/features/gov/GovernmentPage"));
 const EntertainmentPage = lazy(() => import("@/features/ent/EntertainmentPage"));
 const OilGasPage = lazy(() => import("@/features/oil/OilGasPage"));
+const StorefrontAdminPage = lazy(() => import("@/features/storefront/StorefrontAdminPage"));
+const PublicStorefrontPage = lazy(() => import("@/features/storefront/public/PublicStorefrontPage"));
 const TenantScopeLayout = lazy(() => import("@/features/marketing/TenantScopeLayout"));
 
 // Admoon SaaS Control Plane Pages
@@ -193,6 +195,7 @@ function renderErpChildRoutes() {
       <Route path="gov" element={<Guard perm="" module="gov"><GovernmentPage /></Guard>} />
       <Route path="ent" element={<Guard perm="" module="ent"><EntertainmentPage /></Guard>} />
       <Route path="oil" element={<Guard perm="" module="oil"><OilGasPage /></Guard>} />
+      <Route path="storefront" element={<Guard perm="" module="storefront"><StorefrontAdminPage /></Guard>} />
       <Route path="login" element={<LoginPage />} />
     </>
   );
@@ -236,6 +239,10 @@ export default function App() {
       <Route path="/signup" element={token && user ? <Navigate to="/" replace /> : <SignupPage />} />
       <Route path="/onboarding" element={<OnboardingWizard />} />
       <Route path="/login" element={token && user ? <Navigate to="/" replace /> : <LoginPage />} />
+
+      {/* Public Customer-Facing Storefront Routes */}
+      <Route path="/store/:tenantSlug" element={<Page><PublicStorefrontPage /></Page>} />
+      <Route path="/store" element={<Page><PublicStorefrontPage /></Page>} />
 
       {/* Pattern 1: Canonical Tenant Root at /c/:tenantSlug/* */}
       <Route path="/c/:tenantSlug" element={<Page><TenantScopeLayout /></Page>}>

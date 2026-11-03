@@ -17,6 +17,7 @@ import {
   Settings,
   ShieldCheck,
   ShoppingCart,
+  Store,
   Truck,
   UserCog,
   Wallet,
@@ -80,6 +81,7 @@ export const NAV_ITEMS: NavItem[] = [
   { to: "/logistics", label: "الشحن والأسطول", perm: "operations", module: "logistics", icon: Truck, group: "main" },
   { to: "/wms", label: "مستودعات 3PL", perm: "inventory", module: "wms", icon: Warehouse, group: "stock" },
   { to: "/ecommerce", label: "المتجر الإلكتروني", perm: "sales", module: "ecommerce", icon: Globe, group: "main" },
+  { to: "/storefront", label: "متجر المنشأة (Storefront)", perm: "sales", module: "storefront", icon: Store, group: "main" },
 
   // Service-Based Systems (Phase 3)
   { to: "/clinic", label: "العيادات والمستشفيات", perm: "customers", module: "clinic", icon: Stethoscope, group: "main" },

@@ -1,0 +1,86 @@
+{
+  "id": "storefront",
+  "name": "المتجر الإلكتروني وواجهة العملاء (Tenant Storefront)",
+  "name_en": "Tenant Storefront & Omnichannel Ordering",
+  "category": "distribution_logistics",
+  "target_business_types": ["*"],
+  "version": "1.0.0",
+  "icon": "Store",
+  "badge": "تفاعلي",
+  "description": "متجر إلكتروني ذكي متعدد المستأجرين مع كتالوج منتجات تفاعلي، سلة شراء ديناميكية، حساب مصاريف التوصيل، أكواد الخصم، دعم طرق الدفع المصرية (دفع عند الاستلام، فوري، إنستاباي، فيزا)، ونظام تتبع حالة الطلبات لحظياً مع ربط مباشر بنقاط البيع POS وشاشات المطبخ والتجهيز.",
+  "dependencies": ["core", "inventory"],
+  "is_core": false,
+  "nav_items": [
+    {
+      "label": "المتجر الإلكتروني",
+      "path": "/storefront",
+      "icon": "Store",
+      "module": "storefront"
+    }
+  ],
+  "settings_schema": [
+    {
+      "key": "store_title",
+      "label": "عنوان المتجر الإلكتروني",
+      "type": "string",
+      "default": "متجرنا الإلكتروني",
+      "description": "الاسم الظاهر للعملاء في أعلى صفحة المتجر والمحركات."
+    },
+    {
+      "key": "tagline",
+      "label": "الوصف المختصر للمتجر",
+      "type": "string",
+      "default": "تسوق أفضل المنتجات مع خدمة التوصيل السريع",
+      "description": "جملة ترويجية تظهر أسفل اسم المتجر."
+    },
+    {
+      "key": "brand_color",
+      "label": "لون الهوية البصرية (HEX)",
+      "type": "string",
+      "default": "#0f766e",
+      "description": "اللون الأساسي للأزرار والأسعار وشريط العناوين بالمتجر."
+    },
+    {
+      "key": "announcement",
+      "label": "شريط الإعلانات العاجلة",
+      "type": "string",
+      "default": "🚚 توصيل مجاني للطلبات بقيمة 500 ج.م أو أكثر • ادفع عند الاستلام أو عبر فوري وإنستاباي",
+      "description": "شريط إخباري متحرك يظهر في قمة صفحة المتجر."
+    },
+    {
+      "key": "delivery_fee",
+      "label": "قيمة مصاريف التوصيل القياسية (ج.م)",
+      "type": "number",
+      "default": 30,
+      "description": "تكلفة الشحن الثابتة المضافة على طلبات التوصيل للمنازل."
+    },
+    {
+      "key": "free_delivery_above",
+      "label": "حد التوصيل المجاني (ج.م)",
+      "type": "number",
+      "default": 500,
+      "description": "قيمة الطلب المؤهلة للتوصيل المجاني تلقائياً."
+    },
+    {
+      "key": "min_order_amount",
+      "label": "الحد الأدنى لقيمة الطلب (ج.م)",
+      "type": "number",
+      "default": 50,
+      "description": "أقل قيمة مسموح بها لإتمام عملية الشراء."
+    },
+    {
+      "key": "allow_pickup",
+      "label": "تفعيل الاستلام من الفرع",
+      "type": "boolean",
+      "default": true,
+      "description": "السماح للعميل باختيار الاستلام الذاتي من المتجر أو الفرع."
+    },
+    {
+      "key": "allow_dine_in",
+      "label": "تفعيل طلب الصالة والطاولات",
+      "type": "boolean",
+      "default": true,
+      "description": "السماح بالطلب من داخل المطعم/الكافيه مع تحديد رقم الطاولة عبر باركود QR."
+    }
+  ]
+}

@@ -156,3 +156,6 @@ router.include_router(ent_router)
 from app.modules.oil.router import router as oil_router
 router.include_router(oil_router)
 
+from app.modules.storefront.router import router as storefront_module_router
+router.include_router(storefront_module_router)
+

@@ -54,6 +54,8 @@ def _is_https(request: Request) -> bool:
 
 def _is_exempt(path: str) -> bool:
     rel = _script_rel_path(path)
+    if rel.startswith("/storefront/") or rel.startswith("/store/") or rel.startswith("/billing/webhook"):
+        return True
     return rel in CSRF_EXEMPT_SUFFIXES
 
 
