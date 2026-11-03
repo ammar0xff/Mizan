@@ -41,7 +41,27 @@ export function useHotkeySearch(open: () => void) {
 export function TrialBanner() {
   const { tenant } = useAuth();
   if (!tenant || tenant.plan !== "trial" || !tenant.trial_ends_at) return null;
+  const isExpired = new Date(tenant.trial_ends_at).getTime() < Date.now();
   const days = Math.max(0, Math.ceil((new Date(tenant.trial_ends_at).getTime() - Date.now()) / 86_400_000));
+
+  if (isExpired) {
+    return (
+      <div className="no-print flex flex-wrap items-center justify-center gap-x-3 gap-y-1 border-b border-destructive/30 bg-destructive/15 px-4 py-2.5 text-sm text-destructive font-medium">
+        <span className="font-bold flex items-center gap-1.5">
+          <span>⚠️</span>
+          <span>انتهت فترة التجربة المجانية لمساحة العمل «{tenant.name}» (وضع القراءة فقط)</span>
+        </span>
+        <span className="text-xs text-muted-foreground">
+          تم تجميد إضافة مستخدمين أو فروع أو فواتير جديدة حتى ترقية الباقة.
+        </span>
+        <Link to="/pricing" className="inline-flex items-center gap-1 font-bold text-primary underline hover:opacity-90">
+          ترقية باقة الاشتراك الآن
+          <ArrowLeft className="size-4" aria-hidden />
+        </Link>
+      </div>
+    );
+  }
+
   return (
     <div className="no-print flex flex-wrap items-center justify-center gap-x-3 gap-y-1 border-b border-primary/20 bg-primary/10 px-4 py-2 text-sm">
       <span>

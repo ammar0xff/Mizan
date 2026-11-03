@@ -225,6 +225,7 @@ export default function App() {
         <Route path="modules" element={<AdmoonModuleCatalog />} />
         <Route path="subscriptions" element={<AdmoonSubscriptions />} />
         <Route path="billing" element={<AdmoonBillingInvoices />} />
+        <Route path="billing-invoices" element={<AdmoonBillingInvoices />} />
         <Route path="backups" element={<AdmoonBackups />} />
         <Route path="monitoring" element={<AdmoonMonitoringHealth />} />
         <Route path="audit-logs" element={<AdmoonAuditLogs />} />

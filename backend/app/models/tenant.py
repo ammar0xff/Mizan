@@ -48,7 +48,7 @@ class Subscription(Base):
         UUID(as_uuid=True), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=False, index=True
     )
     plan: Mapped[str] = mapped_column(String(16), nullable=False)
-    status: Mapped[str] = mapped_column(String(16), nullable=False, default="requested")
+    status: Mapped[str] = mapped_column(String(32), nullable=False, default="requested")
     contact_phone: Mapped[str | None] = mapped_column(String(32), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 

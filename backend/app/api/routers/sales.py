@@ -27,6 +27,9 @@ router = APIRouter(prefix="/sales", tags=["sales"])
 
 @router.post("", response_model=SaleOut)
 async def create_sale(data: SaleCreate, db: AsyncSession = Depends(get_db), current_user: User = Depends(require_perm("sales", "pos")), _=Depends(require_open_period)):
+    if current_user.tenant_id:
+        from app.services.plan_gating import check_sales_volume_limit
+        await check_sales_volume_limit(db, current_user.tenant_id)
     sale = await sale_service.create_sale(db, data, current_user.id)
     await audit_log(db, "sale", "create", current_user.id, current_user.full_name, sale.id, {"invoice_number": sale.invoice_number, "total": float(sale.total)}, f"فاتورة {sale.invoice_number}")
     return sale

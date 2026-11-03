@@ -26,6 +26,7 @@ from app.api.routers import (
     wallets,
     modules,
     admoon,
+    billing,
 )
 from app.api.routers import collections as collections_router
 from app.api.routers import export as export_router
@@ -66,6 +67,7 @@ router.include_router(notifications.router)
 router.include_router(updater_router.router)
 router.include_router(modules.router)
 router.include_router(admoon.router)
+router.include_router(billing.router)
 
 from app.modules.pharmacy.router import router as pharmacy_router
 router.include_router(pharmacy_router)

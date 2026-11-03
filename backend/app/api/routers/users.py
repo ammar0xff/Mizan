@@ -41,7 +41,10 @@ async def list_users(db: AsyncSession = Depends(get_db), _=Depends(require_perm(
 
 
 @router.post("", response_model=UserOut)
-async def create_user(data: UserCreate, db: AsyncSession = Depends(get_db), _=Depends(require_perm("users"))):
+async def create_user(data: UserCreate, db: AsyncSession = Depends(get_db), current_user: User = Depends(require_perm("users"))):
+    if current_user.tenant_id:
+        from app.services.plan_gating import check_user_creation_limit
+        await check_user_creation_limit(db, current_user.tenant_id)
     return await auth_service.create_user(db, data)
 
 

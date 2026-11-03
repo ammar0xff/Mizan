@@ -24,7 +24,10 @@ async def list_warehouses(db: AsyncSession = Depends(get_db), _=Depends(get_curr
 
 
 @router.post("/warehouses")
-async def create_warehouse(data: WarehouseCreate, db: AsyncSession = Depends(get_db), _=Depends(require_perm("settings"))):
+async def create_warehouse(data: WarehouseCreate, db: AsyncSession = Depends(get_db), current_user: User = Depends(require_perm("settings"))):
+    if current_user.tenant_id:
+        from app.services.plan_gating import check_branch_creation_limit
+        await check_branch_creation_limit(db, current_user.tenant_id)
     w = Warehouse(code=data.code, name=data.name, warehouse_type=data.warehouse_type)
     db.add(w)
     await db.commit()

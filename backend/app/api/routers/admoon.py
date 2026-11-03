@@ -27,7 +27,8 @@ from app.db.base import get_db
 from app.dependencies import get_current_user, require_superadmin
 from app.models.product import Product
 from app.models.sale import Sale
-from app.models.tenant import BackupRecord, PlatformAuditLog, ProvisioningJob, Tenant
+from app.models.tenant import BackupRecord, PlatformAuditLog, ProvisioningJob, Tenant, Subscription
+from app.models.billing import BillingInvoice
 from app.models.user import User
 from app.models.warehouse import Warehouse
 from app.services import auth_service
@@ -1023,3 +1024,147 @@ async def get_platform_users(
             for u in users
         ]
     }
+
+
+# -------------------------------------------------------------------------
+# Subscriptions & Billing Invoices Management
+# -------------------------------------------------------------------------
+@router.get("/subscriptions")
+async def get_admoon_subscriptions(
+    db: AsyncSession = Depends(get_db),
+    _superadmin: User = Depends(require_superadmin),
+):
+    """List SaaS subscriptions, tenant plan distribution, and MRR metrics."""
+    from app.core.plans import PLANS_CONFIG
+
+    # Distribution of tenants by plan
+    tenants = (await db.execute(select(Tenant))).scalars().all()
+    plan_counts: dict[str, int] = {}
+    for t in tenants:
+        plan_counts[t.plan] = plan_counts.get(t.plan, 0) + 1
+
+    # Recent subscription records
+    subs = (
+        await db.execute(
+            select(Subscription).order_by(Subscription.created_at.desc()).limit(50)
+        )
+    ).scalars().all()
+
+    sub_items = []
+    for s in subs:
+        t_stmt = select(Tenant.name).where(Tenant.id == s.tenant_id)
+        t_name = (await db.execute(t_stmt)).scalar() or "Unknown Tenant"
+        sub_items.append({
+            "id": str(s.id),
+            "tenant_id": str(s.tenant_id),
+            "tenant_name": t_name,
+            "plan": s.plan,
+            "status": s.status,
+            "contact_phone": s.contact_phone,
+            "created_at": s.created_at.isoformat() if s.created_at else None,
+        })
+
+    return {
+        "plan_counts": plan_counts,
+        "plans": list(PLANS_CONFIG.values()),
+        "subscriptions": sub_items,
+        "total_active_tenants": len(tenants),
+    }
+
+
+@router.get("/billing-invoices")
+async def get_admoon_billing_invoices(
+    db: AsyncSession = Depends(get_db),
+    _superadmin: User = Depends(require_superadmin),
+):
+    """List all tenant billing invoices with MRR and payment metrics."""
+    invoices = (
+        await db.execute(
+            select(BillingInvoice).order_by(BillingInvoice.created_at.desc()).limit(100)
+        )
+    ).scalars().all()
+
+    total_mrr = sum(inv.amount_egp for inv in invoices if inv.status == "paid")
+    paid_count = sum(1 for inv in invoices if inv.status == "paid")
+    pending_count = sum(1 for inv in invoices if inv.status == "pending")
+
+    items = []
+    for inv in invoices:
+        t_name = (
+            await db.execute(select(Tenant.name).where(Tenant.id == inv.tenant_id))
+        ).scalar() or "مساحة عمل غير معروفة"
+
+        items.append({
+            "id": inv.invoice_ref,
+            "tenant": t_name,
+            "tenant_id": str(inv.tenant_id),
+            "amount": inv.amount_egp,
+            "date": inv.created_at.strftime("%Y-%m-%d") if inv.created_at else "2026-11-01",
+            "method": inv.payment_method.capitalize(),
+            "status": inv.status,
+            "plan": inv.plan,
+            "billing_cycle": inv.billing_cycle,
+        })
+
+    return {
+        "mrr_egp": round(total_mrr, 2),
+        "paid_count": paid_count,
+        "pending_count": pending_count,
+        "items": items,
+    }
+
+
+class UpdateTenantPlanRequest(BaseModel):
+    plan: str
+    trial_days: int | None = None
+    reason: str | None = "Superadmin plan upgrade"
+
+
+@router.post("/tenants/{tenant_id}/plan")
+async def update_tenant_plan(
+    tenant_id: uuid.UUID,
+    payload: UpdateTenantPlanRequest,
+    db: AsyncSession = Depends(get_db),
+    superadmin: User = Depends(require_superadmin),
+):
+    """Directly update a tenant's subscription plan and apply quotas."""
+    from app.core.plans import get_plan, get_plan_limits
+
+    tenant = (await db.execute(select(Tenant).where(Tenant.id == tenant_id))).scalar_one_or_none()
+    if not tenant:
+        raise HTTPException(status_code=404, detail="المنشأة غير موجودة")
+
+    old_plan = tenant.plan
+    plan_cfg = get_plan(payload.plan)
+
+    tenant.plan = payload.plan
+    tenant.limits = get_plan_limits(payload.plan)
+
+    if payload.plan == "trial":
+        days = payload.trial_days or 14
+        tenant.trial_ends_at = datetime.now(UTC) + timedelta(days=days)
+    else:
+        tenant.trial_ends_at = None
+
+    await db.commit()
+
+    await audit_service.log_action(
+        db,
+        action="tenant_plan_updated",
+        platform_user_id=superadmin.id,
+        tenant_id=tenant_id,
+        details={
+            "old_plan": old_plan,
+            "new_plan": payload.plan,
+            "reason": payload.reason,
+            "limits": tenant.limits,
+        },
+    )
+
+    return {
+        "ok": True,
+        "message": f"تم ترقية خطة المنشأة بنجاح إلى '{plan_cfg['name']}'",
+        "plan": tenant.plan,
+        "limits": tenant.limits,
+    }
+
