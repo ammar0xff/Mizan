@@ -471,7 +471,7 @@ export default function PosPage() {
       </div>
 
       {/* Main split grid: Catalog & Fast Scanner on Left / Mechanical Receipt on Right */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_420px] xl:grid-cols-[1fr_440px]">
+      <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[1fr_420px] xl:grid-cols-[1fr_440px]">
         {/* ── Catalog & Barcode Engine ── */}
         <div className="min-w-0 space-y-3">
           {/* Scanner search control card */}
@@ -606,8 +606,8 @@ export default function PosPage() {
         </div>
 
         {/* ── Mechanical Receipt Slip (The Cart) ── */}
-        <div className="flex flex-col gap-3">
-          <div className="receipt-paper flex flex-1 flex-col rounded-2xl overflow-hidden">
+        <div className="hidden lg:flex flex-col gap-3 sticky top-14 self-start max-h-[calc(100svh-4rem-3rem)] overflow-y-auto">
+          <div className="receipt-paper flex flex-1 min-h-0 flex-col rounded-2xl overflow-hidden">
             {/* Receipt Top Header */}
             <header className="border-b border-border/80 bg-card p-3.5">
               <div className="flex items-center justify-between gap-2">
@@ -663,7 +663,7 @@ export default function PosPage() {
             )}
 
             {/* Cart itemized list */}
-            <div className="flex-1 overflow-y-auto max-h-[50vh] lg:max-h-[52vh] p-3 space-y-1">
+            <div className="flex-1 min-h-0 overflow-y-auto p-3 space-y-1">
               {!cart.length ? (
                 <div className="flex flex-col items-center justify-center py-16 text-center text-muted-foreground">
                   <div className="size-12 rounded-full border border-dashed border-line flex items-center justify-center mb-2">
