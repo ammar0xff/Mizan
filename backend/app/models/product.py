@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from decimal import Decimal
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Numeric, String, Text, UniqueConstraint, func
+from sqlalchemy import Boolean, DateTime, ForeignKey, Numeric, String, Text, UniqueConstraint, func, text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -17,7 +17,7 @@ class Category(TenantScoped, Base):
     name: Mapped[str] = mapped_column(String(128), index=True, nullable=False)
     code: Mapped[str | None] = mapped_column(String(32), nullable=True, index=True)
     image_url: Mapped[str | None] = mapped_column(String(512), nullable=True)
-    is_demo: Mapped[bool] = mapped_column(Boolean, default=False, server_default=func.false())
+    is_demo: Mapped[bool] = mapped_column(Boolean, default=False, server_default=text("false"))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     subcategories: Mapped[list["Subcategory"]] = relationship(back_populates="category", cascade="all, delete-orphan")
@@ -30,7 +30,7 @@ class Subcategory(TenantScoped, Base):
     category_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("categories.id", ondelete="CASCADE"))
     name: Mapped[str] = mapped_column(String(128), nullable=False)
     code: Mapped[str | None] = mapped_column(String(32), nullable=True, index=True)
-    is_demo: Mapped[bool] = mapped_column(Boolean, default=False, server_default=func.false())
+    is_demo: Mapped[bool] = mapped_column(Boolean, default=False, server_default=text("false"))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     category: Mapped["Category"] = relationship(back_populates="subcategories")
@@ -61,7 +61,7 @@ class Product(TenantScoped, Base):
     image_url: Mapped[str | None] = mapped_column(String(512), nullable=True)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
-    is_demo: Mapped[bool] = mapped_column(Boolean, default=False, server_default=func.false())
+    is_demo: Mapped[bool] = mapped_column(Boolean, default=False, server_default=text("false"))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 

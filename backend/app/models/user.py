@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, String, Table, UniqueConstraint, func
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, String, Table, UniqueConstraint, func, text
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -31,8 +31,8 @@ class User(Base, TenantScoped):
     password_hash: Mapped[str] = mapped_column(String(256), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     is_manager: Mapped[bool] = mapped_column(Boolean, default=False)
-    is_superadmin: Mapped[bool] = mapped_column(Boolean, default=False, server_default=func.false())
-    is_demo: Mapped[bool] = mapped_column(Boolean, default=False, server_default=func.false())
+    is_superadmin: Mapped[bool] = mapped_column(Boolean, default=False, server_default=text("false"))
+    is_demo: Mapped[bool] = mapped_column(Boolean, default=False, server_default=text("false"))
     permissions: Mapped[list | None] = mapped_column(JSONB, nullable=True)
     default_warehouse_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("warehouses.id", ondelete="SET NULL"), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

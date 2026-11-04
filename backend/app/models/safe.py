@@ -3,7 +3,7 @@ import uuid
 from datetime import datetime
 from decimal import Decimal
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Numeric, Text, func
+from sqlalchemy import Boolean, DateTime, ForeignKey, Numeric, Text, func, text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -19,7 +19,7 @@ class Safe(TenantScoped, Base):
     location: Mapped[str | None] = mapped_column(Text, nullable=True)
     balance: Mapped[Decimal] = mapped_column(Numeric(14, 2), nullable=False, default=0)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
-    is_demo: Mapped[bool] = mapped_column(Boolean, default=False, server_default=func.false())
+    is_demo: Mapped[bool] = mapped_column(Boolean, default=False, server_default=text("false"))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     safe_type: Mapped[str] = mapped_column(Text, nullable=False, default="permanent")
 
