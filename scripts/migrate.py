@@ -196,8 +196,9 @@ MIGRATIONS = [
          ALTER TABLE product_barcodes ALTER COLUMN id SET DEFAULT gen_random_uuid();
          -- Migrate existing barcodes from products table if they exist
          INSERT INTO product_barcodes (product_id, barcode, is_primary)
-         SELECT id, barcode, true FROM products WHERE barcode IS NOT NULL
-         ON CONFLICT (barcode) DO NOTHING;
+         SELECT p.id, p.barcode, true FROM products p
+         WHERE p.barcode IS NOT NULL
+           AND NOT EXISTS (SELECT 1 FROM product_barcodes pb WHERE pb.barcode = p.barcode);
      """),
 
     ("v10_supplier_prices", """
