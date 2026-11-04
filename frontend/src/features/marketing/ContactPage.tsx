@@ -1,20 +1,26 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
-  MapPin,
   Send,
   CheckCircle2,
   Headphones,
+  Mail,
+  Phone,
+  Clock,
+  ShieldCheck,
 } from "lucide-react";
-import { Badge } from "@/components/kit/badge";
 import { Button } from "@/components/kit/button";
 import { Input } from "@/components/kit/input";
 import { MarketingLayout } from "./MarketingLayout";
 import { toast } from "sonner";
 import { sound } from "@/lib/sound";
+import { useTranslation } from "@/i18n";
 
 export default function ContactPage() {
-  const [inquiryType, setInquiryType] = useState<"demo" | "sales" | "support">("demo");
+  const { locale } = useTranslation();
+  const isAr = locale === "ar";
+
+  const [inquiryType, setInquiryType] = useState<"demo" | "enterprise" | "migration" | "support">("demo");
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -27,7 +33,11 @@ export default function ContactPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!fullName.trim() || !email.trim() || !phone.trim()) {
-      toast.error("يرجى ملء الحقول الإلزامية (الاسم، البريد، ورقم الهاتف)");
+      toast.error(
+        isAr
+          ? "يرجى ملء الحقول الإلزامية (الاسم، البريد الإلكتروني، ورقم الهاتف)"
+          : "Please fill in required fields (Name, Email, and Phone)"
+      );
       return;
     }
 
@@ -38,32 +48,129 @@ export default function ContactPage() {
       try {
         sound.success();
       } catch {}
-      toast.success("تم استلام طلبكم بنجاح! سيتواصل معكم مستشار ميزان قريباً.");
-    }, 900);
+      toast.success(
+        isAr
+          ? "تم استلام طلبكم بنجاح! سيتواصل معكم مهندس حلول ميزان قريباً."
+          : "Request received successfully! A Mizan solutions engineer will reach out shortly."
+      );
+    }, 800);
   };
 
   return (
     <MarketingLayout>
-      <div className="py-12 sm:py-16">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-12">
-          {/* Header */}
-          <div className="text-center max-w-2xl mx-auto space-y-3">
-            <Badge variant="outline" className="bg-brand/10 text-brand">
-              فريق المبيعات والدعم المؤسسي
-            </Badge>
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 dark:text-white tracking-tight">
-              تواصل مع خبراء ميزان ERP
+      <div className="py-16 sm:py-24 bg-[#FAF6F0] text-[#262321] transition-colors">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-16">
+          {/* 1. Header */}
+          <div className="mx-auto max-w-3xl text-center space-y-4">
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#E7D6C1] bg-white/80 px-4 py-1.5 text-xs font-semibold text-[#651E2C] shadow-xs">
+              <Headphones className="size-3.5 text-[#B86B76]" />
+              <span>{isAr ? "فريق الاستشارات الهندسية والمبيعات" : "Engineering Consultation & Advisory"}</span>
+            </div>
+
+            <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-normal tracking-tight text-[#262321] leading-[1.15]">
+              {isAr ? (
+                <>
+                  لنناقش التوازن التشغيلي <br />
+                  <span className="italic text-[#B86B76]">والمعماري لمنشأتك</span>
+                </>
+              ) : (
+                <>
+                  Let's discuss the architectural <br />
+                  <span className="italic text-[#B86B76]">balance of your enterprise</span>
+                </>
+              )}
             </h1>
-            <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400">
-              سواء كنت ترغب في حجز عرض توضيحي مباشر (Live Demo)، مناقشة باقات المؤسسات، أو الحصول على
-              دعم فني متخصص، فريقنا جاهز لمساعدتك.
+
+            <p className="mx-auto max-w-2xl text-base text-[#77716E] font-body leading-relaxed">
+              {isAr
+                ? "سواء كنت ترغب في جدولة عرض توضيحي حي (Live Demo)، بحث متطلبات الربط السحابي، أو استكشاف خطط المؤسسات، مهندسونا مستعدون لمساعدتك."
+                : "Whether scheduling a live architectural walkthrough, planning legacy data migration, or configuring custom enterprise infrastructure, we are here."}
             </p>
           </div>
 
-          <div className="grid grid-cols-1 gap-10 lg:grid-cols-12">
-            {/* Left Column: Form */}
+          {/* 2. Split Contact Section */}
+          <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 items-start">
+            {/* Left Column: Architectural Info Card */}
+            <div className="lg:col-span-5 space-y-6">
+              <div className="rounded-3xl border border-[#E7D6C1] bg-white p-8 shadow-xs space-y-6">
+                <div className="relative rounded-2xl overflow-hidden border border-[#E7D6C1] aspect-[16/10] bg-[#35151D]">
+                  <img
+                    src="./assets/marketing/arch-floating-card.jpg"
+                    alt="Mizan Headquarters"
+                    className="w-full h-full object-cover opacity-90 hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#35151D]/80 via-transparent to-transparent" />
+                  <div className="absolute bottom-4 start-4 text-white">
+                    <span className="text-[10px] uppercase font-bold tracking-widest text-[#B86B76]">
+                      {isAr ? "المقر الرئيسي" : "Headquarters"}
+                    </span>
+                    <h3 className="font-display text-lg font-normal">
+                      {isAr ? "القرية الذكية، القاهرة" : "Smart Village, Cairo"}
+                    </h3>
+                  </div>
+                </div>
+
+                <div className="space-y-4 pt-2 text-xs">
+                  <div className="flex items-start gap-3">
+                    <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-[#FAF6F0] text-[#651E2C] border border-[#E7D6C1]">
+                      <Mail className="size-4" />
+                    </div>
+                    <div>
+                      <span className="text-[#77716E] block font-medium">
+                        {isAr ? "الاستفسارات التجارية والهندسية:" : "Commercial & Architecture Inquiries:"}
+                      </span>
+                      <a href="mailto:solutions@mizan.app" className="font-mono font-bold text-[#651E2C] hover:underline">
+                        solutions@mizan.app
+                      </a>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3">
+                    <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-[#FAF6F0] text-[#651E2C] border border-[#E7D6C1]">
+                      <Phone className="size-4" />
+                    </div>
+                    <div>
+                      <span className="text-[#77716E] block font-medium">
+                        {isAr ? "الخط الساخن المباشر:" : "Direct Advisory Hotline:"}
+                      </span>
+                      <span className="font-mono font-bold text-[#262321]">+20 (2) 3536-8000</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3">
+                    <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-[#FAF6F0] text-[#651E2C] border border-[#E7D6C1]">
+                      <Clock className="size-4" />
+                    </div>
+                    <div>
+                      <span className="text-[#77716E] block font-medium">
+                        {isAr ? "ضمان سرعة الاستجابة:" : "Response SLA Guarantee:"}
+                      </span>
+                      <span className="text-[#262321] font-semibold">
+                        {isAr ? "أقل من ساعتين خلال أيام العمل الرسمية" : "Under 2 hours during official business days"}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3">
+                    <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-[#FAF6F0] text-[#651E2C] border border-[#E7D6C1]">
+                      <ShieldCheck className="size-4" />
+                    </div>
+                    <div>
+                      <span className="text-[#77716E] block font-medium">
+                        {isAr ? "سرية البيانات والمواثيق:" : "Data Privacy & Governance:"}
+                      </span>
+                      <span className="text-[#262321]">
+                        {isAr ? "اتفاقية عدم إفصاح رسمية (NDA) معتمدة لكل استشارة" : "Formal enterprise NDA signed before technical audit"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column: Contact & Booking Form */}
             <div className="lg:col-span-7">
-              <div className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+              <div className="rounded-3xl border border-[#E7D6C1] bg-white p-8 sm:p-10 shadow-xs">
                 <AnimatePresence mode="wait">
                   {isSuccess ? (
                     <motion.div
@@ -72,15 +179,16 @@ export default function ContactPage() {
                       animate={{ opacity: 1, scale: 1 }}
                       className="py-12 text-center space-y-4"
                     >
-                      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400">
-                        <CheckCircle2 className="h-10 w-10" />
+                      <div className="mx-auto flex size-16 items-center justify-center rounded-full bg-[#FAF6F0] text-[#651E2C] border-2 border-[#E7D6C1]">
+                        <CheckCircle2 className="size-8" />
                       </div>
-                      <h3 className="text-xl font-bold text-slate-900 dark:text-white">
-                        تم استلام طلبك بنجاح!
+                      <h3 className="font-display text-2xl font-normal text-[#262321]">
+                        {isAr ? "تم استلام استشارتكم بنجاح" : "Your Consultation Has Been Booked"}
                       </h3>
-                      <p className="max-w-md mx-auto text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
-                        شكراً لتواصلك مع ميزان ERP. سيقوم أحد مستشارينا بالتواصل معك عبر الهاتف أو
-                        البريد الإلكتروني خلال أقل من ساعتين عمل لترتيب موعد العرض.
+                      <p className="mx-auto max-w-md text-xs sm:text-sm text-[#77716E] leading-relaxed">
+                        {isAr
+                          ? "شكراً لتواصلك مع ميزان. سيقوم مهندس الحلول المعماري بالتواصل معكم عبر الهاتف أو البريد الإلكتروني لتنسيق جلسة العرض التوضيحي."
+                          : "Thank you for reaching out to Mizan. A solutions architect will contact you directly to arrange the live system walkthrough."}
                       </p>
                       <Button
                         variant="outline"
@@ -89,8 +197,9 @@ export default function ContactPage() {
                           setIsSuccess(false);
                           setMessage("");
                         }}
+                        className="border-[#E7D6C1] text-xs mt-2"
                       >
-                        إرسال رسالة أخرى
+                        {isAr ? "إرسال طلب استشارة آخر" : "Submit Another Inquiry"}
                       </Button>
                     </motion.div>
                   ) : (
@@ -99,222 +208,153 @@ export default function ContactPage() {
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       onSubmit={handleSubmit}
-                      className="space-y-5"
+                      className="space-y-6"
                     >
                       {/* Inquiry Type Tabs */}
-                      <div>
-                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">
-                          نوع الاستفسار المطلوب:
+                      <div className="space-y-2">
+                        <label className="text-xs font-bold text-[#262321]">
+                          {isAr ? "نوع الطلب أو الاستشارة:" : "Nature of Inquiry:"}
                         </label>
-                        <div className="grid grid-cols-3 gap-2">
-                          <button
-                            type="button"
-                            onClick={() => setInquiryType("demo")}
-                            className={`rounded-lg p-2.5 text-xs font-bold transition-colors ${
-                              inquiryType === "demo"
-                                ? "bg-brand text-white shadow-xs"
-                                : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300"
-                            }`}
-                          >
-                            عرض توضيحي مباشر
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setInquiryType("sales")}
-                            className={`rounded-lg p-2.5 text-xs font-bold transition-colors ${
-                              inquiryType === "sales"
-                                ? "bg-brand text-white shadow-xs"
-                                : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300"
-                            }`}
-                          >
-                            مبيعات المؤسسات
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setInquiryType("support")}
-                            className={`rounded-lg p-2.5 text-xs font-bold transition-colors ${
-                              inquiryType === "support"
-                                ? "bg-brand text-white shadow-xs"
-                                : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300"
-                            }`}
-                          >
-                            دعم فني واستفسار
-                          </button>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                          {[
+                            { id: "demo", labelAr: "عرض حي (Live Demo)", labelEn: "Live Demo" },
+                            { id: "enterprise", labelAr: "باقة المؤسسات", labelEn: "Enterprise" },
+                            { id: "migration", labelAr: "نقل البيانات", labelEn: "Data Migration" },
+                            { id: "support", labelAr: "دعم فني واستشارة", labelEn: "Technical Support" },
+                          ].map((t) => (
+                            <button
+                              key={t.id}
+                              type="button"
+                              onClick={() => setInquiryType(t.id as any)}
+                              className={`rounded-xl border py-2.5 px-3 text-center transition-all ${
+                                inquiryType === t.id
+                                  ? "border-[#651E2C] bg-[#651E2C]/5 text-[#651E2C] font-bold"
+                                  : "border-[#E7D6C1] bg-[#FAF6F0] text-[#77716E] hover:border-[#651E2C]/40"
+                              }`}
+                            >
+                              {isAr ? t.labelAr : t.labelEn}
+                            </button>
+                          ))}
                         </div>
                       </div>
 
-                      {/* Name & Phone */}
-                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                        <div>
-                          <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                            الاسم بالكامل <span className="text-rose-500">*</span>
+                      {/* Fields Row 1 */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-bold text-[#262321]">
+                            {isAr ? "الاسم الكامل *" : "Full Name *"}
                           </label>
                           <Input
+                            type="text"
                             required
                             value={fullName}
                             onChange={(e) => setFullName(e.target.value)}
-                            placeholder="مثال: أحمد عبد الله"
-                            className="text-xs"
+                            placeholder={isAr ? "مثال: م. أحمد منصور" : "e.g. Johnathan Miller"}
+                            className="border-[#E7D6C1] bg-[#FAF6F0] text-xs py-2"
                           />
                         </div>
-                        <div>
-                          <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                            رقم الهاتف / واتساب <span className="text-rose-500">*</span>
+
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-bold text-[#262321]">
+                            {isAr ? "البريد الإلكتروني للعمل *" : "Work Email *"}
                           </label>
                           <Input
+                            type="email"
                             required
-                            type="tel"
-                            value={phone}
-                            onChange={(e) => setPhone(e.target.value)}
-                            placeholder="+20 100 000 0000"
-                            className="text-xs font-mono"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            placeholder="name@company.com"
+                            className="border-[#E7D6C1] bg-[#FAF6F0] text-xs py-2 font-mono"
                           />
                         </div>
                       </div>
 
-                      {/* Email & Company */}
-                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                        <div>
-                          <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                            البريد الإلكتروني للعمل <span className="text-rose-500">*</span>
+                      {/* Fields Row 2 */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-bold text-[#262321]">
+                            {isAr ? "رقم الهاتف / واتساب *" : "Phone / WhatsApp *"}
                           </label>
                           <Input
+                            type="tel"
                             required
-                            type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            placeholder="name@company.com"
-                            className="text-xs font-mono"
+                            value={phone}
+                            onChange={(e) => setPhone(e.target.value)}
+                            placeholder="+20 100 123 4567"
+                            className="border-[#E7D6C1] bg-[#FAF6F0] text-xs py-2 font-mono"
                           />
                         </div>
-                        <div>
-                          <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                            اسم المنشأة أو الشركة
+
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-bold text-[#262321]">
+                            {isAr ? "اسم المنشأة أو الشركة" : "Company / Enterprise Name"}
                           </label>
                           <Input
+                            type="text"
                             value={companyName}
                             onChange={(e) => setCompanyName(e.target.value)}
-                            placeholder="مثال: أسواق النور للتجارة"
-                            className="text-xs"
+                            placeholder={isAr ? "مثال: مجموعة المنار للتجارة" : "e.g. Apex Global Trade"}
+                            className="border-[#E7D6C1] bg-[#FAF6F0] text-xs py-2"
                           />
                         </div>
                       </div>
 
                       {/* Industry Selector */}
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                          نشاط المنشأة الرئيسي:
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-[#262321]">
+                          {isAr ? "القطاع التجاري الأساسي:" : "Primary Business Vertical:"}
                         </label>
                         <select
                           value={industry}
                           onChange={(e) => setIndustry(e.target.value)}
-                          className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 focus:border-brand focus:outline-hidden dark:border-slate-800 dark:bg-slate-900 dark:text-white"
+                          className="w-full rounded-xl border border-[#E7D6C1] bg-[#FAF6F0] px-3.5 py-2.5 text-xs text-[#262321] focus:border-[#651E2C] focus:outline-hidden"
                         >
-                          <option value="retail">تجارة تجزئة وسوبرماركت</option>
-                          <option value="restaurant">مطاعم، كافيهات، وضيافة</option>
-                          <option value="clinic">عيادات ومراكز طبية</option>
-                          <option value="pharmacy">صيدليات ومستودعات أدوية</option>
-                          <option value="gym">صالات جيم وأندية رياضية</option>
-                          <option value="mfg">تصنيع وخطوط إنتاج</option>
-                          <option value="wholesale">تجارة جملة وتوزيع</option>
-                          <option value="services">شركات ومكاتب مهنية</option>
-                          <option value="other">نشاط آخر</option>
+                          <option value="retail">{isAr ? "التجزئة والمتاجر والمعارض (Retail & Trade)" : "Retail & Commercial Showrooms"}</option>
+                          <option value="materials">{isAr ? "مواد البناء والتشطيبات والعدد (Building Materials)" : "Building Materials & Hardware"}</option>
+                          <option value="hospitality">{isAr ? "المطاعم والكافيهات وسلاسل الضيافة (Hospitality & KDS)" : "Restaurants, Cafes & Food Chains"}</option>
+                          <option value="manufacturing">{isAr ? "التصنيع وتجهيز المواد الخام (Manufacturing & Assembly)" : "Discrete Manufacturing & Assembly"}</option>
+                          <option value="healthcare">{isAr ? "المجمعات الطبية والعيادات والصيدليات (Healthcare & Clinics)" : "Healthcare & Medical Polyclinics"}</option>
+                          <option value="distribution">{isAr ? "التوزيع وسلاسل الإمداد والأسطول (Logistics & Fleet)" : "Distribution, Warehousing & Fleet"}</option>
                         </select>
                       </div>
 
-                      {/* Message */}
-                      <div>
-                        <div className="flex justify-between items-center mb-1">
-                          <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
-                            ملاحظات أو متطلبات خاصة:
-                          </label>
-                          <span className="text-[10px] text-slate-400">
-                            {message.length} / 500 حرف
-                          </span>
-                        </div>
+                      {/* Message Textarea */}
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-[#262321]">
+                          {isAr ? "تفاصيل إضافية أو متطلبات خاصة (اختياري):" : "Specific Requirements / Notes (Optional):"}
+                        </label>
                         <textarea
-                          rows={3}
-                          maxLength={500}
+                          rows={4}
                           value={message}
                           onChange={(e) => setMessage(e.target.value)}
-                          placeholder="اذكر عدد الفروع التقريبي، عدد الكاشيرات، أو أي أجهزة ترغب في ربطها..."
-                          className="w-full rounded-lg border border-slate-200 bg-white p-3 text-xs text-slate-900 focus:border-brand focus:outline-hidden dark:border-slate-800 dark:bg-slate-900 dark:text-white"
+                          placeholder={
+                            isAr
+                              ? "عدد الفروع الحالية، أجهزة الكاشير المستخدمة، أو طبيعة قواعد البيانات الحالية..."
+                              : "Current branches, hardware setups, or current accounting system in place..."
+                          }
+                          className="w-full rounded-xl border border-[#E7D6C1] bg-[#FAF6F0] p-3 text-xs text-[#262321] placeholder:text-[#77716E] focus:border-[#651E2C] focus:outline-hidden"
                         />
                       </div>
 
                       <Button
                         type="submit"
                         disabled={isSubmitting}
-                        className="w-full bg-brand text-xs font-bold text-white hover:bg-brand/90 py-2.5"
+                        className="w-full bg-[#651E2C] text-white hover:bg-[#521723] rounded-xl py-3 text-xs font-bold shadow-md transition-all flex items-center justify-center gap-2"
                       >
-                        {isSubmitting ? (
-                          <span>جارٍ إرسال الطلب...</span>
-                        ) : (
-                          <span className="flex items-center justify-center gap-2">
-                            <Send className="h-4 w-4 rtl:rotate-180" />
-                            تأكيد وإرسال طلب التواصل
-                          </span>
-                        )}
+                        <Send className="size-3.5" />
+                        <span>
+                          {isSubmitting
+                            ? isAr
+                              ? "جاري إرسال الطلب..."
+                              : "Transmitting..."
+                            : isAr
+                            ? "تأكيد طلب العرض التوضيحي المباشر"
+                            : "Confirm Architecture Walkthrough Request"}
+                        </span>
                       </Button>
                     </motion.form>
                   )}
                 </AnimatePresence>
-              </div>
-            </div>
-
-            {/* Right Column: Office info & Contact Channels */}
-            <div className="lg:col-span-5 space-y-6">
-              {/* Channel 1: Cairo */}
-              <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900 space-y-2">
-                <div className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white">
-                  <MapPin className="h-4 w-4 text-brand" />
-                  <span>المقر الإقليمي الرئيسي (مصر)</span>
-                </div>
-                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                  مجمع البنوك، التجمع الخامس، القاهرة الجديدة، جمهورية مصر العربية.
-                </p>
-                <div className="pt-2 text-xs font-mono text-slate-600 dark:text-slate-300">
-                  هاتف: +20 100 000 0000 • متاح من 9 ص حتى 6 م
-                </div>
-              </div>
-
-              {/* Channel 2: Riyadh */}
-              <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900 space-y-2">
-                <div className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white">
-                  <MapPin className="h-4 w-4 text-brand" />
-                  <span>مكتب المبيعات (المملكة العربية السعودية)</span>
-                </div>
-                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                  طريق الملك فهد، حي الصحافة، الرياض، المملكة العربية السعودية.
-                </p>
-                <div className="pt-2 text-xs font-mono text-slate-600 dark:text-slate-300">
-                  هاتف: +966 50 000 0000 • مبيعات المؤسسات
-                </div>
-              </div>
-
-              {/* Channel 3: Email & SLA */}
-              <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900 space-y-3">
-                <div className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white">
-                  <Headphones className="h-4 w-4 text-emerald-500" />
-                  <span>قنوات البريد الإلكتروني المباشرة</span>
-                </div>
-                <div className="space-y-1.5 text-xs">
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">استشارات المبيعات:</span>
-                    <span className="font-mono font-bold text-slate-800 dark:text-slate-200">
-                      sales@mizan.app
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">الدعم الفني والتشغيلي:</span>
-                    <span className="font-mono font-bold text-slate-800 dark:text-slate-200">
-                      support@mizan.app
-                    </span>
-                  </div>
-                </div>
-                <div className="rounded-lg bg-emerald-50 p-2 text-[11px] text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300">
-                  ✓ ضمان زمن استجابة (SLA) خلال ساعتي عمل للحالات العادية، وفوري للحالات الطارئة.
-                </div>
               </div>
             </div>
           </div>

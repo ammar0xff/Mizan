@@ -2,16 +2,13 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   Check,
-  ShieldCheck,
   Zap,
-  Server,
-  Database,
-  ArrowLeft,
   CreditCard,
   RefreshCw,
   Copy,
   CheckCircle2,
   Sparkles,
+  ChevronDown,
 } from "lucide-react";
 import { api, ApiError } from "@/lib/api";
 import { useToast } from "@/components/ui";
@@ -28,8 +25,9 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/kit/dialog";
-import { formatCurrency } from "@/lib/format";
 import { toast as sonnerToast } from "sonner";
+import { useTranslation } from "@/i18n";
+import { motion, AnimatePresence } from "motion/react";
 
 interface CheckoutResult {
   invoice_ref: string;
@@ -72,6 +70,8 @@ export default function PricingPage() {
   const { user, tenant, setTenant } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { locale } = useTranslation();
+  const isAr = locale === "ar";
 
   const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("monthly");
   const [phone, setPhone] = useState("");
@@ -88,6 +88,7 @@ export default function PricingPage() {
   const [simulating, setSimulating] = useState(false);
   const [paymentActivated, setPaymentActivated] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   // Load tenant subscription info if logged in
   useEffect(() => {
@@ -107,7 +108,11 @@ export default function PricingPage() {
       return;
     }
     if (p.id === "trial") {
-      sonnerToast.info("أنت مفعل بالفعل على المنصة أو يمكنك اختيار إحدى الباقات الإنتاجية");
+      sonnerToast.info(
+        isAr
+          ? "أنت مفعّل بالفعل على المنصة أو يمكنك اختيار إحدى الباقات الإنتاجية"
+          : "You are already active or can choose an active production plan"
+      );
       return;
     }
     setSelectedPlan(p);
@@ -127,9 +132,9 @@ export default function PricingPage() {
         contact_phone: phone || undefined,
       });
       setCheckoutResult(res);
-      sonnerToast.success(res.message || "تم إنشاء طلب السداد وإصدار الفاتورة");
+      sonnerToast.success(res.message || (isAr ? "تم إنشاء طلب السداد وإصدار الفاتورة" : "Checkout invoice generated"));
     } catch (err) {
-      const msg = err instanceof ApiError ? err.message : "تعذر إنشاء جلسة الدفع";
+      const msg = err instanceof ApiError ? err.message : (isAr ? "تعذر إنشاء جلسة الدفع" : "Failed to create payment session");
       toast("error", msg);
       sonnerToast.error(msg);
     } finally {
@@ -148,9 +153,8 @@ export default function PricingPage() {
         }
       );
       setPaymentActivated(true);
-      sonnerToast.success(res.message || "تم تأكيد السداد وتفعيل الباقة بنجاح!");
+      sonnerToast.success(res.message || (isAr ? "تم تأكيد السداد وتفعيل الباقة بنجاح!" : "Payment confirmed and plan activated!"));
 
-      // Update tenant state in auth store
       if (tenant) {
         setTenant({
           ...tenant,
@@ -160,7 +164,6 @@ export default function PricingPage() {
         });
       }
 
-      // Re-fetch subscription info
       try {
         const updated = await api.get<SubscriptionInfo>("/billing/subscription");
         setSubInfo(updated);
@@ -168,7 +171,7 @@ export default function PricingPage() {
         /* ignore */
       }
     } catch (err) {
-      const msg = err instanceof ApiError ? err.message : "فشلت محاكاة السداد";
+      const msg = err instanceof ApiError ? err.message : (isAr ? "فشلت محاكاة السداد" : "Payment simulation failed");
       toast("error", msg);
       sonnerToast.error(msg);
     } finally {
@@ -179,521 +182,602 @@ export default function PricingPage() {
   function copyToClipboard(text: string) {
     navigator.clipboard.writeText(text);
     setCopiedCode(true);
-    sonnerToast.success("تم نسخ الكود للحافظة");
+    sonnerToast.success(isAr ? "تم نسخ الكود للحافظة" : "Copied code to clipboard");
     setTimeout(() => setCopiedCode(false), 2000);
   }
 
-  const isCurrentPlan = (planId: string) => {
-    return tenant?.plan === planId;
-  };
+  const isCurrentPlan = (planId: string) => tenant?.plan === planId;
+
+  // Filter the 3 paid commercial plans for the main luxury cards
+  const commercialPlans = PLANS.filter((p) => p.id !== "trial");
+
+  const comparisonFeatures = [
+    { nameAr: "المستخدمين النشطين", nameEn: "Active Users", starter: "5", pro: "15", enterprise: "غير محدود / Unlimited" },
+    { nameAr: "الفروع والمخازن المتصلة", nameEn: "Branches & Warehouses", starter: "1", pro: "3", enterprise: "غير محدود / Unlimited" },
+    { nameAr: "المعمارية ونمط العمل الأوفلاين", nameEn: "Offline-First Engine", starter: true, pro: true, enterprise: true },
+    { nameAr: "قاعدة بيانات معزولة RLS مشفرة", nameEn: "Encrypted Isolated RLS Database", starter: true, pro: true, enterprise: true },
+    { nameAr: "كافة الـ 47 موديول قطاعي", nameEn: "Full 47 Sector Modules", starter: false, pro: true, enterprise: true },
+    { nameAr: "شاشات المطابخ KDS وبوالص الشحن", nameEn: "Kitchen KDS & Fleet Dispatch", starter: false, pro: true, enterprise: true },
+    { nameAr: "استيراد ملفات وتكامل REST API", nameEn: "REST API & Webhooks Access", starter: false, pro: true, enterprise: true },
+    { nameAr: "خادم مخصص ونطاق خاص (Custom Domain)", nameEn: "Dedicated Server & Custom Domain", starter: false, pro: false, enterprise: true },
+    { nameAr: "ترخيص مكتبي .exe محلي للأجهزة", nameEn: "Local .exe Desktop License", starter: false, pro: false, enterprise: true },
+    { nameAr: "مدير حساب هندسي ودعم 24/7", nameEn: "Dedicated Engineering Manager", starter: "Standard", pro: "Priority", enterprise: "24/7 SLA" },
+  ];
+
+  const faqs = [
+    {
+      qAr: "هل أحتاج لبطاقة ائتمان لبدء التجربة المجانية؟",
+      qEn: "Do I need a credit card for the 14-day trial?",
+      aAr: "إطلاقاً. يمكنك تفعيل حسابك والبدء في إدارة مخزونك ونقاط البيع مجاناً بالكامل لمدة 14 يوماً بدون إدخال أي وسيلة دفع.",
+      aEn: "Not at all. You can register and experience full POS, inventory, and accounting features for 14 days with zero payment info required.",
+    },
+    {
+      qAr: "ما هي طرق الدفع المتاحة داخل مصر وخارجها؟",
+      qEn: "What payment methods are supported?",
+      aAr: "ندعم السداد بالجنيه المصري عبر كود فوري (Fawry)، تحويل فوري عبر إنستاباي (InstaPay)، محفظة فودافون كاش، والبطاقات الائتمانية البنكية (Visa / MasterCard).",
+      aEn: "We support EGP billing via Fawry pay code, instant bank transfers via InstaPay, Vodafone Cash, and standard Visa / Mastercard.",
+    },
+    {
+      qAr: "هل يمكنني الترقية أو تغيير الباقة لاحقاً مع توسع فروعنا؟",
+      qEn: "Can I scale or upgrade our plan as we add branches?",
+      aAr: "نعم وبكل سهولة. يتم احتساب فرق السعر بدقة متناهية (Prorated) وترقية مساحة العمل فورياً دون أي انقطاع في الخدمة أو توقف للكاشير.",
+      aEn: "Yes, seamlessly. Pricing is prorated and your workspace limits and modules upgrade instantly with zero cashier downtime.",
+    },
+    {
+      qAr: "هل تبقى بيانات مشروعي معزولة في حال انتهاء الاشتراك؟",
+      qEn: "Is our financial data safe if subscription lapses?",
+      aAr: "تبقى كافة فواتيرك وقيودك المحاسبية محفوظة ومعزولة ومشفرة بنمط القراءة فقط لمدة 90 يوماً إضافية مع إمكانية تصديرها بالكامل بصيغة Excel أو JSON في أي وقت.",
+      aEn: "All financial journals and transaction records remain strictly isolated, encrypted, and accessible in read-only mode for 90 days with one-click Excel/JSON export.",
+    },
+  ];
 
   return (
     <MarketingLayout>
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 space-y-12">
-        {/* Hero Section */}
-        <div className="mx-auto max-w-3xl text-center">
-          <Badge variant="secondary" className="mb-4 gap-1.5 px-3 py-1 font-medium">
-            <Zap className="size-3.5 text-primary" />
-            باقات اشتراك بالجنيه المصري مع بوابات دفع آلية (فوري • إنستاباي • فيزا)
-          </Badge>
-          <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl">
-            باقات تناسب نمو منشأتك — من المتجر الفردي حتى سلاسل الفروع
+      <div className="py-16 sm:py-24 space-y-20 bg-[#FAF6F0] text-[#262321] transition-colors">
+        {/* 1. Hero Section */}
+        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center space-y-6">
+          <div className="inline-flex items-center gap-2 rounded-full border border-[#E7D6C1] bg-white/80 px-4 py-1.5 text-xs font-semibold text-[#651E2C] shadow-xs">
+            <Sparkles className="size-3.5 text-[#B86B76]" />
+            <span>
+              {isAr
+                ? "باقات اشتراك مرنة بالجنيه المصري — تفعيل فوري وبوابات سداد متعددة"
+                : "Flexible Egyptian Pound pricing — Instant activation & local gateways"}
+            </span>
+          </div>
+
+          <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-normal tracking-tight text-[#262321] leading-[1.15]">
+            {isAr ? (
+              <>
+                استثمار مدروس وشفاف <br />
+                <span className="italic text-[#B86B76]">لتحقيق التوازن التشغيلي</span>
+              </>
+            ) : (
+              <>
+                Predictable, transparent investment <br />
+                <span className="italic text-[#B86B76]">in your operational balance</span>
+              </>
+            )}
           </h1>
-          <p className="mt-4 text-pretty text-lg text-muted-foreground">
-            تفعيل فوري لكافة الميزات والقطاعات مع حصص مستخدمين وفروع مرنة وتخزين مشفر.
+
+          <p className="mx-auto max-w-2xl text-base sm:text-lg text-[#77716E] font-body leading-relaxed">
+            {isAr
+              ? "اختر الباقة المناسبة لحجم منشأتك. بدون رسوم خفية، مع إمكانية الترقية أو الإلغاء في أي وقت."
+              : "Choose the package tailored to your business scale. No hidden fees, upgrade or adjust branches anytime."}
           </p>
 
-          {/* Current Plan & Quota Status Bar (Logged in Tenant) */}
-          {tenant && subInfo && (
-            <div className="mt-8 rounded-2xl border border-primary/30 bg-primary/5 p-4 sm:p-5 text-right shadow-xs">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-primary/20 pb-3">
-                <div className="flex items-center gap-2">
-                  <span className="size-2.5 rounded-full bg-emerald-500 animate-pulse" />
-                  <span className="text-xs font-bold text-foreground">
-                    مساحة العمل: <span className="text-primary font-black">{tenant.name}</span>
-                  </span>
-                  <Badge variant="outline" className="font-bold text-[10px] text-primary border-primary/30">
-                    الباقة الحالية: {tenant.plan.toUpperCase()}
-                  </Badge>
-                </div>
-                {subInfo.is_trial && (
-                  <div className="text-xs font-semibold text-amber-600 dark:text-amber-400">
-                    متبقي في التجربة المجانية: <span className="font-bold num">{subInfo.trial_remaining_days} يوم</span>
-                  </div>
-                )}
-              </div>
-
-              {/* Live Quotas Usage Indicators */}
-              <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-                <div className="bg-background/80 p-2.5 rounded-xl border border-border">
-                  <span className="text-muted-foreground block text-[11px]">المستخدمون النشطون:</span>
-                  <div className="mt-1 flex items-baseline justify-between">
-                    <span className="font-bold text-foreground num">
-                      {subInfo.usage.current_users} / {subInfo.limits.max_users >= 999 ? "غير محدود" : subInfo.limits.max_users}
-                    </span>
-                    <span className="text-[10px] text-muted-foreground">
-                      ({Math.round((subInfo.usage.current_users / (subInfo.limits.max_users || 1)) * 100)}%)
-                    </span>
-                  </div>
-                </div>
-
-                <div className="bg-background/80 p-2.5 rounded-xl border border-border">
-                  <span className="text-muted-foreground block text-[11px]">الفروع والمستودعات:</span>
-                  <div className="mt-1 flex items-baseline justify-between">
-                    <span className="font-bold text-foreground num">
-                      {subInfo.usage.current_branches} / {subInfo.limits.max_branches >= 999 ? "غير محدود" : subInfo.limits.max_branches}
-                    </span>
-                    <span className="text-[10px] text-muted-foreground">
-                      ({Math.round((subInfo.usage.current_branches / (subInfo.limits.max_branches || 1)) * 100)}%)
-                    </span>
-                  </div>
-                </div>
-
-                <div className="bg-background/80 p-2.5 rounded-xl border border-border">
-                  <span className="text-muted-foreground block text-[11px]">فواتير المبيعات هذا الشهر:</span>
-                  <div className="mt-1 flex items-baseline justify-between">
-                    <span className="font-bold text-foreground num">
-                      {subInfo.usage.current_monthly_sales} / {subInfo.limits.max_monthly_sales >= 999999 ? "غير محدود" : subInfo.limits.max_monthly_sales}
-                    </span>
-                    <span className="text-[10px] text-muted-foreground">
-                      ({Math.round((subInfo.usage.current_monthly_sales / (subInfo.limits.max_monthly_sales || 1)) * 100)}%)
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Billing Switcher */}
-          <div className="mt-8 flex items-center justify-center">
-            <div className="flex items-center rounded-xl border bg-muted/40 p-1">
+          {/* Billing Cycle Toggle */}
+          <div className="pt-4 flex items-center justify-center">
+            <div className="inline-flex items-center rounded-full border border-[#E7D6C1] bg-white p-1 shadow-xs">
               <button
                 type="button"
                 onClick={() => setBillingCycle("monthly")}
-                className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
+                className={`rounded-full px-5 py-2 text-xs font-semibold transition-all ${
                   billingCycle === "monthly"
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
+                    ? "bg-[#651E2C] text-white shadow-xs"
+                    : "text-[#77716E] hover:text-[#262321]"
                 }`}
               >
-                الدفع الشهري
+                {isAr ? "الدفع الشهري" : "Monthly Billing"}
               </button>
               <button
                 type="button"
                 onClick={() => setBillingCycle("annual")}
-                className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition ${
+                className={`rounded-full px-5 py-2 text-xs font-semibold transition-all flex items-center gap-1.5 ${
                   billingCycle === "annual"
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
+                    ? "bg-[#651E2C] text-white shadow-xs"
+                    : "text-[#77716E] hover:text-[#262321]"
                 }`}
               >
-                <span>الدفع السنوي</span>
-                <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
-                  وفّر شهرين (17%)
+                <span>{isAr ? "الدفع السنوي" : "Annual Billing"}</span>
+                <span className="rounded-full bg-[#B86B76]/20 px-2 py-0.5 text-[10px] font-bold text-[#651E2C]">
+                  {isAr ? "وفر 20%" : "Save 20%"}
                 </span>
               </button>
             </div>
           </div>
-        </div>
 
-        {/* Pricing Cards Grid */}
-        <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {PLANS.map((p) => {
-            const price = billingCycle === "monthly" ? p.price_egp : Math.round(p.price_annual_egp / 12);
-            const active = isCurrentPlan(p.id);
-
-            return (
-              <div
-                key={p.id}
-                className={`relative flex flex-col justify-between rounded-2xl border bg-card p-6 transition hover:shadow-md ${
-                  p.popular ? "border-primary ring-2 ring-primary/20 shadow-md" : ""
-                } ${active ? "border-emerald-500/50 bg-emerald-500/5 ring-1 ring-emerald-500" : ""}`}
-              >
-                {p.popular && !active && (
-                  <Badge className="absolute -top-3 right-6 bg-primary text-primary-foreground font-semibold flex items-center gap-1">
-                    <Sparkles className="size-3" />
-                    الأكثر طلباً
+          {/* Active Tenant Workspace Quota Status */}
+          {tenant && subInfo && (
+            <div className="mx-auto mt-6 max-w-2xl rounded-2xl border border-[#B86B76]/30 bg-white p-4 text-start shadow-xs">
+              <div className="flex items-center justify-between border-b border-[#E7D6C1] pb-3">
+                <div className="flex items-center gap-2">
+                  <span className="size-2 rounded-full bg-emerald-600 animate-pulse" />
+                  <span className="text-xs font-semibold text-[#262321]">
+                    {isAr ? "المساحة النشطة:" : "Active Workspace:"}{" "}
+                    <span className="font-bold text-[#651E2C]">{tenant.name}</span>
+                  </span>
+                  <Badge variant="outline" className="text-[10px] text-[#651E2C] border-[#B86B76]/40">
+                    {tenant.plan.toUpperCase()}
                   </Badge>
-                )}
-                {active && (
-                  <Badge className="absolute -top-3 right-6 bg-emerald-600 text-white font-bold flex items-center gap-1">
-                    <CheckCircle2 className="size-3" />
-                    باقتك الحالية
-                  </Badge>
-                )}
-
-                <div>
-                  <h3 className="text-xl font-bold">{p.name}</h3>
-                  <p className="mt-1 text-xs text-muted-foreground min-h-[32px]">{p.tagline}</p>
-
-                  <div className="mt-5 border-t border-b py-4">
-                    <div className="flex items-baseline gap-1">
-                      {price === 0 ? (
-                        <span className="text-3xl font-extrabold text-emerald-600 dark:text-emerald-400">مجاناً</span>
-                      ) : (
-                        <>
-                          <span className="num text-4xl font-black tracking-tight">{price.toLocaleString("en-US")}</span>
-                          <span className="text-xs font-semibold text-muted-foreground mr-1">ج.م / شهرياً</span>
-                        </>
-                      )}
-                    </div>
-                    {billingCycle === "annual" && p.price_annual_egp > 0 && (
-                      <p className="mt-1 text-[11px] text-muted-foreground">
-                        تُدفع سنوياً بقيمة <span className="num font-semibold">{p.price_annual_egp.toLocaleString("en-US")} ج.م</span>
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Quotas */}
-                  <div className="mt-4 flex flex-col gap-1.5 text-xs text-muted-foreground">
-                    <div className="flex items-center justify-between">
-                      <span>المستخدمون المصرح لهم:</span>
-                      <span className="num font-semibold text-foreground">
-                        {p.maxUsers >= 50 ? "غير محدود" : `${p.maxUsers} مستخدمين`}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span>المساحة السحابية المخصصة:</span>
-                      <span className="num font-semibold text-foreground">
-                        {p.maxStorageMb >= 102400 ? "100+ GB أو غير محدود" : `${Math.round(p.maxStorageMb / 1024)} GB`}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Features list */}
-                  <div className="mt-5">
-                    <span className="text-xs font-semibold text-muted-foreground">المزايا المضمنة:</span>
-                    <ul className="mt-2.5 flex flex-col gap-2 text-xs">
-                      {p.features.map((f) => (
-                        <li key={f} className="flex items-start gap-2 text-foreground/90">
-                          <Check className="size-4 shrink-0 text-emerald-600 dark:text-emerald-400 mt-0.5" aria-hidden />
-                          <span>{f}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
                 </div>
-
-                <div className="mt-8 pt-4 border-t">
-                  <Button
-                    variant={active ? "outline" : p.popular ? "default" : "outline"}
-                    className="w-full font-semibold"
-                    disabled={active && p.id === "trial"}
-                    onClick={() => handlePlanClick(p)}
-                  >
-                    {active ? "باقتك الحالية المفعلة" : price > 0 ? "ترقية الاشتراك وسداد فوري" : "ابدأ تجربتك المجانية"}
-                    <ArrowLeft className="size-4 mr-1.5" />
-                  </Button>
+                {subInfo.is_trial && (
+                  <span className="text-xs font-medium text-amber-700 font-mono">
+                    {isAr ? `${subInfo.trial_remaining_days} يوم متبقي بالتجربة` : `${subInfo.trial_remaining_days} days trial left`}
+                  </span>
+                )}
+              </div>
+              <div className="mt-3 grid grid-cols-3 gap-3 text-xs">
+                <div className="rounded-xl border border-[#E7D6C1] bg-[#FAF6F0] p-2.5">
+                  <span className="text-[11px] text-[#77716E] block">{isAr ? "المستخدمون:" : "Users:"}</span>
+                  <span className="font-bold font-mono text-[#262321]">
+                    {subInfo.usage.current_users} / {subInfo.limits.max_users >= 999 ? "∞" : subInfo.limits.max_users}
+                  </span>
+                </div>
+                <div className="rounded-xl border border-[#E7D6C1] bg-[#FAF6F0] p-2.5">
+                  <span className="text-[11px] text-[#77716E] block">{isAr ? "الفروع:" : "Branches:"}</span>
+                  <span className="font-bold font-mono text-[#262321]">
+                    {subInfo.usage.current_branches} / {subInfo.limits.max_branches >= 999 ? "∞" : subInfo.limits.max_branches}
+                  </span>
+                </div>
+                <div className="rounded-xl border border-[#E7D6C1] bg-[#FAF6F0] p-2.5">
+                  <span className="text-[11px] text-[#77716E] block">{isAr ? "مبيعات الشهر:" : "Monthly Sales:"}</span>
+                  <span className="font-bold font-mono text-[#262321]">
+                    {subInfo.usage.current_monthly_sales}
+                  </span>
                 </div>
               </div>
-            );
-          })}
+            </div>
+          )}
         </div>
 
-        {/* Platform Guarantees Section */}
-        <section className="mt-20 rounded-2xl border bg-muted/20 p-8 sm:p-12">
-          <div className="text-center max-w-2xl mx-auto">
-            <h2 className="text-2xl font-bold tracking-tight">معايير الأمان والمرونة الموحدة لكافة العملاء</h2>
-            <p className="mt-2 text-sm text-muted-foreground">
-              سواء اخترت الباقة المجانية أو خطة المؤسسات الكبرى، ستحصل على البنية التحتية الصلبة لمنصة Vendora.
+        {/* 2. Three Editorial Luxury Pricing Cards */}
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-3 items-stretch">
+            {commercialPlans.map((plan) => {
+              const isPopular = plan.popular;
+              const isCurrent = isCurrentPlan(plan.id);
+              const price = billingCycle === "annual" ? Math.round(plan.price_annual_egp / 12) : plan.price_egp;
+
+              return (
+                <div
+                  key={plan.id}
+                  className={`relative flex flex-col justify-between rounded-2xl transition-all duration-300 p-8 sm:p-10 ${
+                    isPopular
+                      ? "border-2 border-[#651E2C] bg-white shadow-xl shadow-[#651E2C]/5 ring-1 ring-[#651E2C]"
+                      : "border border-[#E7D6C1] bg-white/80 hover:bg-white shadow-xs"
+                  }`}
+                >
+                  {isPopular && (
+                    <div className="absolute -top-3.5 start-1/2 -translate-x-1/2 rounded-full bg-[#651E2C] px-4 py-1 text-[11px] font-bold text-white shadow-xs">
+                      {isAr ? "الباقة الأكثر اختياراً" : "Most Popular Choice"}
+                    </div>
+                  )}
+
+                  <div className="space-y-6">
+                    <div>
+                      <h3 className="font-display text-2xl font-normal text-[#262321]">
+                        {isAr
+                          ? plan.name.split("(")[0].trim()
+                          : plan.id.charAt(0).toUpperCase() + plan.id.slice(1)}
+                      </h3>
+                      <p className="mt-2 text-xs text-[#77716E] leading-relaxed">
+                        {isAr ? plan.tagline : plan.recommendedFor}
+                      </p>
+                    </div>
+
+                    <div className="border-y border-[#E7D6C1] py-5">
+                      <div className="flex items-baseline gap-2">
+                        <span className="font-display text-4xl sm:text-5xl font-normal text-[#262321] font-mono">
+                          {price.toLocaleString()}
+                        </span>
+                        <span className="text-xs font-semibold text-[#77716E]">
+                          {isAr ? "ج.م / شهر" : "EGP / month"}
+                        </span>
+                      </div>
+                      {billingCycle === "annual" && (
+                        <p className="mt-1 text-[11px] text-[#B86B76] font-medium font-mono">
+                          {isAr
+                            ? `يُسدد ${plan.price_annual_egp.toLocaleString()} ج.م سنوياً`
+                            : `Billed ${plan.price_annual_egp.toLocaleString()} EGP annually`}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="space-y-3">
+                      <p className="text-xs font-bold uppercase tracking-wider text-[#77716E]">
+                        {isAr ? "المزايا المتضمنة:" : "Included Capabilities:"}
+                      </p>
+                      <ul className="space-y-2.5 text-xs text-[#262321]">
+                        {plan.features.map((feat, idx) => (
+                          <li key={idx} className="flex items-start gap-2.5 leading-relaxed">
+                            <span className="mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full bg-[#FAF6F0] text-[#651E2C] border border-[#E7D6C1]">
+                              <Check className="size-2.5 stroke-[3]" />
+                            </span>
+                            <span>{feat}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+
+                  <div className="mt-8 pt-6 border-t border-[#E7D6C1]">
+                    <Button
+                      onClick={() => handlePlanClick(plan)}
+                      size="lg"
+                      className={`w-full rounded-xl py-3 text-xs font-bold transition-all ${
+                        isPopular
+                          ? "bg-[#651E2C] text-white hover:bg-[#521723] shadow-md"
+                          : "border border-[#E7D6C1] bg-[#FAF6F0] text-[#262321] hover:bg-[#E7D6C1]"
+                      }`}
+                    >
+                      {isCurrent
+                        ? isAr
+                          ? "باقاتك الحالية المفعلة"
+                          : "Current Active Plan"
+                        : user
+                        ? isAr
+                          ? "ترقية واشتراك فوري"
+                          : "Upgrade & Subscribe"
+                        : isAr
+                        ? "ابدأ تجربة الـ 14 يوماً"
+                        : "Start 14-Day Free Trial"}
+                    </Button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* 3. Detailed Feature Comparison Matrix */}
+        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center space-y-2 mb-8">
+            <h2 className="font-display text-2xl sm:text-3xl font-normal text-[#262321]">
+              {isAr ? "جدول المقارنة التفصيلي للميزات" : "Comprehensive Feature Comparison"}
+            </h2>
+            <p className="text-xs text-[#77716E]">
+              {isAr
+                ? "مقارنة دقيقة لجميع الصلاحيات والحصص والخيارات المعمارية"
+                : "Exact comparison of quotas, operational permissions, and infrastructure"}
             </p>
           </div>
 
-          <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            <div className="flex gap-4 rounded-xl border bg-background p-5">
-              <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
-                <Database className="size-5" />
-              </span>
-              <div>
-                <h4 className="text-sm font-bold">عزل كامل لبيانات كل منشأة</h4>
-                <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
-                  قواعد بيانات مستقلة ومنع اختلاط السجلات، مع إمكانية ربط تفرع Neon أو قاعدة بيانات PostgreSQL خاصة.
-                </p>
-              </div>
-            </div>
+          <div className="overflow-x-auto rounded-2xl border border-[#E7D6C1] bg-white shadow-xs">
+            <table className="w-full text-start text-xs text-[#262321]">
+              <thead>
+                <tr className="border-b border-[#E7D6C1] bg-[#FAF6F0] text-[#77716E]">
+                  <th className="py-4 px-6 text-start font-bold uppercase tracking-wider">
+                    {isAr ? "الميزة / القدرة" : "Feature / Capability"}
+                  </th>
+                  <th className="py-4 px-4 text-center font-bold">{isAr ? "البداية (Starter)" : "Starter"}</th>
+                  <th className="py-4 px-4 text-center font-bold text-[#651E2C] bg-[#651E2C]/5">
+                    {isAr ? "المحترفين (Pro)" : "Pro"}
+                  </th>
+                  <th className="py-4 px-4 text-center font-bold">{isAr ? "المؤسسات (Enterprise)" : "Enterprise"}</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#E7D6C1]">
+                {comparisonFeatures.map((row, idx) => (
+                  <tr key={idx} className="hover:bg-[#FAF6F0]/50 transition-colors">
+                    <td className="py-3.5 px-6 font-medium text-[#262321]">
+                      {isAr ? row.nameAr : row.nameEn}
+                    </td>
+                    <td className="py-3.5 px-4 text-center">
+                      {typeof row.starter === "boolean" ? (
+                        row.starter ? (
+                          <Check className="mx-auto size-4 text-[#27835C] stroke-[2.5]" />
+                        ) : (
+                          <span className="text-[#77716E]">—</span>
+                        )
+                      ) : (
+                        <span className="font-mono">{row.starter}</span>
+                      )}
+                    </td>
+                    <td className="py-3.5 px-4 text-center bg-[#651E2C]/5">
+                      {typeof row.pro === "boolean" ? (
+                        row.pro ? (
+                          <Check className="mx-auto size-4 text-[#651E2C] stroke-[2.5]" />
+                        ) : (
+                          <span className="text-[#77716E]">—</span>
+                        )
+                      ) : (
+                        <span className="font-mono font-bold text-[#651E2C]">{row.pro}</span>
+                      )}
+                    </td>
+                    <td className="py-3.5 px-4 text-center">
+                      {typeof row.enterprise === "boolean" ? (
+                        row.enterprise ? (
+                          <Check className="mx-auto size-4 text-[#27835C] stroke-[2.5]" />
+                        ) : (
+                          <span className="text-[#77716E]">—</span>
+                        )
+                      ) : (
+                        <span className="font-mono font-semibold">{row.enterprise}</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
 
-            <div className="flex gap-4 rounded-xl border bg-background p-5">
-              <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
-                <ShieldCheck className="size-5" />
-              </span>
-              <div>
-                <h4 className="text-sm font-bold">نسخ احتياطي واستعادة فورية</h4>
-                <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
-                  نسخ تلقائي مجدول مع إمكانية تصدير واسترجاع نسخة كاملة بضغطة زر وتنزيلها محلياً دون قيود.
-                </p>
-              </div>
-            </div>
+        {/* 4. Frequently Asked Questions (FAQ Accordions) */}
+        <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 space-y-6">
+          <div className="text-center space-y-2 mb-8">
+            <h2 className="font-display text-2xl sm:text-3xl font-normal text-[#262321]">
+              {isAr ? "الأسئلة الشائعة حول الباقات والسداد" : "Frequently Asked Questions"}
+            </h2>
+            <p className="text-xs text-[#77716E]">
+              {isAr ? "إجابات شفافة عن الفوترة والتجديد وإلغاء الاشتراك" : "Transparent answers about billing, upgrades, and cancellations"}
+            </p>
+          </div>
 
-            <div className="flex gap-4 rounded-xl border bg-background p-5">
-              <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
-                <Server className="size-5" />
-              </span>
-              <div>
-                <h4 className="text-sm font-bold">مرونة التشغيل أوفلاين وسحابياً</h4>
-                <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
-                  دعم العمل المكتبي بدون إنترنت تماماً مع تراخيص مشفرة بـ HMAC ومزامنة تلقائية عند عودة الشبكة.
-                </p>
+          <div className="space-y-3">
+            {faqs.map((faq, idx) => {
+              const isOpen = openFaq === idx;
+              return (
+                <div
+                  key={idx}
+                  className="rounded-xl border border-[#E7D6C1] bg-white overflow-hidden transition-all shadow-xs"
+                >
+                  <button
+                    type="button"
+                    onClick={() => setOpenFaq(isOpen ? null : idx)}
+                    className="w-full flex items-center justify-between p-5 text-start font-semibold text-xs sm:text-sm text-[#262321] hover:text-[#651E2C] transition-colors"
+                  >
+                    <span>{isAr ? faq.qAr : faq.qEn}</span>
+                    <ChevronDown
+                      className={`size-4 text-[#77716E] transition-transform duration-200 shrink-0 ms-2 ${
+                        isOpen ? "rotate-180 text-[#651E2C]" : ""
+                      }`}
+                    />
+                  </button>
+                  <AnimatePresence>
+                    {isOpen && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="px-5 pb-5 text-xs text-[#77716E] leading-relaxed border-t border-[#E7D6C1]/50 pt-3"
+                      >
+                        {isAr ? faq.aAr : faq.aEn}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* 5. Final CTA Banner */}
+        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+          <div className="rounded-3xl bg-[#35151D] p-8 sm:p-12 text-center text-[#F5EBDD] space-y-6 shadow-xl relative overflow-hidden">
+            <div className="relative z-10 space-y-3">
+              <h2 className="font-display text-2xl sm:text-4xl font-normal tracking-tight text-white">
+                {isAr ? "هل تحتاج إلى استشارة متخصصة لمؤسستك؟" : "Need custom enterprise requirements?"}
+              </h2>
+              <p className="mx-auto max-w-xl text-xs sm:text-sm text-[#E7D6C1] font-body leading-relaxed">
+                {isAr
+                  ? "فريقنا الهندسي مستعد لمساعدتك في تخطيط استضافة مخصصة، نقل البيانات التاريخية، وتدريب طاقم العمل."
+                  : "Our engineering consultants will assist you with custom deployments, legacy data migration, and on-premise setups."}
+              </p>
+              <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
+                <Button
+                  render={<Link to="/contact" />}
+                  nativeButton={false}
+                  size="lg"
+                  className="bg-[#651E2C] text-white hover:bg-[#8A293B] rounded-full px-6 py-2.5 text-xs font-bold"
+                >
+                  {isAr ? "حجز جلسة استشارية مع مهندس حلول" : "Book Enterprise Architecture Session"}
+                </Button>
+                <Button
+                  render={<Link to="/signup" />}
+                  nativeButton={false}
+                  size="lg"
+                  variant="outline"
+                  className="border-[#E7D6C1]/30 bg-transparent text-[#F5EBDD] hover:bg-white/10 rounded-full px-6 py-2.5 text-xs font-bold"
+                >
+                  {isAr ? "تجربة مجانية فورية" : "Start 14-Day Free Trial"}
+                </Button>
               </div>
             </div>
           </div>
-        </section>
-
-        {/* Superadmin CTA */}
-        <div className="mt-12 text-center text-xs text-muted-foreground">
-          هل أنت المشرف على البنية التحتية لمنصة Vendora؟{" "}
-          <Link to="/admoon" className="font-semibold text-primary underline underline-offset-4 hover:text-primary/80">
-            الدخول إلى لوحة قيادة المشرف العام (Admoon Control Plane)
-          </Link>
         </div>
       </div>
 
-      {/* Interactive Checkout & Payment Modal */}
+      {/* Checkout and Payment Simulation Modal */}
       <Dialog open={checkoutModalOpen} onOpenChange={setCheckoutModalOpen}>
-        <DialogContent className="max-w-lg" dir="rtl">
-          <DialogHeader>
-            <DialogTitle className="text-lg font-black flex items-center gap-2">
-              <CreditCard className="size-5 text-primary" />
-              <span>ترقية الاشتراك والدفع الإلكتروني الآمن</span>
+        <DialogContent className="max-w-lg rounded-2xl bg-white p-6 border border-[#E7D6C1] text-[#262321] font-body">
+          <DialogHeader className="border-b border-[#E7D6C1] pb-4">
+            <DialogTitle className="font-display text-xl text-[#262321] font-normal">
+              {isAr ? "إتمام الاشتراك وتأكيد السداد" : "Complete Subscription & Checkout"}
             </DialogTitle>
           </DialogHeader>
 
           {selectedPlan && (
-            <div className="space-y-4 py-2 text-xs">
-              {/* Step 1: Selection & Checkout Initiation */}
+            <div className="space-y-5 py-3">
+              {/* Plan Summary Card */}
+              <div className="rounded-xl border border-[#E7D6C1] bg-[#FAF6F0] p-4 flex items-center justify-between">
+                <div>
+                  <h4 className="font-bold text-sm text-[#262321]">
+                    {selectedPlan.name}
+                  </h4>
+                  <p className="text-xs text-[#77716E]">
+                    {billingCycle === "annual"
+                      ? isAr
+                        ? "دورة فوترة سنوية (خصم 20%)"
+                        : "Annual billing cycle (20% off)"
+                      : isAr
+                      ? "دورة فوترة شهرية"
+                      : "Monthly billing cycle"}
+                  </p>
+                </div>
+                <div className="text-end font-mono">
+                  <span className="text-lg font-bold text-[#651E2C]">
+                    {(billingCycle === "annual"
+                      ? selectedPlan.price_annual_egp
+                      : selectedPlan.price_egp
+                    ).toLocaleString()}{" "}
+                    {isAr ? "ج.م" : "EGP"}
+                  </span>
+                </div>
+              </div>
+
               {!checkoutResult ? (
                 <>
-                  <div className="p-3 rounded-xl bg-muted/40 border border-border flex items-center justify-between">
-                    <div>
-                      <span className="font-bold text-foreground text-sm">{selectedPlan.name}</span>
-                      <p className="text-[11px] text-muted-foreground mt-0.5">
-                        الدورة: {billingCycle === "annual" ? "سداد سنوي (خصم شهرين)" : "سداد شهري"}
-                      </p>
-                    </div>
-                    <div className="text-left">
-                      <span className="text-xl font-black text-primary num">
-                        {formatCurrency(
-                          billingCycle === "annual" ? selectedPlan.price_annual_egp : selectedPlan.price_egp
-                        )}
-                      </span>
-                    </div>
-                  </div>
-
+                  {/* Payment Gateway Options */}
                   <div className="space-y-2">
-                    <label className="font-bold text-foreground block">اختر بوابة وطريقة السداد المفضلة:</label>
-                    <div className="grid grid-cols-2 gap-2">
+                    <label className="text-xs font-bold text-[#262321]">
+                      {isAr ? "اختر وسيلة الدفع المناسبة:" : "Select payment method:"}
+                    </label>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
                       {[
-                        {
-                          id: "card",
-                          name: "بطاقة بنكية (Visa / Meeza)",
-                          badge: "بوابة Paymob",
-                          icon: "💳",
-                        },
-                        {
-                          id: "fawry",
-                          name: "فوري باي (Fawry Pay)",
-                          badge: "كود فوري فوري",
-                          icon: "⚡",
-                        },
-                        {
-                          id: "instapay",
-                          name: "إنستاباي (InstaPay)",
-                          badge: "تحويل لحظي IPN",
-                          icon: "📱",
-                        },
-                        {
-                          id: "vodafone_cash",
-                          name: "محافظ المحمول الذكية",
-                          badge: "فودافون كاش",
-                          icon: "🔴",
-                        },
-                      ].map((m) => (
-                        <button
-                          key={m.id}
-                          type="button"
-                          onClick={() => setPaymentMethod(m.id)}
-                          className={`p-3 rounded-xl border text-right transition-colors ${
-                            paymentMethod === m.id
-                              ? "border-primary bg-primary/10 text-foreground ring-1 ring-primary font-bold"
-                              : "border-border bg-card text-muted-foreground hover:bg-muted/40"
-                          }`}
-                        >
-                          <div className="flex items-center gap-1.5 font-bold text-foreground">
-                            <span>{m.icon}</span>
-                            <span>{m.name}</span>
-                          </div>
-                          <span className="text-[10px] text-primary/80 mt-1 block">{m.badge}</span>
-                        </button>
-                      ))}
+                        { id: "card", label: isAr ? "بطاقة بنكية (Visa/MC)" : "Bank Card (Visa/MC)", icon: CreditCard },
+                        { id: "fawry", label: isAr ? "كود فوري (Fawry Pay)" : "Fawry Pay Code", icon: Zap },
+                        { id: "instapay", label: isAr ? "تحويل إنستاباي (InstaPay)" : "InstaPay Transfer", icon: RefreshCw },
+                        { id: "vodafone_cash", label: isAr ? "محفظة فودافون كاش" : "Vodafone Cash Wallet", icon: Sparkles },
+                      ].map((m) => {
+                        const Icon = m.icon;
+                        return (
+                          <button
+                            key={m.id}
+                            type="button"
+                            onClick={() => setPaymentMethod(m.id)}
+                            className={`flex items-center gap-2 rounded-xl border p-3 text-start transition-all ${
+                              paymentMethod === m.id
+                                ? "border-[#651E2C] bg-[#651E2C]/5 text-[#651E2C] font-bold"
+                                : "border-[#E7D6C1] hover:bg-[#FAF6F0] text-[#77716E]"
+                            }`}
+                          >
+                            <Icon className="size-4 shrink-0" />
+                            <span>{m.label}</span>
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
 
-                  <div className="space-y-1.5">
-                    <label className="font-bold text-foreground">رقم هاتف مسؤول المنشأة (لإرسال إشعار السداد):</label>
+                  {/* Contact Phone */}
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-[#77716E]">
+                      {isAr ? "رقم الهاتف لتأكيد السداد (اختياري):" : "Contact phone for receipt (optional):"}
+                    </label>
                     <Input
-                      placeholder="010xxxxxxxx أو 011xxxxxxxx"
+                      type="tel"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
-                      className="text-xs h-9 font-mono"
+                      placeholder="01012345678"
+                      className="border-[#E7D6C1] text-xs font-mono"
                     />
                   </div>
-                </>
-              ) : paymentActivated ? (
-                /* Step 3: Success Screen */
-                <div className="py-6 text-center space-y-4">
-                  <div className="size-14 rounded-full bg-emerald-500/10 text-emerald-600 mx-auto flex items-center justify-center">
-                    <CheckCircle2 className="size-8" />
-                  </div>
-                  <div>
-                    <h3 className="text-base font-black text-foreground">مبروك! تم تفعيل اشتراكك بنجاح</h3>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      تمت ترقية المنشأة إلى <strong className="text-foreground">{checkoutResult.plan_name}</strong> وجرى تحديث كافة الصلاحيات والحصص فوراً.
-                    </p>
-                  </div>
-                  <div className="p-3 rounded-xl bg-muted/40 border border-border inline-block font-mono text-xs">
-                    رقم الفاتورة المعتمدة: <strong className="text-primary">{checkoutResult.invoice_ref}</strong>
-                  </div>
-                </div>
-              ) : (
-                /* Step 2: Payment Details & Simulation Screen */
-                <div className="space-y-4">
-                  <div className="p-3 rounded-xl bg-primary/5 border border-primary/20 flex items-center justify-between">
-                    <div>
-                      <span className="text-[11px] text-muted-foreground">رقم مرجع الفاتورة السحابية:</span>
-                      <p className="font-mono font-black text-foreground text-sm">{checkoutResult.invoice_ref}</p>
-                    </div>
-                    <div className="text-left">
-                      <span className="text-[11px] text-muted-foreground">المبلغ المستحق:</span>
-                      <p className="font-black text-primary text-base num">
-                        {formatCurrency(checkoutResult.amount_egp)}
-                      </p>
-                    </div>
-                  </div>
 
-                  {/* Fawry instructions */}
-                  {checkoutResult.payment_meta.type === "fawry" && (
-                    <div className="p-4 rounded-xl border-2 border-dashed border-amber-500/40 bg-amber-500/5 text-center space-y-2">
-                      <span className="text-xs font-bold text-amber-700 dark:text-amber-400 block">
-                        كود الدفع لدى منافذ فوري أو فوري باي:
+                  <Button
+                    onClick={handleCreateCheckout}
+                    disabled={checkingOut}
+                    className="w-full bg-[#651E2C] text-white hover:bg-[#521723] rounded-xl py-3 text-xs font-bold"
+                  >
+                    {checkingOut
+                      ? isAr
+                        ? "جاري تجهيز الفاتورة..."
+                        : "Preparing invoice..."
+                      : isAr
+                      ? "إصدار الفاتورة وتوليد كود السداد"
+                      : "Generate Invoice & Payment Code"}
+                  </Button>
+                </>
+              ) : (
+                /* Invoice and Simulation UI */
+                <div className="space-y-4">
+                  <div className="rounded-xl border border-emerald-300 bg-emerald-50/50 p-4 text-xs space-y-2 text-emerald-950">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold flex items-center gap-1 text-emerald-700">
+                        <CheckCircle2 className="size-4" />
+                        {isAr ? "تم إصدار الفاتورة بنجاح" : "Invoice Issued Successfully"}
                       </span>
-                      <div className="flex items-center justify-center gap-2">
-                        <span className="text-2xl font-black font-mono tracking-widest text-foreground bg-background px-4 py-1.5 rounded-lg border border-border">
-                          {checkoutResult.payment_meta.fawry_ref}
-                        </span>
+                      <span className="font-mono text-[11px] text-emerald-800">
+                        #{checkoutResult.invoice_ref}
+                      </span>
+                    </div>
+
+                    {checkoutResult.payment_meta.fawry_ref && (
+                      <div className="mt-2 rounded-lg bg-white p-3 border border-emerald-200 flex items-center justify-between">
+                        <div>
+                          <span className="text-[11px] text-[#77716E] block">
+                            {isAr ? "كود سداد فوري الموحد:" : "Fawry Reference Code:"}
+                          </span>
+                          <span className="font-mono text-base font-black text-[#651E2C]">
+                            {checkoutResult.payment_meta.fawry_ref}
+                          </span>
+                        </div>
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => copyToClipboard(checkoutResult.payment_meta.fawry_ref || "")}
-                          className="h-9 px-3 gap-1"
+                          onClick={() => copyToClipboard(checkoutResult.payment_meta.fawry_ref!)}
+                          className="text-[11px] border-[#E7D6C1]"
                         >
-                          {copiedCode ? <Check className="size-4 text-emerald-500" /> : <Copy className="size-4" />}
-                          <span className="text-[10px]">{copiedCode ? "تم النسخ" : "نسخ"}</span>
+                          {copiedCode ? <Check className="size-3 text-emerald-600" /> : <Copy className="size-3" />}
                         </Button>
                       </div>
-                      <p className="text-[11px] text-muted-foreground">
+                    )}
+
+                    {checkoutResult.payment_meta.instructions && (
+                      <p className="text-[11px] text-emerald-900 leading-relaxed">
                         {checkoutResult.payment_meta.instructions}
                       </p>
-                    </div>
-                  )}
+                    )}
+                  </div>
 
-                  {/* InstaPay instructions */}
-                  {checkoutResult.payment_meta.type === "instapay" && (
-                    <div className="p-4 rounded-xl border border-border bg-card space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-foreground">عنوان الدفع اللحظي (IPA):</span>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => copyToClipboard(checkoutResult.payment_meta.ipa_address || "")}
-                          className="h-6 text-[11px] gap-1"
-                        >
-                          <Copy className="size-3" />
-                          <span>نسخ</span>
-                        </Button>
-                      </div>
-                      <p className="font-mono font-bold text-primary text-sm bg-muted/60 p-2 rounded-lg">
-                        {checkoutResult.payment_meta.ipa_address}
-                      </p>
-                      <p className="text-[11px] text-muted-foreground leading-relaxed">
-                        {checkoutResult.payment_meta.instructions}
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Card / Paymob instructions */}
-                  {checkoutResult.payment_meta.type === "card" && (
-                    <div className="p-4 rounded-xl border border-border bg-card space-y-2">
-                      <span className="text-xs font-bold text-foreground block">بوابة البطاقات البنكية المعتمدة:</span>
-                      <p className="text-[11px] text-muted-foreground">
-                        نظام التحصيل مؤمن ومربوط مع شبكة الدفع القومية المصرية ميزة، وفيزا، وماستركارد.
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Instant Demo/Simulation Activation Banner */}
-                  <div className="p-3.5 rounded-xl border border-emerald-500/40 bg-emerald-500/10 space-y-2">
-                    <div className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-300 font-bold">
-                      <Zap className="size-4" />
-                      <span>اختبار البيئة التجريبية (Instant Demo Activation)</span>
-                    </div>
-                    <p className="text-[11px] text-emerald-800/80 dark:text-emerald-200/80 leading-relaxed">
-                      يمكنك الضغط أدناه لتأكيد السداد فوراً بمحاكاة البنك، وترقية مساحة العمل وتحديث الحصص في قاعدة البيانات دون انتظار السداد الفعلي.
-                    </p>
+                  {/* Dev / Test Payment Simulator Button */}
+                  <div className="pt-2">
                     <Button
-                      size="sm"
                       onClick={handleSimulatePayment}
-                      disabled={simulating}
-                      className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold gap-1.5 h-8 mt-1"
+                      disabled={simulating || paymentActivated}
+                      className="w-full bg-[#27835C] text-white hover:bg-[#1E6B4A] rounded-xl py-3 text-xs font-bold"
                     >
-                      {simulating ? <RefreshCw className="size-3.5 animate-spin" /> : <CheckCircle2 className="size-3.5" />}
-                      <span>تأكيد السداد وتفعيل الباقة فوراً</span>
+                      {paymentActivated
+                        ? isAr
+                          ? "تم تفعيل الباقة بنجاح!"
+                          : "Plan Activated Successfully!"
+                        : simulating
+                        ? isAr
+                          ? "جاري تأكيد السداد الآلي..."
+                          : "Simulating confirmation..."
+                        : isAr
+                        ? "محاكاة الدفع الفوري (Webhook Live Trigger)"
+                        : "Simulate Instant Payment (Webhook Live Trigger)"}
                     </Button>
+                    <p className="mt-1.5 text-center text-[10px] text-[#77716E]">
+                      {isAr
+                        ? "زر المحاكاة متاح للتجربة والتفعيل التلقائي دون خصم فعلي"
+                        : "Simulator triggers platform webhook to activate quotas instantly"}
+                    </p>
                   </div>
                 </div>
               )}
             </div>
           )}
 
-          <DialogFooter className="gap-2 sm:gap-0">
-            {paymentActivated ? (
-              <Button
-                size="sm"
-                className="w-full font-bold"
-                onClick={() => {
-                  setCheckoutModalOpen(false);
-                  navigate("/app");
-                }}
-              >
-                الذهاب إلى مساحة العمل
-              </Button>
-            ) : !checkoutResult ? (
-              <>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setCheckoutModalOpen(false)}
-                  disabled={checkingOut}
-                >
-                  إلغاء
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={handleCreateCheckout}
-                  disabled={checkingOut}
-                  className="font-bold gap-1.5"
-                >
-                  {checkingOut ? <RefreshCw className="size-3.5 animate-spin" /> : <CreditCard className="size-3.5" />}
-                  <span>متابعة وإصدار الفاتورة</span>
-                </Button>
-              </>
-            ) : (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCheckoutModalOpen(false)}
-              >
-                إغلاق
-              </Button>
-            )}
+          <DialogFooter className="border-t border-[#E7D6C1] pt-3">
+            <Button
+              variant="outline"
+              onClick={() => setCheckoutModalOpen(false)}
+              className="border-[#E7D6C1] text-xs"
+            >
+              {isAr ? "إغلاق" : "Close"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

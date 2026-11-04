@@ -4,15 +4,17 @@ import { motion, AnimatePresence, useReducedMotion } from "motion/react";
 import {
   Menu,
   X,
-  Sun,
-  Moon,
+  Globe,
+  Search,
+  ArrowRight,
+  ArrowLeft,
   ShieldCheck,
-  Layers,
   Lock,
+  ChevronDown,
 } from "lucide-react";
 import { useAuth } from "@/stores/auth";
-import { useUiStore } from "@/stores/ui";
-import { Button } from "@/components/kit/button";
+import { useTranslation } from "@/i18n";
+import { MizanLogo } from "@/components/MizanLogo";
 
 interface MarketingLayoutProps {
   children?: React.ReactNode;
@@ -21,63 +23,175 @@ interface MarketingLayoutProps {
 export function MarketingLayout({ children }: MarketingLayoutProps) {
   const location = useLocation();
   const { user, token, tenant } = useAuth();
-  const { themeMode, toggleThemeMode } = useUiStore();
+  const { locale, dir, toggleLocale } = useTranslation();
   const shouldReduceMotion = useReducedMotion();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
 
   // Close mobile menu on route change
   useEffect(() => {
     setMobileMenuOpen(false);
+    setDropdownOpen(null);
   }, [location.pathname]);
 
-  // Max 4 links in main navigation
-  const navLinks = [
-    { href: "/product", label: "المنتج" },
-    { href: "/industries", label: "القطاعات" },
-    { href: "/pricing", label: "الأسعار" },
-    { href: "/docs", label: "التوثيق" },
+  const isAr = locale === "ar";
+  const appDestination = tenant ? `/c/${tenant.slug}` : "/pos";
+
+  // Navigation Links matching Image 1 (EN) and Image 2 (AR)
+  const navLinksEn = [
+    {
+      href: "/product",
+      label: "Product",
+      hasDropdown: true,
+      items: [
+        { href: "/product", label: "Overview & Architecture" },
+        { href: "/features", label: "Core Modules & Features" },
+        { href: "/demo", label: "Live System Demo (Light & Dark)" },
+        { href: "/docs", label: "Developer Documentation" },
+      ],
+    },
+    {
+      href: "/industries",
+      label: "Solutions",
+      hasDropdown: true,
+      items: [
+        { href: "/industries", label: "Retail & E-commerce" },
+        { href: "/industries", label: "Manufacturing & Supply" },
+        { href: "/industries", label: "Services & Healthcare" },
+      ],
+    },
+    { href: "/demo", label: "Live Demo", hasDropdown: false },
+    { href: "/pricing", label: "Pricing", hasDropdown: false },
+    {
+      href: "/blog",
+      label: "Resources",
+      hasDropdown: true,
+      items: [
+        { href: "/blog", label: "Editorial Blog & Insights" },
+        { href: "/docs", label: "Documentation Portal" },
+        { href: "/contact", label: "Help & Technical Support" },
+      ],
+    },
+    { href: "/about", label: "About", hasDropdown: false },
   ];
 
-  const appDestination = tenant ? `/c/${tenant.slug}` : "/pos";
+  const navLinksAr = [
+    {
+      href: "/product",
+      label: "المنتج",
+      hasDropdown: true,
+      items: [
+        { href: "/product", label: "نظرة عامة والبنية التحتية" },
+        { href: "/features", label: "الوحدات والمميزات الأساسية" },
+        { href: "/demo", label: "معاينة النظام الحي (فاتح وداكن)" },
+        { href: "/docs", label: "دليل المطور والتوثيق" },
+      ],
+    },
+    {
+      href: "/demo",
+      label: "عرض حي",
+      hasDropdown: false,
+    },
+    {
+      href: "/industries",
+      label: "القطاعات",
+      hasDropdown: true,
+      items: [
+        { href: "/industries", label: "التجزئة والتجارة الإلكترونية" },
+        { href: "/industries", label: "التصنيع والتوريد" },
+        { href: "/industries", label: "الخدمات والاستشارات والرعاية" },
+      ],
+    },
+    { href: "/pricing", label: "الأسعار", hasDropdown: false },
+    { href: "/about", label: "من نحن", hasDropdown: false },
+    { href: "/blog", label: "المدونة", hasDropdown: false },
+  ];
+
+  const currentNav = isAr ? navLinksAr : navLinksEn;
 
   return (
     <div
-      dir="rtl"
-      className="min-h-screen flex flex-col bg-background font-sans text-foreground transition-colors duration-150 selection:bg-primary selection:text-primary-foreground"
+      dir={dir}
+      className={`min-h-screen flex flex-col bg-[#FAF6F0] text-[#262321] transition-colors duration-150 selection:bg-[#651E2C] selection:text-[#FAF6F0] ${
+        isAr ? "font-body" : "font-sans"
+      }`}
     >
-      {/* 1. Sticky Modern Top Navigation — Hairline border, no blur gimmick */}
-      <header className="sticky top-0 z-40 w-full border-b border-border bg-background">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          {/* Logo & Brand Identity */}
+      {/* 1. Top Navigation Bar — Warm Ivory Light background matching design */}
+      <header className="sticky top-0 z-50 w-full border-b border-[#E6DCD2] bg-[#FAF6F0]/95 backdrop-blur-md">
+        <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+          {/* Brand Logo */}
           <div className="flex items-center gap-3">
-            <Link to="/" className="flex items-center gap-2.5 min-h-[44px] py-1">
-              <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary text-primary-foreground">
-                <Layers className="h-5 w-5" />
-              </div>
-              <div className="flex flex-col">
-                <span className="font-semibold text-base tracking-tight text-foreground leading-tight">
-                  ميزان ERP
-                </span>
-                <span className="text-xs font-mono text-muted-foreground">
-                  إدارة تجار مواد البناء
-                </span>
-              </div>
+            <Link to="/" className="flex items-center py-2" aria-label="Mizan ERP">
+              <MizanLogo size="lg" locale={locale} />
             </Link>
           </div>
 
-          {/* Desktop Navigation Links — Max 4 Links */}
-          <nav className="hidden md:flex items-center gap-1" aria-label="التنقل الرئيسي">
-            {navLinks.map((link) => {
+          {/* Desktop Navigation Links */}
+          <nav className="hidden lg:flex items-center gap-1.5" aria-label="Main Navigation">
+            {currentNav.map((link) => {
               const isActive = location.pathname === link.href;
+
+              if (link.hasDropdown && link.items) {
+                const isOpen = dropdownOpen === link.label;
+                return (
+                  <div
+                    key={link.label}
+                    className="relative"
+                    onMouseEnter={() => setDropdownOpen(link.label)}
+                    onMouseLeave={() => setDropdownOpen(null)}
+                  >
+                    <Link
+                      to={link.href}
+                      className={`inline-flex items-center gap-1 px-3.5 py-2 text-sm font-medium rounded-full transition-colors ${
+                        isActive
+                          ? "text-[#651E2C] font-semibold"
+                          : "text-[#55504D] hover:text-[#262321] hover:bg-[#EFE4D6]/60"
+                      }`}
+                    >
+                      <span>{link.label}</span>
+                      <ChevronDown
+                        className={`h-3.5 w-3.5 transition-transform duration-200 ${
+                          isOpen ? "rotate-180" : ""
+                        }`}
+                      />
+                    </Link>
+
+                    {/* Elegant Dropdown Card */}
+                    <AnimatePresence>
+                      {isOpen && (
+                        <motion.div
+                          initial={shouldReduceMotion ? false : { opacity: 0, y: 8 }}
+                          animate={shouldReduceMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
+                          exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: 4 }}
+                          transition={{ duration: 0.15 }}
+                          className="absolute top-full start-0 mt-1 w-64 rounded-xl border border-[#E6DCD2] bg-[#FFFFFF] p-2 shadow-lg z-50"
+                        >
+                          {link.items.map((subItem) => (
+                            <Link
+                              key={subItem.href + subItem.label}
+                              to={subItem.href}
+                              className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-[#55504D] hover:text-[#651E2C] hover:bg-[#FAF6F0] transition-colors"
+                            >
+                              <span className="w-1.5 h-1.5 rounded-full bg-[#B86B76]/50" />
+                              <span>{subItem.label}</span>
+                            </Link>
+                          ))}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                );
+              }
+
               return (
                 <Link
                   key={link.href}
                   to={link.href}
-                  className={`rounded-md px-3.5 py-2 text-sm font-medium transition-colors min-h-[44px] flex items-center ${
+                  className={`px-3.5 py-2 text-sm font-medium rounded-full transition-colors ${
                     isActive
-                      ? "bg-accent text-accent-foreground"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                      ? "text-[#651E2C] font-semibold"
+                      : "text-[#55504D] hover:text-[#262321] hover:bg-[#EFE4D6]/60"
                   }`}
                 >
                   {link.label}
@@ -86,52 +200,62 @@ export function MarketingLayout({ children }: MarketingLayoutProps) {
             })}
           </nav>
 
-          {/* Right Action Utilities (Theme Toggle + Single Clear CTA) */}
-          <div className="flex items-center gap-2.5">
-            {/* Dark/Light Mode Toggle — 44px touch target */}
-            <button
-              onClick={toggleThemeMode}
-              title={themeMode === "dark" ? "التبديل للوضع الفاتح" : "التبديل للوضع الداكن"}
-              className="flex h-11 w-11 items-center justify-center rounded-md border border-border text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-              aria-label="تبديل مظهر العرض"
+          {/* Right Action Utilities (Language Switcher + Sign In + Get Started) */}
+          <div className="flex items-center gap-3">
+            {/* Search Icon button (Matching Arabic mockup) */}
+            <Link
+              to="/docs"
+              className="hidden sm:flex h-9 w-9 items-center justify-center rounded-full text-[#77716E] hover:text-[#262321] hover:bg-[#EFE4D6]/70 transition-colors"
+              title={isAr ? "بحث في التوثيق" : "Search docs"}
+              aria-label="Search"
             >
-              {themeMode === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              <Search className="h-4 w-4" />
+            </Link>
+
+            {/* Language Switcher Pill */}
+            <button
+              onClick={toggleLocale}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[#DECFC0] bg-[#FAF6F0] text-xs font-medium text-[#262321] hover:bg-[#EFE4D6] transition-colors"
+              title={isAr ? "Switch to English" : "التبديل إلى العربية"}
+              aria-label="Toggle language"
+            >
+              <Globe className="h-3.5 w-3.5 text-[#651E2C]" />
+              <span>{isAr ? "English" : "العربية"}</span>
             </button>
 
-            {/* Authenticated Dashboard vs Guest Start CTA */}
+            {/* Authenticated Dashboard button vs Guest Auth Actions */}
             {token && user ? (
-              <Button
-                size="sm"
-                className="bg-primary text-primary-foreground hover:bg-primary/90 font-medium min-h-[44px] px-4 text-xs"
-                render={<Link to={appDestination} />}
-                nativeButton={false}
+              <Link
+                to={appDestination}
+                className="inline-flex items-center gap-1.5 px-5 py-2 rounded-full bg-[#651E2C] text-[#FAF6F0] text-xs font-semibold hover:bg-[#521723] shadow-sm transition-all"
               >
-                لوحة التحكم
-              </Button>
+                <span>{isAr ? "لوحة التحكم" : "Dashboard"}</span>
+                {isAr ? <ArrowLeft className="h-3.5 w-3.5" /> : <ArrowRight className="h-3.5 w-3.5" />}
+              </Link>
             ) : (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 sm:gap-3">
                 <Link
                   to="/login"
-                  className="hidden sm:flex min-h-[44px] items-center px-3 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+                  className="hidden sm:inline-flex px-3 py-1.5 text-xs sm:text-sm font-medium text-[#55504D] hover:text-[#262321] transition-colors"
                 >
-                  تسجيل الدخول
+                  {isAr ? "تسجيل الدخول" : "Sign In"}
                 </Link>
-                <Button
-                  size="sm"
-                  className="bg-primary text-primary-foreground hover:bg-primary/90 font-medium min-h-[44px] px-5 text-xs shadow-xs"
-                  render={<Link to="/signup" />}
-                  nativeButton={false}
+
+                <Link
+                  to="/signup"
+                  className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-[#651E2C] text-[#FAF6F0] text-xs sm:text-sm font-semibold hover:bg-[#521723] shadow-sm transition-all hover:scale-[1.02]"
                 >
-                  ابدأ مجاناً
-                </Button>
+                  <span>{isAr ? "ابدأ الآن" : "Get Started"}</span>
+                  {isAr ? <ArrowLeft className="h-3.5 w-3.5" /> : <ArrowRight className="h-3.5 w-3.5" />}
+                </Link>
               </div>
             )}
 
-            {/* Mobile Menu Hamburger — 44px target */}
+            {/* Mobile Hamburger Button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="flex h-11 w-11 items-center justify-center rounded-md border border-border text-muted-foreground hover:bg-muted hover:text-foreground md:hidden"
-              aria-label={mobileMenuOpen ? "إغلاق القائمة" : "فتح القائمة"}
+              className="flex h-10 w-10 items-center justify-center rounded-lg border border-[#DECFC0] text-[#55504D] hover:bg-[#EFE4D6] lg:hidden"
+              aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
               aria-expanded={mobileMenuOpen}
             >
               {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -146,20 +270,20 @@ export function MarketingLayout({ children }: MarketingLayoutProps) {
               initial={shouldReduceMotion ? false : { height: 0, opacity: 0 }}
               animate={shouldReduceMotion ? { opacity: 1 } : { height: "auto", opacity: 1 }}
               exit={shouldReduceMotion ? { opacity: 0 } : { height: 0, opacity: 0 }}
-              transition={{ duration: 0.15 }}
-              className="overflow-hidden border-b border-border bg-card px-4 py-4 md:hidden"
+              transition={{ duration: 0.2 }}
+              className="overflow-hidden border-b border-[#DECFC0] bg-[#FAF6F0] px-4 py-5 lg:hidden"
             >
               <div className="flex flex-col space-y-2">
-                {navLinks.map((link) => {
+                {currentNav.map((link) => {
                   const isActive = location.pathname === link.href;
                   return (
                     <Link
                       key={link.href}
                       to={link.href}
-                      className={`rounded-md px-3 py-3 text-sm font-medium transition-colors min-h-[44px] flex items-center ${
+                      className={`rounded-lg px-3.5 py-2.5 text-sm font-medium transition-colors min-h-[44px] flex items-center ${
                         isActive
-                          ? "bg-accent text-accent-foreground"
-                          : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                          ? "bg-[#651E2C] text-[#FAF6F0]"
+                          : "text-[#55504D] hover:bg-[#EFE4D6] hover:text-[#262321]"
                       }`}
                     >
                       {link.label}
@@ -167,20 +291,30 @@ export function MarketingLayout({ children }: MarketingLayoutProps) {
                   );
                 })}
 
-                <div className="pt-3 border-t border-border flex flex-col gap-2.5">
+                <div className="pt-3 border-t border-[#DECFC0] flex flex-col gap-2.5">
+                  <div className="flex items-center justify-between px-2 py-1">
+                    <span className="text-xs text-[#77716E]">{isAr ? "اللغة" : "Language"}</span>
+                    <button
+                      onClick={toggleLocale}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[#DECFC0] bg-white text-xs font-medium text-[#262321]"
+                    >
+                      <Globe className="h-3.5 w-3.5 text-[#651E2C]" />
+                      <span>{isAr ? "English" : "العربية"}</span>
+                    </button>
+                  </div>
+
                   <Link
                     to="/login"
-                    className="flex min-h-[44px] items-center justify-center rounded-md border border-border text-xs font-medium text-foreground hover:bg-muted transition-colors"
+                    className="flex min-h-[44px] items-center justify-center rounded-full border border-[#DECFC0] bg-white text-xs font-semibold text-[#262321] hover:bg-[#EFE4D6]"
                   >
-                    تسجيل الدخول للمنظومة
+                    {isAr ? "تسجيل الدخول للمنظومة" : "Sign In to Mizan"}
                   </Link>
-                  <Button
-                    className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-medium min-h-[44px] text-xs"
-                    render={<Link to="/signup" />}
-                    nativeButton={false}
+                  <Link
+                    to="/signup"
+                    className="flex min-h-[44px] items-center justify-center rounded-full bg-[#651E2C] text-xs font-semibold text-[#FAF6F0] hover:bg-[#521723]"
                   >
-                    ابدأ تجربة مجانية (14 يوماً)
-                  </Button>
+                    {isAr ? "ابدأ تجربة مجانية (14 يوماً)" : "Start Free Trial (14 Days)"}
+                  </Link>
                 </div>
               </div>
             </motion.div>
@@ -191,162 +325,173 @@ export function MarketingLayout({ children }: MarketingLayoutProps) {
       {/* 2. Main Page Content */}
       <main className="flex-1">{children}</main>
 
-      {/* 3. Four Dense Columns Footer — Hairline top, domain links, no fluff */}
-      <footer className="border-t border-border bg-card text-muted-foreground">
-        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 sm:py-10">
-          <div className="grid grid-cols-2 gap-x-6 gap-y-6 sm:gap-y-8 lg:grid-cols-4">
-            {/* Col 1: Identity & Live Merchant Reliability */}
-            <div className="col-span-2 lg:col-span-1 space-y-3">
-              <Link to="/" className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
-                  <Layers className="h-4 w-4" />
-                </div>
-                <span className="font-semibold text-base text-foreground">
-                  ميزان ERP
-                </span>
+      {/* 3. Official Deep Merlot Luxury Footer (#35151D) matching Image 4 */}
+      <footer className="border-t border-[#481822] bg-[#35151D] text-[#E7D6C1]">
+        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 sm:py-16">
+          <div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-5">
+            {/* Col 1 & 2: Brand Identity & Equilibrium Philosophy */}
+            <div className="lg:col-span-2 space-y-4">
+              <Link to="/" className="inline-flex items-center" aria-label="Mizan Home">
+                <MizanLogo size="lg" theme="dark" locale={locale} />
               </Link>
-              <p className="text-xs leading-relaxed text-muted-foreground">
-                منظومة نقاط البيع والمخازن والخزينة لتجار ومحلات مواد البناء والسباكة والكهرباء بمصر.
-                صُممت لتعمل بدون توقف بنمط Offline-First مع عزل بيانات مشفر.
+              <p className="text-xs sm:text-sm leading-relaxed text-[#E7D6C1]/80 max-w-sm">
+                {isAr
+                  ? "منصة ميزان السحابية المتكاملة لإدارة العمليات المالية والتشغيلية والمخازن. صُممت لتحقيق التوازن الدقيق والكفاءة المؤسسية العالية."
+                  : "Mizan is an enterprise multi-tenant ERP platform uniting financial, administrative, and operational activities into one balanced ecosystem."}
               </p>
 
-              {/* System Reliability Indicator */}
-              <div className="flex items-center gap-2 pt-1 text-xs font-mono text-foreground">
-                <span className="flex h-2 w-2 rounded-full bg-success" />
-                <span>حالة النظام: مستقرة 99.98%</span>
-              </div>
-
-              <div className="flex items-center gap-3 pt-1 text-xs text-muted-foreground">
-                <span className="flex items-center gap-1">
-                  <ShieldCheck className="h-4 w-4 text-success" /> معتمد ETA مصر
+              {/* Security & Reliability Badges */}
+              <div className="flex flex-wrap items-center gap-3 pt-2 text-xs text-[#E7D6C1]/90">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#48151F] border border-white/10 font-mono">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#27835C]" />
+                  {isAr ? "حالة النظام: مستقرة 99.9%" : "System Status: 99.9%"}
                 </span>
-                <span className="text-border">|</span>
-                <span className="flex items-center gap-1">
-                  <Lock className="h-4 w-4 text-primary" /> تشفير TLS 1.3
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#48151F] border border-white/10">
+                  <ShieldCheck className="h-3.5 w-3.5 text-[#27835C]" />
+                  {isAr ? "معتمد ضريبياً ETA" : "ETA Tax Compliant"}
+                </span>
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#48151F] border border-white/10">
+                  <Lock className="h-3.5 w-3.5 text-[#B86B76]" />
+                  {isAr ? "تشفير TLS 1.3" : "TLS 1.3 Encrypted"}
                 </span>
               </div>
             </div>
 
-            {/* Col 2: Core Platform Capabilities */}
+            {/* Col 3: Core Platform Modules */}
             <div>
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-foreground mb-3">
-                إمكانيات المنظومة
+              <h3 className="text-xs font-bold uppercase tracking-wider text-[#FAF6F0] mb-4">
+                {isAr ? "منظومة البرامج" : "Platform Modules"}
               </h3>
-              <ul className="space-y-2 text-xs">
+              <ul className="space-y-2.5 text-xs text-[#E7D6C1]/80">
                 <li>
-                  <Link to="/features" className="hover:text-foreground transition-colors">
-                    نقطة البيع السريعة والكاشير
+                  <Link to="/features" className="hover:text-[#FAF6F0] transition-colors">
+                    {isAr ? "المحاسبة والمالية المتقدمة" : "Accounting & Finance"}
                   </Link>
                 </li>
                 <li>
-                  <Link to="/features" className="hover:text-foreground transition-colors">
-                    إدارة المستودعات والوحدات المركبة
+                  <Link to="/features" className="hover:text-[#FAF6F0] transition-colors">
+                    {isAr ? "إدارة المبيعات وفواتير POS" : "Sales & POS Terminal"}
                   </Link>
                 </li>
                 <li>
-                  <Link to="/features" className="hover:text-foreground transition-colors">
-                    الخزينة والعهد ويومية الموردين
+                  <Link to="/features" className="hover:text-[#FAF6F0] transition-colors">
+                    {isAr ? "المخازن والوحدات المركبة" : "Inventory & Warehouses"}
                   </Link>
                 </li>
                 <li>
-                  <Link to="/features" className="hover:text-foreground transition-colors">
-                    فواتير الباركود والطباعة الحرارية
+                  <Link to="/features" className="hover:text-[#FAF6F0] transition-colors">
+                    {isAr ? "المشتريات وإدارة الموردين" : "Purchases & Procurement"}
                   </Link>
                 </li>
                 <li>
-                  <Link to="/features" className="hover:text-foreground transition-colors">
-                    تقارير الورديات والـ Z-Report
+                  <Link to="/features" className="hover:text-[#FAF6F0] transition-colors">
+                    {isAr ? "الموارد البشرية والرواتب HR" : "HR & Payroll Management"}
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/features" className="hover:text-[#FAF6F0] transition-colors">
+                    {isAr ? "المشاريع والأتمتة الذكية" : "Projects & Workflow Automation"}
                   </Link>
                 </li>
               </ul>
             </div>
 
-            {/* Col 3: Building Materials Sectors */}
+            {/* Col 4: Industry Solutions */}
             <div>
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-foreground mb-3">
-                قطاعات مواد البناء
+              <h3 className="text-xs font-bold uppercase tracking-wider text-[#FAF6F0] mb-4">
+                {isAr ? "قطاعات الأعمال" : "Industry Solutions"}
               </h3>
-              <ul className="space-y-2 text-xs">
+              <ul className="space-y-2.5 text-xs text-[#E7D6C1]/80">
                 <li>
-                  <Link to="/industries" className="hover:text-foreground transition-colors">
-                    الأدوات الصحية والسباكة
+                  <Link to="/industries" className="hover:text-[#FAF6F0] transition-colors">
+                    {isAr ? "تجارة التجزئة والمعارض" : "Retail & Showrooms"}
                   </Link>
                 </li>
                 <li>
-                  <Link to="/industries" className="hover:text-foreground transition-colors">
-                    تجار الكهرباء والإنارة
+                  <Link to="/industries" className="hover:text-[#FAF6F0] transition-colors">
+                    {isAr ? "التوزيع والتجارة بالجملة" : "Wholesale & Distribution"}
                   </Link>
                 </li>
                 <li>
-                  <Link to="/industries" className="hover:text-foreground transition-colors">
-                    الدهانات ومستلزمات البناء
+                  <Link to="/industries" className="hover:text-[#FAF6F0] transition-colors">
+                    {isAr ? "التصنيع وتتبع خطوط الإنتاج" : "Manufacturing & BOM"}
                   </Link>
                 </li>
                 <li>
-                  <Link to="/industries" className="hover:text-foreground transition-colors">
-                    الحديد والأسمنت ومواد العزل
+                  <Link to="/industries" className="hover:text-[#FAF6F0] transition-colors">
+                    {isAr ? "الخدمات المهنية والاستشارات" : "Professional Services"}
                   </Link>
                 </li>
                 <li>
-                  <Link to="/industries" className="hover:text-foreground transition-colors">
-                    المسامير والعدد والمعدات
+                  <Link to="/industries" className="hover:text-[#FAF6F0] transition-colors">
+                    {isAr ? "المقاولات ومواد البناء" : "Contracting & Construction"}
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/industries" className="hover:text-[#FAF6F0] transition-colors">
+                    {isAr ? "الضيافة والمطاعم" : "Hospitality & Restaurants"}
                   </Link>
                 </li>
               </ul>
             </div>
 
-            {/* Col 4: Documentation & Legal */}
-            <div className="col-span-2 sm:col-span-1">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-foreground mb-3">
-                التوثيق والمساعدة
+            {/* Col 5: Documentation & Help */}
+            <div>
+              <h3 className="text-xs font-bold uppercase tracking-wider text-[#FAF6F0] mb-4">
+                {isAr ? "التوثيق والمساعدة" : "Documentation & Help"}
               </h3>
-              <ul className="space-y-2 text-xs">
+              <ul className="space-y-2.5 text-xs text-[#E7D6C1]/80">
                 <li>
-                  <Link to="/docs" className="hover:text-foreground transition-colors">
-                    دليل تشغيل الكاشير والمخازن
+                  <Link to="/docs" className="hover:text-[#FAF6F0] transition-colors">
+                    {isAr ? "دليل البدء السريع" : "Quickstart Guide"}
                   </Link>
                 </li>
                 <li>
-                  <Link to="/docs/dev/hardware-escpos" className="hover:text-foreground transition-colors">
-                    ربط الطابعات وقوارئ الباركود
+                  <Link to="/docs" className="hover:text-[#FAF6F0] transition-colors">
+                    {isAr ? "مرجع REST API الموثق" : "REST API Reference"}
                   </Link>
                 </li>
                 <li>
-                  <Link to="/pricing" className="hover:text-foreground transition-colors">
-                    الأسعار وباقات الاشتراك
+                  <Link to="/pricing" className="hover:text-[#FAF6F0] transition-colors">
+                    {isAr ? "باقات واشتراكات ميزان" : "Plans & Pricing"}
                   </Link>
                 </li>
                 <li>
-                  <Link to="/contact" className="hover:text-foreground transition-colors">
-                    طلب عرض توضيحي (Demo)
+                  <Link to="/contact" className="hover:text-[#FAF6F0] transition-colors">
+                    {isAr ? "طلب عرض توضيحي (Demo)" : "Request a Live Demo"}
                   </Link>
                 </li>
                 <li>
-                  <Link to="/about" className="hover:text-foreground transition-colors">
-                    عن المنصة ومبادئ العمل
+                  <Link to="/about" className="hover:text-[#FAF6F0] transition-colors">
+                    {isAr ? "عن الشركة وفلسفة العمل" : "About Mizan"}
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/blog" className="hover:text-[#FAF6F0] transition-colors">
+                    {isAr ? "مدونة رؤى الأعمال" : "Editorial Blog"}
                   </Link>
                 </li>
               </ul>
             </div>
           </div>
 
-          {/* Bottom Bar — Hairline top border */}
-          <div className="mt-6 sm:mt-8 flex flex-col items-center justify-between border-t border-border pt-4 text-xs text-muted-foreground sm:flex-row gap-2.5 sm:gap-3">
+          {/* Bottom Bar — Hairline top border in Merlot tone */}
+          <div className="mt-12 flex flex-col items-center justify-between border-t border-white/10 pt-6 text-xs text-[#E7D6C1]/70 sm:flex-row gap-3">
             <div>
-              © {new Date().getFullYear()} ميزان ERP. جميع الحقوق محفوظة لتجار ومحلات مواد البناء بمصر.
+              © {new Date().getFullYear()} {isAr ? "ميزان ERP. جميع الحقوق محفوظة." : "Mizan ERP. All rights reserved."}
             </div>
-            <div className="flex items-center gap-4">
-              <Link to="/about" className="hover:text-foreground transition-colors">
-                عن الشركة
+            <div className="flex items-center gap-5">
+              <Link to="/about" className="hover:text-[#FAF6F0] transition-colors">
+                {isAr ? "عن المنصة" : "About"}
               </Link>
-              <Link to="/pricing" className="hover:text-foreground transition-colors">
-                الباقات
+              <Link to="/pricing" className="hover:text-[#FAF6F0] transition-colors">
+                {isAr ? "الأسعار" : "Pricing"}
               </Link>
-              <Link to="/contact" className="hover:text-foreground transition-colors">
-                اتصل بنا
+              <Link to="/contact" className="hover:text-[#FAF6F0] transition-colors">
+                {isAr ? "اتصل بنا" : "Contact"}
               </Link>
-              <Link to="/docs" className="hover:text-foreground transition-colors">
-                سياسة الخصوصية
+              <Link to="/docs" className="hover:text-[#FAF6F0] transition-colors">
+                {isAr ? "سياسة الخصوصية" : "Privacy Policy"}
               </Link>
             </div>
           </div>
@@ -355,3 +500,5 @@ export function MarketingLayout({ children }: MarketingLayoutProps) {
     </div>
   );
 }
+
+export default MarketingLayout;

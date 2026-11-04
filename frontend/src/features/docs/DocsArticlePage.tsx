@@ -11,18 +11,20 @@ import {
   ThumbsDown,
 } from "lucide-react";
 import { getDocArticle, getAllDocArticles } from "./docsData";
-import { Badge } from "@/components/kit/badge";
 import { Button } from "@/components/kit/button";
 import { toast } from "sonner";
+import { useTranslation } from "@/i18n";
 
 export default function DocsArticlePage() {
   const params = useParams();
-  // Match full wildcard or multi-segment path
   const slug = params["*"] || params.slug || "";
   const article = getDocArticle(slug);
 
   const [copiedCodeIndex, setCopiedCodeIndex] = useState<number | null>(null);
   const [feedbackGiven, setFeedbackGiven] = useState<"yes" | "no" | null>(null);
+
+  const { locale } = useTranslation();
+  const isAr = locale === "ar";
 
   if (!article) {
     return <Navigate to="/docs" replace />;
@@ -36,36 +38,39 @@ export default function DocsArticlePage() {
   const handleCopyCode = (code: string, index: number) => {
     navigator.clipboard.writeText(code);
     setCopiedCodeIndex(index);
-    toast.success("تم نسخ الكود البرمجي إلى الحافظة!");
+    toast.success(isAr ? "تم نسخ الشفرة البرمجية إلى الحافظة!" : "Code copied to clipboard!");
     setTimeout(() => setCopiedCodeIndex(null), 2000);
   };
 
   return (
-    <div className="grid grid-cols-1 gap-8 xl:grid-cols-12">
+    <div className="grid grid-cols-1 gap-10 xl:grid-cols-12 text-[#262321] font-body">
       {/* Main Reading Column */}
       <div className="xl:col-span-9 space-y-8">
         {/* Breadcrumb Navigation */}
-        <nav className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
-          <Link to="/docs" className="hover:text-brand">
-            التوثيق
+        <nav className="flex items-center gap-2 text-xs text-[#77716E]">
+          <Link to="/docs" className="hover:text-[#651E2C] transition-colors">
+            {isAr ? "مركز التوثيق" : "Documentation"}
           </Link>
           <span>/</span>
-          <span className="text-slate-700 dark:text-slate-300 font-medium">{article.title}</span>
+          <span className="text-[#262321] font-semibold">{article.title}</span>
         </nav>
 
         {/* Article Title & Meta */}
-        <div className="border-b border-slate-200 pb-6 dark:border-slate-800">
-          <div className="flex items-center gap-2 mb-2">
-            <Badge variant="outline" className="bg-brand/10 text-brand dark:bg-brand/20">
+        <div className="border-b border-[#E7D6C1] pb-6 space-y-3">
+          <div className="flex items-center gap-2">
+            <span className="rounded-full bg-[#651E2C]/10 px-3 py-1 text-[11px] font-bold text-[#651E2C]">
               {article.category}
-            </Badge>
-            <span className="text-xs text-slate-400 font-mono">/{article.slug}</span>
+            </span>
+            <span className="text-xs text-[#77716E] font-mono">/{article.slug}</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+
+          <h1 className="font-display text-3xl sm:text-4xl font-normal text-[#262321] tracking-tight leading-tight">
             {article.title}
           </h1>
-          <div className="text-sm font-mono text-slate-400 mt-1">{article.titleEn}</div>
-          <p className="mt-3 text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+
+          <div className="text-xs font-mono text-[#77716E]">{article.titleEn}</div>
+
+          <p className="mt-3 text-sm text-[#77716E] leading-relaxed">
             {article.content.overview}
           </p>
         </div>
@@ -73,47 +78,47 @@ export default function DocsArticlePage() {
         {/* Content Sections */}
         <div className="space-y-8">
           {article.content.sections.map((sec, idx) => (
-            <section key={sec.id} id={sec.id} className="scroll-mt-20">
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white border-b border-slate-100 pb-2 mb-3 dark:border-slate-800">
+            <section key={sec.id} id={sec.id} className="scroll-mt-20 space-y-3">
+              <h2 className="font-display text-xl sm:text-2xl font-normal text-[#262321] border-b border-[#E7D6C1] pb-2">
                 {sec.title}
               </h2>
 
-              <div className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed whitespace-pre-line">
+              <div className="text-xs sm:text-sm text-[#77716E] leading-relaxed whitespace-pre-line">
                 {sec.body}
               </div>
 
               {/* Callout Box if present */}
               {sec.callout && (
                 <div
-                  className={`mt-4 flex items-start gap-3 rounded-xl p-4 text-xs leading-relaxed ${
+                  className={`mt-4 flex items-start gap-3 rounded-2xl p-4 text-xs leading-relaxed border ${
                     sec.callout.type === "tip"
-                      ? "border border-emerald-200 bg-emerald-50/80 text-emerald-900 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-300"
+                      ? "border-emerald-200 bg-emerald-50/80 text-emerald-950"
                       : sec.callout.type === "important"
-                      ? "border border-amber-200 bg-amber-50/80 text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-300"
+                      ? "border-amber-200 bg-amber-50/80 text-amber-950"
                       : sec.callout.type === "warning"
-                      ? "border border-rose-200 bg-rose-50/80 text-rose-900 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-300"
-                      : "border border-blue-200 bg-blue-50/80 text-blue-900 dark:border-blue-900/50 dark:bg-blue-950/30 dark:text-blue-300"
+                      ? "border-[#651E2C]/30 bg-[#651E2C]/5 text-[#651E2C]"
+                      : "border-blue-200 bg-blue-50/80 text-blue-950"
                   }`}
                 >
                   <div className="mt-0.5 shrink-0">
-                    {sec.callout.type === "tip" && <Lightbulb className="h-4 w-4 text-emerald-600" />}
+                    {sec.callout.type === "tip" && <Lightbulb className="size-4 text-emerald-600" />}
                     {sec.callout.type === "important" && (
-                      <AlertCircle className="h-4 w-4 text-amber-600" />
+                      <AlertCircle className="size-4 text-amber-600" />
                     )}
                     {sec.callout.type === "warning" && (
-                      <AlertTriangle className="h-4 w-4 text-rose-600" />
+                      <AlertTriangle className="size-4 text-[#651E2C]" />
                     )}
-                    {sec.callout.type === "note" && <Info className="h-4 w-4 text-blue-600" />}
+                    {sec.callout.type === "note" && <Info className="size-4 text-blue-600" />}
                   </div>
                   <div>
                     <span className="font-bold block mb-0.5">
                       {sec.callout.type === "tip"
-                        ? "نصيحة تقنية:"
+                        ? isAr ? "نصيحة تقنية:" : "Technical Tip:"
                         : sec.callout.type === "important"
-                        ? "ملاحظة هامة:"
+                        ? isAr ? "ملاحظة هامة:" : "Important Note:"
                         : sec.callout.type === "warning"
-                        ? "تحذير أمني:"
-                        : "تنبيه:"}
+                        ? isAr ? "تحذير أمني:" : "Security Warning:"
+                        : isAr ? "تنبيه:" : "Notice:"}
                     </span>
                     {sec.callout.text}
                   </div>
@@ -122,27 +127,28 @@ export default function DocsArticlePage() {
 
               {/* Code Snippet with Copy Button */}
               {sec.codeBlock && (
-                <div className="mt-4 rounded-xl border border-slate-800 bg-slate-950 overflow-hidden shadow-md">
-                  <div className="flex items-center justify-between border-b border-slate-800 px-4 py-2 text-xs font-mono text-slate-400">
-                    <span>{sec.codeBlock.filename || sec.codeBlock.language}</span>
+                <div className="mt-4 rounded-2xl border border-[#35151D] bg-[#270F16] overflow-hidden shadow-lg text-start">
+                  <div className="flex items-center justify-between border-b border-white/10 px-4 py-2.5 text-xs font-mono text-[#E7D6C1]">
+                    <span>{sec.codeBlock.filename || sec.codeBlock.language.toUpperCase()}</span>
                     <button
+                      type="button"
                       onClick={() => handleCopyCode(sec.codeBlock!.code, idx)}
-                      className="flex items-center gap-1 text-[11px] hover:text-white transition-colors"
+                      className="flex items-center gap-1 text-[11px] text-white/70 hover:text-white transition-colors"
                     >
                       {copiedCodeIndex === idx ? (
                         <>
-                          <Check className="h-3 w-3 text-emerald-400" />
-                          <span className="text-emerald-400">تم النسخ</span>
+                          <Check className="size-3 text-emerald-400" />
+                          <span className="text-emerald-400">{isAr ? "تم النسخ" : "Copied"}</span>
                         </>
                       ) : (
                         <>
-                          <Copy className="h-3 w-3" />
-                          <span>نسخ الكود</span>
+                          <Copy className="size-3" />
+                          <span>{isAr ? "نسخ الشفرة" : "Copy"}</span>
                         </>
                       )}
                     </button>
                   </div>
-                  <pre className="p-4 text-xs font-mono text-slate-200 overflow-x-auto leading-relaxed">
+                  <pre className="p-4 text-xs font-mono text-[#FAF6F0] overflow-x-auto leading-relaxed">
                     <code>{sec.codeBlock.code}</code>
                   </pre>
                 </div>
@@ -152,14 +158,15 @@ export default function DocsArticlePage() {
         </div>
 
         {/* Was this helpful feedback widget */}
-        <div className="mt-12 rounded-xl border border-slate-200 bg-slate-50/50 p-4 dark:border-slate-800 dark:bg-slate-900/50 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="text-xs text-slate-600 dark:text-slate-400">
-            هل كان هذا الشرح مفيداً وواضحاً؟
+        <div className="mt-12 rounded-2xl border border-[#E7D6C1] bg-white p-5 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xs">
+          <div className="text-xs text-[#77716E]">
+            {isAr ? "هل كان هذا الشرح مفيداً وواضحاً لمنشأتك؟" : "Was this documentation article helpful and clear?"}
           </div>
           <div className="flex items-center gap-2">
             {feedbackGiven ? (
-              <span className="text-xs text-emerald-600 font-bold">
-                ✓ شكراً لمشاركتنا رأيك القيّم!
+              <span className="text-xs text-emerald-700 font-bold flex items-center gap-1">
+                <Check className="size-3.5" />
+                {isAr ? "شكراً لمشاركتنا تقييمك القيّم!" : "Thank you for your valuable feedback!"}
               </span>
             ) : (
               <>
@@ -168,22 +175,24 @@ export default function DocsArticlePage() {
                   variant="outline"
                   onClick={() => {
                     setFeedbackGiven("yes");
-                    toast.success("شكراً على تقييمك الإيجابي!");
+                    toast.success(isAr ? "شكراً على تقييمك الإيجابي!" : "Thank you for your rating!");
                   }}
-                  className="text-xs"
+                  className="text-xs border-[#E7D6C1] hover:bg-[#FAF6F0]"
                 >
-                  <ThumbsUp className="h-3.5 w-3.5 ms-1 text-emerald-500" /> نعم، مفيد
+                  <ThumbsUp className="size-3.5 me-1 text-emerald-600" />
+                  <span>{isAr ? "نعم، مفيد" : "Yes, helpful"}</span>
                 </Button>
                 <Button
                   size="sm"
                   variant="outline"
                   onClick={() => {
                     setFeedbackGiven("no");
-                    toast.info("تم تسجيل ملاحظتك وسنعمل على تحسين المقال.");
+                    toast.info(isAr ? "تم تسجيل ملاحظتك وسنعمل على تحسين المقال." : "Noted. We will improve this guide.");
                   }}
-                  className="text-xs"
+                  className="text-xs border-[#E7D6C1] hover:bg-[#FAF6F0]"
                 >
-                  <ThumbsDown className="h-3.5 w-3.5 ms-1 text-rose-500" /> يحتاج تحسين
+                  <ThumbsDown className="size-3.5 me-1 text-[#651E2C]" />
+                  <span>{isAr ? "يحتاج تحسين" : "Needs clarity"}</span>
                 </Button>
               </>
             )}
@@ -191,14 +200,16 @@ export default function DocsArticlePage() {
         </div>
 
         {/* Previous and Next Navigation */}
-        <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-slate-200 pt-6 dark:border-slate-800">
+        <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-[#E7D6C1] pt-6">
           {prevArticle ? (
             <Link
               to={`/docs/${prevArticle.slug}`}
-              className="flex flex-col items-start rounded-lg border border-slate-200 p-3 hover:border-brand/40 dark:border-slate-800 w-full sm:w-1/2 transition-colors"
+              className="flex flex-col items-start rounded-xl border border-[#E7D6C1] bg-white p-4 hover:border-[#651E2C]/50 w-full sm:w-1/2 transition-colors shadow-xs"
             >
-              <span className="text-[10px] text-slate-400">← المقال السابق</span>
-              <span className="text-xs font-bold text-slate-900 dark:text-white mt-0.5">
+              <span className="text-[10px] text-[#77716E] font-mono">
+                {isAr ? "← المقال السابق" : "← Previous Article"}
+              </span>
+              <span className="text-xs font-bold text-[#262321] mt-0.5">
                 {prevArticle.title}
               </span>
             </Link>
@@ -209,10 +220,12 @@ export default function DocsArticlePage() {
           {nextArticle && (
             <Link
               to={`/docs/${nextArticle.slug}`}
-              className="flex flex-col items-end rounded-lg border border-slate-200 p-3 hover:border-brand/40 dark:border-slate-800 w-full sm:w-1/2 text-end transition-colors"
+              className="flex flex-col items-end rounded-xl border border-[#E7D6C1] bg-white p-4 hover:border-[#651E2C]/50 w-full sm:w-1/2 text-end transition-colors shadow-xs"
             >
-              <span className="text-[10px] text-slate-400">المقال التالي →</span>
-              <span className="text-xs font-bold text-slate-900 dark:text-white mt-0.5">
+              <span className="text-[10px] text-[#77716E] font-mono">
+                {isAr ? "المقال التالي →" : "Next Article →"}
+              </span>
+              <span className="text-xs font-bold text-[#262321] mt-0.5">
                 {nextArticle.title}
               </span>
             </Link>
@@ -222,16 +235,16 @@ export default function DocsArticlePage() {
 
       {/* Right Column: "On this page" Table of Contents (Sticky on Desktop) */}
       <div className="hidden xl:block xl:col-span-3">
-        <div className="sticky top-20 border-s border-slate-200 ps-4 dark:border-slate-800">
-          <div className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white mb-3">
-            في هذه الصفحة
+        <div className="sticky top-24 border-s-2 border-[#E7D6C1] ps-4 space-y-4">
+          <div className="text-xs font-bold uppercase tracking-wider text-[#651E2C]">
+            {isAr ? "في هذه الصفحة" : "On This Page"}
           </div>
-          <ul className="space-y-2 text-xs text-slate-500 dark:text-slate-400">
+          <ul className="space-y-2 text-xs text-[#77716E]">
             {article.content.sections.map((sec) => (
               <li key={sec.id}>
                 <a
                   href={`#${sec.id}`}
-                  className="hover:text-brand block truncate transition-colors"
+                  className="hover:text-[#651E2C] block truncate transition-colors"
                 >
                   {sec.title}
                 </a>
@@ -239,15 +252,15 @@ export default function DocsArticlePage() {
             ))}
           </ul>
 
-          <div className="mt-8 pt-4 border-t border-slate-200 dark:border-slate-800">
+          <div className="pt-4 border-t border-[#E7D6C1]">
             <Link
               to="/contact"
-              className="text-[11px] text-brand hover:underline font-bold block"
+              className="text-xs text-[#651E2C] hover:underline font-bold block"
             >
-              هل تحتاج لمساعدة مطور مخصصة؟
+              {isAr ? "هل تحتاج لمساعدة مطور مخصصة؟" : "Need custom developer assistance?"}
             </Link>
-            <span className="text-[10px] text-slate-400 block mt-1">
-              تواصل مباشرة مع مهندسي النظام
+            <span className="text-[10px] text-[#77716E] block mt-1">
+              {isAr ? "تواصل مباشرة مع مهندسي النظام" : "Direct access to our systems architects"}
             </span>
           </div>
         </div>

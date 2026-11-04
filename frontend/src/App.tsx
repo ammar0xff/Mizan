@@ -78,6 +78,7 @@ const AboutPage = lazy(() => import("@/features/marketing/AboutPage"));
 const ContactPage = lazy(() => import("@/features/marketing/ContactPage"));
 const BlogPage = lazy(() => import("@/features/marketing/BlogPage"));
 const BlogPostPage = lazy(() => import("@/features/marketing/BlogPostPage"));
+const DashboardShowcasePage = lazy(() => import("@/features/marketing/DashboardShowcasePage"));
 const DocsLayout = lazy(() => import("@/features/docs/DocsLayout").then((m) => ({ default: m.DocsLayout })));
 const DocsHomePage = lazy(() => import("@/features/docs/DocsHomePage"));
 const DocsArticlePage = lazy(() => import("@/features/docs/DocsArticlePage"));
@@ -259,6 +260,7 @@ export default function App() {
       <Route path="/contact" element={<Page><ContactPage /></Page>} />
       <Route path="/blog" element={<Page><BlogPage /></Page>} />
       <Route path="/blog/:slug" element={<Page><BlogPostPage /></Page>} />
+      <Route path="/demo" element={<Page><DashboardShowcasePage /></Page>} />
 
       {/* Documentation Portal Routes */}
       <Route

@@ -1,35 +1,19 @@
-/**
- * PAGE CONTRACT
- * Page: تسجيل الدخول (/login)
- * User: موظف أو مدير منشأة يسجل دخوله من جهاز الفرع، الكاشير، أو المكتب
- * Outcome: مصادقة ناجحة والوصول للوحة التحكم بصلاحيات دوره ونشاط منشأته
- * Primary information: حقلا اسم المستخدم وكلمة المرور؛ رسالة الخطأ عند الفشل
- * Primary action: «تسجيل الدخول»؛ عند الخطأ → إعادة المحاولة
- * Secondary action: إظهار/إخفاء كلمة المرور · تخصيص المظهر والأنماط · إنشاء حساب جديد
- * Anti-AI Score: 0 (Pure design tokens, modular presentation, role-based radii, zero unmapped gradients)
- */
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import {
   Eye,
   EyeOff,
   LogIn,
-  Scale,
-  Palette,
-  Store,
-  UtensilsCrossed,
-  GraduationCap,
-  Briefcase,
-  Zap,
+  Lock,
+  User as UserIcon,
+  Globe,
 } from "lucide-react";
 import { api } from "@/lib/api";
-import { Button, ErrorBox, Input, Spinner } from "@/components/ui";
-import { Stagger, StaggerItem } from "@/components/motion";
+import { ErrorBox, Spinner } from "@/components/ui";
 import { useAuth, type User, type TenantInfo } from "@/stores/auth";
-import { useUiStore } from "@/stores/ui";
-import { AppearanceSettingsModal } from "@/components/AppearanceSettingsModal";
 import { sound } from "@/lib/sound";
-import { useLocation } from "react-router-dom";
+import { MizanLogo } from "@/components/MizanLogo";
+import { useTranslation } from "@/i18n";
 
 const auth = () => useAuth.getState();
 
@@ -40,13 +24,6 @@ interface LoginResponse {
   full_name: string;
   role: User["role"];
 }
-
-const BUSINESS_PILLS = [
-  { label: "تجارة وتجزئة ومستودعات", icon: Store },
-  { label: "مطاعم، كافيهات، وضيافة", icon: UtensilsCrossed },
-  { label: "مدارس وأكاديميات تعليمية", icon: GraduationCap },
-  { label: "شركات ومقاولات وخدمات", icon: Briefcase },
-];
 
 export interface LoginPageProps {
   tenant?: TenantInfo | null;
@@ -62,12 +39,12 @@ export default function LoginPage(props: LoginPageProps = {}) {
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
+  const { locale, dir, toggleLocale } = useTranslation();
+  const isAr = locale === "ar";
 
   const authTenant = useAuth((s) => s.tenant);
   const currentTenant = props.tenant || authTenant;
   const targetSlug = props.tenantSlug || currentTenant?.slug;
-
-  const { appearanceModalOpen, setAppearanceModalOpen } = useUiStore();
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -95,221 +72,185 @@ export default function LoginPage(props: LoginPageProps = {}) {
       if (props.onSuccess) {
         props.onSuccess();
       } else {
-        const prefix = targetSlug ? (location.pathname.startsWith("/c/") ? `/c/${targetSlug}` : `/${targetSlug}`) : "/";
+        const prefix = targetSlug
+          ? location.pathname.startsWith("/c/")
+            ? `/c/${targetSlug}`
+            : `/${targetSlug}`
+          : "/";
         navigate(prefix, { replace: true });
       }
-    } catch (err) {
+    } catch (err: any) {
       sound.error();
-      setError(err instanceof Error ? err.message : "تعذر تسجيل الدخول");
+      setError(
+        err?.response?.data?.detail ||
+          (isAr
+            ? "تعذر تسجيل الدخول، تأكد من صحة البيانات والمحاولة مجدداً"
+            : "Failed to sign in. Please check your credentials.")
+      );
     } finally {
       setBusy(false);
     }
   }
 
   return (
-    <div className="grid min-h-screen lg:grid-cols-2 bg-background text-foreground">
-      {/* Brand & Showcase Panel — Responsive Enterprise Identity */}
-      <aside className="relative hidden flex-col justify-between overflow-hidden bg-sidebar p-10 lg:flex text-sidebar-foreground border-e border-sidebar-border">
-        {/* Ambient Grid Texture */}
-        <div className="pointer-events-none absolute inset-0 opacity-[0.03] bg-[radial-gradient(currentColor_1px,transparent_1px)] [background-size:16px_16px]" />
-
-        {/* Top Masthead */}
-        <div className="relative flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex size-11 items-center justify-center rounded-xl bg-sidebar-primary text-sidebar-primary-foreground font-black shadow-xs">
-              <Scale className="size-6" />
-            </div>
-            <div className="leading-tight">
-              <span className="text-xl font-black tracking-tight text-sidebar-foreground">ميزان</span>
-              <p className="text-xs text-sidebar-foreground/70 font-medium">Vendora ERP Platform</p>
-            </div>
-          </div>
-
+    <div
+      dir={dir}
+      className={`min-h-screen grid grid-cols-1 lg:grid-cols-12 bg-[#FAF6F0] text-[#262321] ${
+        isAr ? "font-body" : "font-sans"
+      }`}
+    >
+      {/* ── LEFT PANEL: Deep Merlot Architectural Brand Cover (#35151D) ── */}
+      <div className="lg:col-span-5 bg-[#35151D] text-[#FAF6F0] hero-concentric-arcs p-8 sm:p-12 lg:p-16 flex flex-col justify-between relative overflow-hidden border-b lg:border-b-0 lg:border-e border-[#481822]">
+        {/* Top Header */}
+        <div className="flex items-center justify-between z-10">
+          <Link to="/" aria-label="Mizan ERP">
+            <MizanLogo size="lg" theme="dark" locale={locale} />
+          </Link>
           <button
-            onClick={() => setAppearanceModalOpen(true)}
-            className="flex items-center gap-1.5 rounded-lg border border-sidebar-border/80 bg-sidebar-accent/50 px-3 py-1.5 text-xs font-semibold text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground transition"
+            onClick={toggleLocale}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/15 bg-white/5 text-xs text-[#E7D6C1] hover:bg-white/10 transition-colors"
           >
-            <Palette className="size-3.5 text-sidebar-primary" />
-            <span>المظهر والأنماط</span>
+            <Globe className="h-3.5 w-3.5 text-[#D4626E]" />
+            <span>{isAr ? "English" : "العربية"}</span>
           </button>
         </div>
 
-        {/* Core Value Statement */}
-        <div className="relative max-w-lg space-y-5">
-          <div className="inline-flex items-center gap-2 rounded-full border border-sidebar-border/80 bg-sidebar-accent/40 px-3 py-1 text-xs text-sidebar-foreground/80">
-            <Zap className="size-3 text-sidebar-primary" />
-            <span>نظام موحد ومرن لجميع الأنشطة التجارية والخدمية</span>
+        {/* Center Brand Statement matching Image 4 */}
+        <div className="my-auto py-12 space-y-4 text-center z-10 max-w-sm mx-auto">
+          <div className="flex justify-center mb-6">
+            <div className="p-4 rounded-3xl bg-white/5 border border-white/10 shadow-2xl backdrop-blur-md">
+              <MizanLogo size="xl" variant="icon" theme="dark" />
+            </div>
           </div>
 
-          <h2 className="text-3xl font-black leading-snug tracking-tight text-sidebar-foreground">
-            منصة متكاملة لإدارة الفروع، المخزون، ونقاط البيع السريعة
+          <h2
+            className={`text-2xl sm:text-3xl lg:text-4xl font-normal text-[#FAF6F0] tracking-tight leading-snug ${
+              isAr ? "font-serif-ar" : "font-serif-en"
+            }`}
+          >
+            {isAr ? "مرحباً بعودتك،" : "Welcome back,"}
+            <br />
+            <span className="italic text-[#D4626E]">
+              {isAr ? "لنكمل معاً رحلتك." : "let's continue your journey."}
+            </span>
           </h2>
 
-          <p className="text-sm leading-relaxed text-sidebar-foreground/75">
-            صُمم ميزان ليتكيف مع طبيعة عملك؛ سواء كنت تدير صالة مطعم، مدرسة وأقساط طلاب، مجمع تجزئة وسوبرماركت، أو شركة خدمات ومقاولات.
+          <p className="text-xs sm:text-sm text-[#E7D6C1]/80 leading-relaxed font-light">
+            {isAr
+              ? "نظام موحد ومرن لجميع الأنشطة التجارية والخدمية — توازن تام في كل تفاصيل الإدارة."
+              : "An integrated, modular ecosystem uniting operations, finances, and people in perfect equilibrium."}
           </p>
-
-          {/* Business Profile Pills */}
-          <div className="grid grid-cols-2 gap-2.5 pt-2">
-            {BUSINESS_PILLS.map((p) => {
-              const Icon = p.icon;
-              return (
-                <div
-                  key={p.label}
-                  className="flex items-center gap-2 rounded-lg border border-sidebar-border/60 bg-sidebar-accent/30 px-3 py-2 text-xs text-sidebar-foreground/90"
-                >
-                  <Icon className="size-4 text-sidebar-primary shrink-0" />
-                  <span className="truncate">{p.label}</span>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Operational Metrics Ribbon */}
-          <ul className="grid grid-cols-2 gap-3 text-xs text-sidebar-foreground/80 pt-2 border-t border-sidebar-border/40 font-mono">
-            <li className="flex items-center gap-2">
-              <span className="size-1.5 rounded-full bg-sidebar-primary" />
-              <span>نقاط بيع فورية [F2]</span>
-            </li>
-            <li className="flex items-center gap-2">
-              <span className="size-1.5 rounded-full bg-sidebar-primary" />
-              <span>شاشات مطبخ حية (KDS)</span>
-            </li>
-            <li className="flex items-center gap-2">
-              <span className="size-1.5 rounded-full bg-sidebar-primary" />
-              <span>تحصيل أقساط وإيصالات</span>
-            </li>
-            <li className="flex items-center gap-2">
-              <span className="size-1.5 rounded-full bg-sidebar-primary" />
-              <span>دفاتر خزائن وبنوك</span>
-            </li>
-          </ul>
         </div>
 
-        {/* Footer */}
-        <div className="relative flex items-center justify-between text-xs text-sidebar-foreground/50">
-          <p>© {new Date().getFullYear()} ميزان — نظام إدارة وتشغيل الأعمال</p>
-          <span className="font-mono text-[11px]">v3.2 Modular Engine</span>
+        {/* Bottom Status */}
+        <div className="pt-6 border-t border-white/10 flex items-center justify-between text-xs text-[#E7D6C1]/60 z-10 font-mono">
+          <span>© {new Date().getFullYear()} Mizan ERP</span>
+          <span className="flex items-center gap-1.5 text-[#27835C]">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#27835C]" />
+            <span>{isAr ? "المنظومة متصلة" : "All Systems Online"}</span>
+          </span>
         </div>
-      </aside>
-
-      {/* Form Panel */}
-      <div className="grid place-items-center p-4 sm:p-8">
-        <Stagger className="w-full max-w-sm" delay={0.05}>
-          <StaggerItem>
-            {/* Mobile Header */}
-            <div className="mb-6 flex items-center justify-between lg:hidden">
-              <div className="flex items-center gap-2.5">
-                <div className="grid size-10 place-items-center rounded-xl bg-primary text-primary-foreground font-black">
-                  <Scale className="size-5" />
-                </div>
-                <div>
-                  <span className="font-extrabold text-base">ميزان</span>
-                  <p className="text-[11px] text-muted-foreground">Vendora ERP</p>
-                </div>
-              </div>
-
-              <button
-                onClick={() => setAppearanceModalOpen(true)}
-                className="flex items-center gap-1 rounded-md border border-border px-2 py-1 text-xs text-muted-foreground hover:bg-muted"
-              >
-                <Palette className="size-3.5" />
-                <span>المظهر</span>
-              </button>
-            </div>
-
-            <div className="rounded-2xl border border-border bg-card p-6 sm:p-8 shadow-sm">
-              <div className="mb-6 text-start">
-                <div className="flex items-center justify-between gap-2 mb-1.5">
-                  <h1 className="text-xl font-bold text-foreground">
-                    {currentTenant?.name ? currentTenant.name : "تسجيل الدخول"}
-                  </h1>
-                  {targetSlug && (
-                    <span className="rounded bg-primary/10 border border-primary/20 px-2 py-0.5 text-[10px] font-mono font-bold text-primary">
-                      /{targetSlug}
-                    </span>
-                  )}
-                </div>
-                <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
-                  {currentTenant?.name
-                    ? `بيئة عمل المنشأة المخصصة (${currentTenant.business_type || "نظام موحد"}) — يرجى تسجيل الدخول`
-                    : "أدخل بيانات حسابك للوصول إلى لوحة التحكم والفرع"}
-                </p>
-              </div>
-
-              <form onSubmit={submit} className="space-y-4">
-                <div>
-                  <label htmlFor="u" className="mb-1 block text-xs font-semibold text-foreground">
-                    اسم المستخدم
-                  </label>
-                  <Input
-                    id="u"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    autoComplete="username"
-                    placeholder="اسم المستخدم المسجل"
-                    required
-                    autoFocus
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="p" className="mb-1 block text-xs font-semibold text-foreground">
-                    كلمة المرور
-                  </label>
-                  <div className="relative">
-                    <Input
-                      id="p"
-                      type={show ? "text" : "password"}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      autoComplete="current-password"
-                      placeholder="••••••••"
-                      required
-                      className="pe-10"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShow((s) => !s)}
-                      className="absolute end-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground hover:text-foreground"
-                      aria-label={show ? "إخفاء كلمة المرور" : "إظهار كلمة المرور"}
-                    >
-                      {show ? <EyeOff size={16} /> : <Eye size={16} />}
-                    </button>
-                  </div>
-                </div>
-
-                {error && <ErrorBox message={error} />}
-
-                <Button
-                  type="submit"
-                  disabled={busy || !username || !password}
-                  className="w-full font-bold h-10 gap-2 shadow-xs"
-                >
-                  {busy ? <Spinner /> : <LogIn size={16} />}
-                  تسجيل الدخول
-                </Button>
-              </form>
-
-              {/* Business Registration Link */}
-              <div className="mt-6 pt-4 border-t border-border/60 text-center">
-                <p className="text-xs text-muted-foreground">
-                  ليس لديك مساحة عمل؟{" "}
-                  <Link to="/signup" className="font-bold text-primary hover:underline">
-                    أنشئ حساب منشأتك مجاناً
-                  </Link>
-                </p>
-              </div>
-            </div>
-          </StaggerItem>
-        </Stagger>
       </div>
 
-      {/* Global Appearance Customization Modal */}
-      <AppearanceSettingsModal
-        open={appearanceModalOpen}
-        onOpenChange={setAppearanceModalOpen}
-      />
+      {/* ── RIGHT PANEL: Warm Ivory Form Area (#FAF6F0) ── */}
+      <div className="lg:col-span-7 flex items-center justify-center p-6 sm:p-12 lg:p-16">
+        <div className="w-full max-w-md space-y-8 bg-[#FFFFFF] p-8 sm:p-10 rounded-3xl border border-[#DECFC0] shadow-xl">
+          <div className="space-y-2 text-start">
+            <h1
+              className={`text-2xl sm:text-3xl font-semibold text-[#262321] tracking-tight ${
+                isAr ? "font-serif-ar" : "font-serif-en"
+              }`}
+            >
+              {isAr ? "تسجيل الدخول" : "Sign In to Mizan"}
+            </h1>
+            <p className="text-xs sm:text-sm text-[#77716E]">
+              {isAr
+                ? "أدخل بيانات حسابك للوصول إلى لوحة التحكم ومساحة العمل الخاصة بك."
+                : "Enter your credentials to access your enterprise dashboard."}
+            </p>
+          </div>
+
+          {error && <ErrorBox message={error} />}
+
+          <form onSubmit={submit} className="space-y-5">
+            <div className="space-y-1.5 text-start">
+              <label htmlFor="login-username" className="text-xs font-semibold text-[#262321]">
+                {isAr ? "اسم المستخدم أو البريد" : "Username or Email"}
+              </label>
+              <div className="relative">
+                <UserIcon className="absolute top-1/2 -translate-y-1/2 start-3.5 h-4 w-4 text-[#77716E]" />
+                <input
+                  id="login-username"
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  required
+                  autoFocus
+                  placeholder={isAr ? "اسم المستخدم (مثال: admin)" : "Username (e.g. admin)"}
+                  className="w-full rounded-xl border border-[#DECFC0] bg-[#FAF6F0] py-2.5 ps-10 pe-3 text-sm text-[#262321] placeholder:text-[#77716E]/70 focus:border-[#651E2C] focus:bg-[#FFFFFF] focus:outline-none transition-colors"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1.5 text-start">
+              <div className="flex items-center justify-between">
+                <label htmlFor="login-password" className="text-xs font-semibold text-[#262321]">
+                  {isAr ? "كلمة المرور" : "Password"}
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setShow(!show)}
+                  className="text-xs text-[#651E2C] hover:underline"
+                >
+                  {show ? (isAr ? "إخفاء" : "Hide") : (isAr ? "إظهار" : "Show")}
+                </button>
+              </div>
+              <div className="relative">
+                <Lock className="absolute top-1/2 -translate-y-1/2 start-3.5 h-4 w-4 text-[#77716E]" />
+                <input
+                  id="login-password"
+                  type={show ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  placeholder="••••••••"
+                  className="w-full rounded-xl border border-[#DECFC0] bg-[#FAF6F0] py-2.5 ps-10 pe-10 text-sm text-[#262321] placeholder:text-[#77716E]/70 focus:border-[#651E2C] focus:bg-[#FFFFFF] focus:outline-none transition-colors"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShow(!show)}
+                  className="absolute top-1/2 -translate-y-1/2 end-3 text-[#77716E] hover:text-[#262321]"
+                  aria-label={show ? "Hide password" : "Show password"}
+                >
+                  {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={busy}
+              className="w-full rounded-full bg-[#651E2C] hover:bg-[#521723] text-[#FAF6F0] py-3 text-sm font-semibold shadow-md transition-all flex items-center justify-center gap-2 hover:scale-[1.01] disabled:opacity-50"
+            >
+              {busy ? (
+                <Spinner className="size-4" />
+              ) : (
+                <>
+                  <LogIn className="h-4 w-4" />
+                  <span>{isAr ? "تسجيل الدخول" : "Sign In"}</span>
+                </>
+              )}
+            </button>
+          </form>
+
+          <div className="pt-4 border-t border-[#E6DCD2] text-center text-xs text-[#77716E]">
+            <span>{isAr ? "ليس لديك حساب بعد؟" : "Don't have an account yet?"} </span>
+            <Link to="/signup" className="font-semibold text-[#651E2C] hover:underline">
+              {isAr ? "أنشئ حساباً جديداً مجاناً" : "Start 14-day free trial"}
+            </Link>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Search,
@@ -7,7 +7,6 @@ import {
   ChevronDown,
   Menu,
   X,
-  Layers,
   FileText,
   Sun,
   Moon,
@@ -16,7 +15,7 @@ import {
 import { DOC_SECTIONS, getAllDocArticles } from "./docsData";
 import { useUiStore } from "@/stores/ui";
 import { useI18nStore } from "@/i18n";
-import { Badge } from "@/components/kit/badge";
+import { MizanLogo } from "@/components/MizanLogo";
 
 interface DocsLayoutProps {
   children?: React.ReactNode;
@@ -24,9 +23,9 @@ interface DocsLayoutProps {
 
 export function DocsLayout({ children }: DocsLayoutProps) {
   const location = useLocation();
-  const navigate = useNavigate();
   const { themeMode, toggleThemeMode } = useUiStore();
   const { locale, toggleLocale, dir } = useI18nStore();
+  const isAr = locale === "ar";
 
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -54,7 +53,6 @@ export function DocsLayout({ children }: DocsLayoutProps) {
       )
     : [];
 
-  // Keyboard shortcut for Cmd+K / Ctrl+K
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
@@ -69,7 +67,6 @@ export function DocsLayout({ children }: DocsLayoutProps) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [searchOpen]);
 
-  // Close mobile sidebar on route change
   useEffect(() => {
     setMobileSidebarOpen(false);
   }, [location.pathname]);
@@ -84,82 +81,80 @@ export function DocsLayout({ children }: DocsLayoutProps) {
   return (
     <div
       dir={dir}
-      className="min-h-screen flex flex-col bg-slate-50 font-sans text-slate-900 transition-colors duration-200 dark:bg-slate-950 dark:text-slate-100"
+      className="min-h-screen flex flex-col bg-[#FAF6F0] font-body text-[#262321] transition-colors selection:bg-[#651E2C] selection:text-white"
     >
-      {/* 1. Docs Sticky TopBar */}
-      <header className="sticky top-0 z-40 w-full border-b border-slate-200/80 bg-white/90 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-900/90">
-        <div className="flex h-14 items-center justify-between px-4 sm:px-6 lg:px-8">
+      {/* 1. Docs Top Bar */}
+      <header className="sticky top-0 z-40 w-full border-b border-[#E7D6C1] bg-[#FAF6F0]/95 backdrop-blur-md">
+        <div className="flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3">
             <button
+              type="button"
               onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
-              className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 dark:border-slate-800 dark:text-slate-300 dark:hover:bg-slate-800 lg:hidden"
-              aria-label="قائمة التوثيق"
+              className="flex size-9 items-center justify-center rounded-xl border border-[#E7D6C1] text-[#262321] hover:bg-white lg:hidden"
+              aria-label="Toggle Docs Navigation"
             >
-              <Menu className="h-4 w-4" />
+              <Menu className="size-4" />
             </button>
 
             <Link to="/" className="flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand text-white shadow-xs">
-                <Layers className="h-4 w-4" />
-              </div>
-              <span className="font-extrabold text-sm text-slate-900 dark:text-white">
-                ميزان ERP
-              </span>
+              <MizanLogo size="sm" showWordmark={true} />
             </Link>
 
-            <span className="text-slate-300 dark:text-slate-700">/</span>
+            <span className="text-[#E7D6C1] hidden sm:inline-block">/</span>
 
             <Link
               to="/docs"
-              className="flex items-center gap-1.5 text-xs font-bold text-brand hover:underline"
+              className="hidden sm:flex items-center gap-1.5 text-xs font-bold text-[#651E2C] hover:underline"
             >
-              <BookOpen className="h-3.5 w-3.5" />
-              <span>بوابة التوثيق والمطورين</span>
+              <BookOpen className="size-3.5 text-[#B86B76]" />
+              <span>{isAr ? "مركز التوثيق والمطورين" : "Docs & Developer Portal"}</span>
             </Link>
 
-            <Badge
-              variant="outline"
-              className="hidden sm:inline-flex text-[10px] bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
-            >
+            <span className="hidden md:inline-flex rounded-full bg-[#651E2C]/10 px-2.5 py-0.5 text-[10px] font-bold text-[#651E2C] font-mono">
               v3.0.0
-            </Badge>
+            </span>
           </div>
 
           {/* Search Trigger & Right Actions */}
           <div className="flex items-center gap-2">
             <button
+              type="button"
               onClick={() => setSearchOpen(true)}
-              className="group flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs text-slate-500 hover:border-brand/40 hover:bg-white dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400 dark:hover:border-slate-700 sm:w-64"
+              className="group flex items-center gap-2 rounded-full border border-[#E7D6C1] bg-white px-3.5 py-1.5 text-xs text-[#77716E] hover:border-[#651E2C] hover:text-[#262321] sm:w-64 transition-all shadow-xs"
             >
-              <Search className="h-3.5 w-3.5 text-slate-400 group-hover:text-brand" />
-              <span className="flex-1 text-start">بحث في التوثيق...</span>
-              <kbd className="hidden sm:inline-block rounded border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] font-mono text-slate-400 dark:border-slate-700 dark:bg-slate-800">
+              <Search className="size-3.5 text-[#B86B76] group-hover:text-[#651E2C]" />
+              <span className="flex-1 text-start">
+                {isAr ? "بحث في شروحات المنظومة..." : "Search docs & APIs..."}
+              </span>
+              <kbd className="hidden sm:inline-block rounded border border-[#E7D6C1] bg-[#FAF6F0] px-1.5 py-0.5 text-[10px] font-mono text-[#77716E]">
                 ⌘K
               </kbd>
             </button>
 
             <button
+              type="button"
               onClick={toggleLocale}
-              title={locale === "ar" ? "English" : "العربية"}
-              className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-100 dark:border-slate-800 dark:text-slate-300 dark:hover:bg-slate-800"
+              title={isAr ? "Switch to English" : "التبديل إلى العربية"}
+              className="flex size-9 items-center justify-center rounded-full border border-[#E7D6C1] bg-white text-xs font-bold text-[#262321] hover:border-[#651E2C]"
             >
-              {locale === "ar" ? "EN" : "ع"}
+              {isAr ? "EN" : "ع"}
             </button>
 
             <button
+              type="button"
               onClick={toggleThemeMode}
-              title="تبديل المظهر"
-              className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 dark:border-slate-800 dark:text-slate-300 dark:hover:bg-slate-800"
+              title="Toggle theme"
+              className="flex size-9 items-center justify-center rounded-full border border-[#E7D6C1] bg-white text-[#262321] hover:border-[#651E2C]"
             >
-              {themeMode === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              {themeMode === "dark" ? <Sun className="size-4" /> : <Moon className="size-4" />}
             </button>
 
             <Link
               to="/"
-              className="hidden sm:inline-flex items-center gap-1 text-xs font-medium text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white ms-1"
+              className="hidden sm:inline-flex items-center gap-1.5 text-xs font-bold text-[#651E2C] bg-[#651E2C]/10 hover:bg-[#651E2C] hover:text-white rounded-full px-3 py-1.5 transition-all ms-1"
             >
-              <Home className="h-3.5 w-3.5" />
-              <span>الموقع الرئيسي</span>
+              <Home className="size-3.5" />
+              <span>{isAr ? "الموقع الرئيسي" : "Home"}</span>
             </Link>
           </div>
         </div>
@@ -168,54 +163,54 @@ export function DocsLayout({ children }: DocsLayoutProps) {
       {/* 2. Main Content Area with Sidebar */}
       <div className="flex-1 flex mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Left Desktop Sidebar */}
-        <aside className="hidden lg:block w-72 shrink-0 border-e border-slate-200/80 pe-6 py-8 dark:border-slate-800/80 sticky top-14 h-[calc(100vh-3.5rem)] overflow-y-auto">
+        <aside className="hidden lg:block w-72 shrink-0 border-e border-[#E7D6C1] pe-6 py-8 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto">
           <div className="mb-4">
             <Link
               to="/docs"
-              className={`flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-bold transition-colors ${
+              className={`flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold transition-all ${
                 location.pathname === "/docs"
-                  ? "bg-brand/10 text-brand dark:bg-brand/20 dark:text-brand-light"
-                  : "text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+                  ? "bg-[#651E2C] text-white shadow-xs"
+                  : "text-[#262321] hover:bg-white"
               }`}
             >
-              <FileText className="h-4 w-4" />
-              <span>نظرة عامة على التوثيق</span>
+              <FileText className="size-4" />
+              <span>{isAr ? "فهرس التوثيق العام" : "Documentation Overview"}</span>
             </Link>
           </div>
 
-          <div className="space-y-6">
+          <nav className="space-y-6">
             {DOC_SECTIONS.map((section) => {
-              const isExpanded = expandedSections[section.id] !== false;
+              const isExpanded = expandedSections[section.id] ?? false;
               return (
-                <div key={section.id}>
+                <div key={section.id} className="space-y-1.5">
                   <button
+                    type="button"
                     onClick={() => toggleSection(section.id)}
-                    className="flex w-full items-center justify-between text-xs font-bold text-slate-900 uppercase tracking-wider dark:text-slate-200 hover:text-brand"
+                    className="flex w-full items-center justify-between text-start text-xs font-bold uppercase tracking-wider text-[#77716E] hover:text-[#262321] py-1"
                   >
-                    <span>{locale === "ar" ? section.title : section.titleEn}</span>
+                    <span>{section.title}</span>
                     <ChevronDown
-                      className={`h-3.5 w-3.5 text-slate-400 transition-transform ${
-                        isExpanded ? "rotate-0" : "-rotate-90 rtl:rotate-90"
+                      className={`size-3.5 transition-transform duration-200 ${
+                        isExpanded ? "rotate-180" : ""
                       }`}
                     />
                   </button>
 
                   {isExpanded && (
-                    <ul className="mt-2 space-y-1 border-s border-slate-200 ps-2.5 ms-1 dark:border-slate-800">
+                    <ul className="space-y-0.5 ps-1 border-s-2 border-[#E7D6C1]">
                       {section.items.map((item) => {
-                        const itemPath = `/docs/${item.slug}`;
-                        const isActive = location.pathname === itemPath;
+                        const active = location.pathname === `/docs/${item.slug}`;
                         return (
                           <li key={item.slug}>
                             <Link
-                              to={itemPath}
-                              className={`block rounded-md px-2.5 py-1.5 text-xs transition-colors ${
-                                isActive
-                                  ? "bg-brand text-white font-bold shadow-xs"
-                                  : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+                              to={`/docs/${item.slug}`}
+                              className={`block rounded-lg px-2.5 py-1.5 text-xs transition-all ${
+                                active
+                                  ? "bg-[#651E2C]/10 text-[#651E2C] font-bold"
+                                  : "text-[#77716E] hover:bg-white hover:text-[#262321]"
                               }`}
                             >
-                              {locale === "ar" ? item.title : item.titleEn}
+                              {item.title}
                             </Link>
                           </li>
                         );
@@ -225,152 +220,117 @@ export function DocsLayout({ children }: DocsLayoutProps) {
                 </div>
               );
             })}
-          </div>
+          </nav>
         </aside>
 
-        {/* Mobile Collapsible Drawer */}
+        {/* Mobile Navigation Drawer */}
         <AnimatePresence>
           {mobileSidebarOpen && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-50 bg-black/60 lg:hidden backdrop-blur-xs"
-              onClick={() => setMobileSidebarOpen(false)}
+              className="fixed inset-0 z-50 bg-[#35151D]/60 backdrop-blur-xs lg:hidden"
             >
               <motion.div
-                initial={{ x: dir === "rtl" ? "100%" : "-100%" }}
+                initial={{ x: isAr ? 300 : -300 }}
                 animate={{ x: 0 }}
-                exit={{ x: dir === "rtl" ? "100%" : "-100%" }}
-                transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                className="absolute inset-y-0 start-0 w-80 max-w-[85%] bg-white p-6 shadow-2xl dark:bg-slate-900 overflow-y-auto"
-                onClick={(e) => e.stopPropagation()}
+                exit={{ x: isAr ? 300 : -300 }}
+                className="fixed inset-y-0 start-0 w-80 bg-[#FAF6F0] p-6 shadow-2xl overflow-y-auto border-e border-[#E7D6C1]"
               >
-                <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800">
-                  <div className="flex items-center gap-2">
-                    <BookOpen className="h-4 w-4 text-brand" />
-                    <span className="font-bold text-sm">أقسام التوثيق</span>
-                  </div>
+                <div className="flex items-center justify-between pb-4 border-b border-[#E7D6C1] mb-4">
+                  <MizanLogo size="sm" showWordmark={true} />
                   <button
+                    type="button"
                     onClick={() => setMobileSidebarOpen(false)}
-                    className="p-1 text-slate-400 hover:text-slate-700"
+                    className="size-8 flex items-center justify-center rounded-lg border border-[#E7D6C1] text-[#262321]"
                   >
-                    <X className="h-4 w-4" />
+                    <X className="size-4" />
                   </button>
                 </div>
 
-                <div className="mt-4 space-y-6">
+                <nav className="space-y-6">
                   {DOC_SECTIONS.map((section) => (
-                    <div key={section.id}>
-                      <div className="text-xs font-bold text-slate-900 dark:text-white uppercase mb-2">
-                        {locale === "ar" ? section.title : section.titleEn}
-                      </div>
-                      <ul className="space-y-1">
-                        {section.items.map((item) => {
-                          const itemPath = `/docs/${item.slug}`;
-                          const isActive = location.pathname === itemPath;
-                          return (
-                            <li key={item.slug}>
-                              <Link
-                                to={itemPath}
-                                className={`block rounded-md px-3 py-1.5 text-xs ${
-                                  isActive
-                                    ? "bg-brand text-white font-bold"
-                                    : "text-slate-600 dark:text-slate-400"
-                                }`}
-                              >
-                                {locale === "ar" ? item.title : item.titleEn}
-                              </Link>
-                            </li>
-                          );
-                        })}
+                    <div key={section.id} className="space-y-1.5">
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-[#77716E]">
+                        {section.title}
+                      </h4>
+                      <ul className="space-y-1 ps-2 border-s border-[#E7D6C1]">
+                        {section.items.map((item) => (
+                          <li key={item.slug}>
+                            <Link
+                              to={`/docs/${item.slug}`}
+                              className="block rounded-lg px-2 py-1.5 text-xs text-[#262321] hover:bg-white"
+                            >
+                              {item.title}
+                            </Link>
+                          </li>
+                        ))}
                       </ul>
                     </div>
                   ))}
-                </div>
+                </nav>
               </motion.div>
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Right Content Area */}
-        <div className="flex-1 min-w-0 py-8 lg:ps-8">{children}</div>
+        {/* Main Content Pane */}
+        <main className="flex-1 py-8 lg:ps-8 min-w-0">
+          {children}
+        </main>
       </div>
 
-      {/* 3. Search Modal Dialog (Cmd+K) */}
+      {/* Global Cmd+K Search Modal */}
       <AnimatePresence>
         {searchOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-start justify-center bg-black/60 p-4 pt-16 backdrop-blur-xs sm:pt-24"
-            onClick={() => setSearchOpen(false)}
-          >
+          <div className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-20 bg-[#35151D]/60 backdrop-blur-xs">
             <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="w-full max-w-xl rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-900 overflow-hidden"
-              onClick={(e) => e.stopPropagation()}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="w-full max-w-xl rounded-2xl border border-[#E7D6C1] bg-white p-4 shadow-2xl space-y-4"
             >
-              <div className="flex items-center border-b border-slate-200 px-4 dark:border-slate-800">
-                <Search className="h-4 w-4 text-slate-400 ms-1" />
+              <div className="relative">
+                <Search className="absolute start-3 top-1/2 -translate-y-1/2 size-4 text-[#B86B76]" />
                 <input
                   type="text"
                   autoFocus
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="ابحث في كافة شروحات وموديولات التوثيق..."
-                  className="w-full bg-transparent px-3 py-3.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-hidden dark:text-white"
+                  placeholder={isAr ? "اكتب للبحث في شروحات وموديولات ميزان..." : "Type to search articles and modules..."}
+                  className="w-full rounded-xl border border-[#E7D6C1] bg-[#FAF6F0] ps-9 pe-4 py-2.5 text-xs text-[#262321] placeholder:text-[#77716E] focus:border-[#651E2C] focus:outline-hidden"
                 />
-                <button
-                  onClick={() => setSearchOpen(false)}
-                  className="rounded p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
-                >
-                  <X className="h-4 w-4" />
-                </button>
               </div>
 
-              <div className="max-h-96 overflow-y-auto p-2">
-                {searchQuery.trim() === "" ? (
-                  <div className="p-6 text-center text-xs text-slate-400">
-                    اكتب كلمة البحث للبحث الفوري في الـ 38 دليلاً وموديولاً...
-                  </div>
-                ) : searchResults.length === 0 ? (
-                  <div className="p-6 text-center text-xs text-slate-400">
-                    لم يتم العثور على نتائج تطابق «{searchQuery}»
-                  </div>
-                ) : (
-                  <div className="space-y-1">
-                    {searchResults.map((result) => (
-                      <button
-                        key={result.slug}
-                        onClick={() => {
-                          navigate(`/docs/${result.slug}`);
-                          setSearchOpen(false);
-                          setSearchQuery("");
-                        }}
-                        className="flex w-full flex-col items-start rounded-lg p-2.5 text-start hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              {searchQuery.trim() && (
+                <div className="max-h-80 overflow-y-auto divide-y divide-[#E7D6C1] text-xs">
+                  {searchResults.length === 0 ? (
+                    <p className="py-6 text-center text-[#77716E]">
+                      {isAr ? "لم يتم العثور على نتائج تطابق بحثك" : "No matching documentation articles found"}
+                    </p>
+                  ) : (
+                    searchResults.map((res) => (
+                      <Link
+                        key={res.slug}
+                        to={`/docs/${res.slug}`}
+                        onClick={() => setSearchOpen(false)}
+                        className="block p-3 hover:bg-[#FAF6F0] rounded-lg transition-colors"
                       >
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold text-xs text-slate-900 dark:text-white">
-                            {result.title}
-                          </span>
-                          <span className="text-[10px] text-slate-400 font-mono">
-                            ({result.titleEn})
-                          </span>
+                        <div className="flex items-center justify-between">
+                          <span className="font-bold text-[#262321]">{res.title}</span>
+                          <span className="text-[10px] text-[#651E2C] font-mono">{res.category}</span>
                         </div>
-                        <p className="mt-0.5 text-[11px] text-slate-500 line-clamp-1">
-                          {result.description}
+                        <p className="text-[11px] text-[#77716E] line-clamp-1 mt-0.5">
+                          {res.description}
                         </p>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
+                      </Link>
+                    ))
+                  )}
+                </div>
+              )}
             </motion.div>
-          </motion.div>
+          </div>
         )}
       </AnimatePresence>
     </div>

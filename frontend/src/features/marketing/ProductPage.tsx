@@ -4,240 +4,277 @@ import {
   Boxes,
   Database,
   Cpu,
+  Layers,
+  ArrowRight,
+  ArrowLeft,
 } from "lucide-react";
-import { Badge } from "@/components/kit/badge";
 import { Button } from "@/components/kit/button";
 import { MarketingLayout } from "./MarketingLayout";
+import { useTranslation } from "@/i18n";
 
 export default function ProductPage() {
+  const { locale } = useTranslation();
+  const isAr = locale === "ar";
   const [activeWorkflowStep, setActiveWorkflowStep] = useState<number>(0);
 
   const workflowSteps = [
     {
-      title: "1. حركة بيع في الكاشير (POS)",
-      desc: "يقوم الكاشير بمسح باركود المنتج وإصدار الفاتورة الضريبية الفورية مع طباعة الإيصال الحراري ونبضة فتح الدرج.",
-      module: "pos",
-      badge: "نقطة بيع سريعة",
+      titleAr: "1. حركة بيع في الكاشير (POS)",
+      titleEn: "1. Cashier Point of Sale Transaction",
+      descAr: "يقوم الكاشير بمسح باركود المنتج وإصدار الفاتورة الضريبية الفورية مع طباعة الإيصال الحراري ونبضة فتح الدرج.",
+      descEn: "Cashier scans barcode and issues immediate tax-compliant receipt with 80mm thermal printing and cash drawer pulse.",
+      badge: "POS Terminal",
     },
     {
-      title: "2. خصم المخزون اللحظي (WMS)",
-      desc: "يقوم محرك المخزون بخصم الكميات من المستودع المحدد فورياً، وتتبع التشغيلة FEFO، وتحديث حد إعادة الطلب.",
-      module: "inventory",
-      badge: "إدارة المخزون",
+      titleAr: "2. خصم المخزون اللحظي (WMS)",
+      titleEn: "2. Instant Warehouse Inventory Deduction",
+      descAr: "يقوم محرك المخزون بخصم الكميات من المستودع المحدد فورياً، وتتبع التشغيلة FEFO، وتحديث حد إعادة الطلب.",
+      descEn: "Inventory engine deducts item quantities from specific warehouse instantly and updates stock reorder thresholds.",
+      badge: "Inventory Sync",
     },
     {
-      title: "3. ترحيل القيود لدفتر الأستاذ (GL)",
-      desc: "يتم إنشاء قيد محاسبي مزدوج تلقائي: مدين (الخزينة) ودائن (إيراد المبيعات + ضريبة القيمة المضافة) بدون تدخل يدوي.",
-      module: "finance",
-      badge: "المالية والحسابات",
+      titleAr: "3. ترحيل القيود لدفتر الأستاذ (GL)",
+      titleEn: "3. Automated General Ledger Journal Posting",
+      descAr: "يتم إنشاء قيد محاسبي مزدوج تلقائي: مدين (الخزينة) ودائن (إيراد المبيعات + ضريبة القيمة المضافة) بدون تدخل يدوي.",
+      descEn: "Creates automated double-entry ledger entry: Debit (Treasury) and Credit (Sales Revenue + VAT) without manual intervention.",
+      badge: "General Ledger",
     },
     {
-      title: "4. احتساب عمولة الموظف والوردية (HR)",
-      desc: "يتم تسجيل العملية في سجل تدقيق الكاشير، وربط المبيعات بمسير الحوافز والرواتب الشهري المعتمد.",
-      module: "hr",
-      badge: "الموارد البشرية",
+      titleAr: "4. احتساب عمولة الموظف والوردية (HR)",
+      titleEn: "4. Shift Handover & Commission Audit",
+      descAr: "يتم تسجيل العملية في سجل تدقيق الكاشير، وربط المبيعات بمسير الحوافز والرواتب الشهري المعتمد.",
+      descEn: "Logs operation in cashier audit trail and links revenue to approved monthly commission and payroll payroll rules.",
+      badge: "HR & Shift Audit",
     },
   ];
 
   return (
     <MarketingLayout>
-      <div className="py-12 sm:py-16 space-y-16">
-        {/* 1. Hero Header */}
+      <div className="py-12 sm:py-20 space-y-16 sm:space-y-24 bg-[#FAF6F0] text-[#262321]">
+        {/* 1. Hero Header matching Image 4 */}
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center space-y-6">
-          <Badge variant="outline" className="bg-brand/10 text-brand">
-            معمارية المنظومة الموحدة
-          </Badge>
-          <h1 className="text-3xl sm:text-5xl font-black text-slate-900 dark:text-white tracking-tight max-w-4xl mx-auto leading-tight">
-            نظام متكامل يربط عمليات منشأتك بنبضة واحدة
+          <div className="inline-flex items-center gap-2 rounded-full border border-[#DECFC0] bg-[#FAF0E4] px-4 py-1.5 text-xs font-semibold text-[#651E2C]">
+            <Layers className="h-3.5 w-3.5" />
+            <span>{isAr ? "معمارية المنظومة الموحدة" : "Unified Enterprise Architecture"}</span>
+          </div>
+
+          <h1
+            className={`text-4xl sm:text-5xl lg:text-6xl font-normal text-[#262321] tracking-tight max-w-4xl mx-auto leading-tight ${
+              isAr ? "font-serif-ar" : "font-serif-en"
+            }`}
+          >
+            {isAr
+              ? "منصة أعمال متكاملة في نظام واحد"
+              : "An Integrated Business Platform in One System"}
           </h1>
-          <p className="max-w-2xl mx-auto text-sm sm:text-base text-slate-600 dark:text-slate-400 leading-relaxed">
-            وداعاً لتشتت البيانات بين برامج منفصلة لكل قسم. في ميزان ERP، تتصل كافة الموديولات
-            بشجرة حسابات موحدة، قاعدة بيانات آمنة، ومحرك أحداث لحظي يضمن تدفق المعلومات بسلاسة.
+
+          <p className="max-w-2xl mx-auto text-sm sm:text-base text-[#77716E] leading-relaxed">
+            {isAr
+              ? "وداعاً لتشتت البيانات بين برامج منفصلة لكل قسم. في ميزان ERP، تتصل كافة الموديولات بشجرة حسابات موحدة، وقاعدة بيانات معزولة ومحرك أحداث لحظي."
+              : "Eliminate fragmented data silos. In Mizan ERP, all operational modules connect to a unified ledger, isolated cloud database, and real-time event pipeline."}
           </p>
+
+          {/* 3D Isometric Modular Blocks Illustration matching Image 4 */}
+          <div className="pt-6 max-w-4xl mx-auto">
+            <div className="relative rounded-3xl border border-[#DECFC0] bg-gradient-to-b from-[#FAF0E4]/60 to-[#FFFFFF] p-8 sm:p-12 shadow-xl overflow-hidden">
+              {/* Isometric 3D Module Blocks Visual */}
+              <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
+                {[
+                  { nameAr: "المحاسبة العامة", nameEn: "General Ledger", color: "#651E2C" },
+                  { nameAr: "نقاط البيع POS", nameEn: "POS Terminal", color: "#8A293B" },
+                  { nameAr: "المستودعات والمخازن", nameEn: "Warehouses", color: "#48151F" },
+                  { nameAr: "المشتريات والموردين", nameEn: "Procurement", color: "#B86B76" },
+                  { nameAr: "الموارد البشرية HR", nameEn: "Human Resources", color: "#D4626E" },
+                  { nameAr: "المشاريع والأتمتة", nameEn: "Projects & Tasks", color: "#35151D" },
+                ].map((block, i) => (
+                  <div
+                    key={i}
+                    className="group relative flex flex-col items-center justify-center w-36 h-28 sm:w-44 sm:h-32 rounded-2xl border border-[#DECFC0] bg-[#FFFFFF] p-3 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all"
+                  >
+                    <div
+                      className="w-10 h-10 rounded-xl mb-2 flex items-center justify-center text-white font-bold text-xs shadow-sm"
+                      style={{ backgroundColor: block.color }}
+                    >
+                      <Layers className="h-5 w-5" />
+                    </div>
+                    <span className="text-xs font-bold text-[#262321] text-center">
+                      {isAr ? block.nameAr : block.nameEn}
+                    </span>
+                    <span className="text-[10px] text-[#27835C] font-mono mt-0.5">● Active Core</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* 2. Visual Architecture Diagram */}
+        {/* 2. Visual Architecture Layers */}
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-10 shadow-lg dark:border-slate-800 dark:bg-slate-900 space-y-8">
+          <div className="rounded-3xl border border-[#DECFC0] bg-[#FFFFFF] p-6 sm:p-10 shadow-xl space-y-8">
             <div className="text-center space-y-1">
-              <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">
-                طبقات معمارية ميزان الثلاث (The 3-Layer Architecture)
+              <h2
+                className={`text-2xl sm:text-3xl font-semibold text-[#262321] ${
+                  isAr ? "font-serif-ar" : "font-serif-en"
+                }`}
+              >
+                {isAr
+                  ? "بنية ذكية لعمل أكثر كفاءة"
+                  : "Smart Architecture for Maximum Efficiency"}
               </h2>
-              <p className="text-xs text-slate-500">
-                تصميم هندسي يجمع بين صلابة النواة ومرونة التخصيص غير المحدود
+              <p className="text-xs sm:text-sm text-[#77716E]">
+                {isAr
+                  ? "تصميم هندسي يجمع بين صلابة النواة ومرونة التخصيص المستقل"
+                  : "Engineered to deliver high-performance scalability with zero data leakage"}
               </p>
             </div>
 
             <div className="space-y-4">
               {/* Layer 1: Core System */}
-              <div className="rounded-xl border border-blue-200 bg-blue-50/50 p-5 dark:border-blue-900/50 dark:bg-blue-950/20">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <Database className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                    <span className="font-bold text-sm text-blue-900 dark:text-blue-300">
-                      الطبقة الأولى: النواة والأمان وقواعد البيانات (Core & PostgreSQL RLS)
+              <div className="rounded-2xl border border-[#DECFC0] bg-[#FAF0E4]/60 p-5 sm:p-6 space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 rounded-xl bg-[#651E2C] text-[#FAF6F0]">
+                      <Database className="h-5 w-5" />
+                    </div>
+                    <span className="font-bold text-sm sm:text-base text-[#262321]">
+                      {isAr
+                        ? "الطبقة الأولى: النواة والأمان وقواعد البيانات المعزولة (PostgreSQL RLS)"
+                        : "Layer 1: Isolated Core Engine & Row-Level Security"}
                     </span>
                   </div>
-                  <Badge variant="outline" className="text-[10px] bg-white dark:bg-slate-900">
-                    أساسية لكافة المنشآت
-                  </Badge>
+                  <span className="text-[11px] font-semibold text-[#651E2C] bg-[#651E2C]/10 px-2.5 py-0.5 rounded-full">
+                    {isAr ? "أساسية للجميع" : "Core Pillar"}
+                  </span>
                 </div>
-                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                  تتولى إدارة المستخدمين، المصادقة وتشفير JWT، صلاحيات RBAC، شجرة الحسابات العامة،
-                  سجل التدقيق الرقابي غير القابل للتعديل، وسياسات عزل المنشآت الحسابية RLS.
+                <p className="text-xs sm:text-sm text-[#55504D] leading-relaxed">
+                  {isAr
+                    ? "تتولى إدارة المستخدمين، المصادقة وتشفير البيانات، شجرة الحسابات العامة، سجل التدقيق الرقابي غير القابل للتعديل، وسياسات عزل المنشآت الحسابية RLS."
+                    : "Manages user access, authentication, encryption, general ledger tree, immutable audit log, and tenant isolation policies."}
                 </p>
               </div>
 
               {/* Layer 2: Modular Applications */}
-              <div className="rounded-xl border border-brand/30 bg-brand/5 p-5 dark:border-brand/30 dark:bg-brand/10">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <Boxes className="h-5 w-5 text-brand" />
-                    <span className="font-bold text-sm text-slate-900 dark:text-white">
-                      الطبقة الثانية: الموديولات القطاعية والتطبيقات (47 Pluggable Modules)
+              <div className="rounded-2xl border border-[#DECFC0] bg-[#FAF6F0] p-5 sm:p-6 space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 rounded-xl bg-[#8A293B] text-[#FAF6F0]">
+                      <Boxes className="h-5 w-5" />
+                    </div>
+                    <span className="font-bold text-sm sm:text-base text-[#262321]">
+                      {isAr
+                        ? "الطبقة الثانية: الموديولات القطاعية المعيارية (Modular Business Apps)"
+                        : "Layer 2: Pluggable Modular Business Applications"}
                     </span>
                   </div>
-                  <Badge variant="outline" className="text-[10px] bg-white dark:bg-slate-900">
-                    تفعيل بنقرة زر
-                  </Badge>
+                  <span className="text-[11px] font-semibold text-[#27835C] bg-[#27835C]/10 px-2.5 py-0.5 rounded-full">
+                    {isAr ? "تفعيل اختياري" : "On-Demand"}
+                  </span>
                 </div>
-                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                  موديولات مستقلة ذاتياً تعرّف جداولها وشاشاتها وواجهاتها عبر manifest.json:
-                  المطاعم وشاشات المطبخ، الصيدليات وتتبع الصلاحيات، العيادات والملفات الطبية،
-                  المقاولات، وصالات الجيم.
+                <p className="text-xs sm:text-sm text-[#55504D] leading-relaxed">
+                  {isAr
+                    ? "تطبيقات منفصلة وظيفياً تتكامل عبر واجهات برمجية قياسية: نقاط البيع السريعة، المخازن المتعددة، المشتريات، الموارد البشرية، وشاشات المطبخ KDS."
+                    : "Functionally independent modules integrating via standardized APIs: POS, multi-branch inventory, procurement, HR, and KDS displays."}
                 </p>
               </div>
 
-              {/* Layer 3: Hardware & Device Ecosystem */}
-              <div className="rounded-xl border border-emerald-200 bg-emerald-50/50 p-5 dark:border-emerald-900/50 dark:bg-emerald-950/20">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <Cpu className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-                    <span className="font-bold text-sm text-emerald-900 dark:text-emerald-300">
-                      الطبقة الثالثة: تكامل العتاد وأجهزة نقاط البيع (Hardware & Automation)
+              {/* Layer 3: Integration & Extensibility */}
+              <div className="rounded-2xl border border-[#DECFC0] bg-[#FAF0E4]/60 p-5 sm:p-6 space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 rounded-xl bg-[#35151D] text-[#FAF6F0]">
+                      <Cpu className="h-5 w-5" />
+                    </div>
+                    <span className="font-bold text-sm sm:text-base text-[#262321]">
+                      {isAr
+                        ? "الطبقة الثالثة: التكامل والأجهزة الطرفية (Hardware & ETA API)"
+                        : "Layer 3: Hardware Drivers & Tax API Integration"}
                     </span>
                   </div>
-                  <Badge variant="outline" className="text-[10px] bg-white dark:bg-slate-900">
-                    بروتوكولات مباشرة
-                  </Badge>
+                  <span className="text-[11px] font-semibold text-[#C58A35] bg-[#C58A35]/10 px-2.5 py-0.5 rounded-full">
+                    {isAr ? "ربط فوري" : "Direct Link"}
+                  </span>
                 </div>
-                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                  محرك طباعة إيصالات حرارية مباشر عبر ESC/POS، قارئات الباركود السريعة، أجهزة الحضور
-                  والانصراف ZKTeco عبر منفذ 4370 TCP، ومحرك الأتمتة المجدول (Cron Worker).
+                <p className="text-xs sm:text-sm text-[#55504D] leading-relaxed">
+                  {isAr
+                    ? "محرك تشغيل العتاد (طابعات الإيصالات 80mm/58mm عبر ESC/POS، قارئات الباركود وموازين الوزن الإلكترونية) وبوابة الفاتورة الإلكترونية ETA."
+                    : "Native hardware integration (thermal receipt printers, barcode readers, weight scales) and official Egyptian Tax Authority integration."}
                 </p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* 3. Cross-Module Data Flow Simulator */}
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-8">
-          <div className="text-center space-y-2">
-            <Badge variant="outline" className="bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40">
-              التكامل اللحظي
-            </Badge>
-            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">
-              كيف تتدفق البيانات بين الموديولات في ثوانٍ؟
+        {/* 3. Real-Time Workflow Trace */}
+        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 space-y-6">
+          <div className="text-start space-y-1">
+            <h2
+              className={`text-2xl sm:text-3xl font-semibold text-[#262321] ${
+                isAr ? "font-serif-ar" : "font-serif-en"
+              }`}
+            >
+              {isAr ? "دورة تدفق العملية الواحدة عبر المنظومة" : "Live Single-Transaction Workflow Trace"}
             </h2>
-            <p className="text-xs sm:text-sm text-slate-500 max-w-xl mx-auto">
-              اضغط على أي مرحلة لمشاهدة تأثيرها التلقائي على باقي أقسام المنظومة
+            <p className="text-xs sm:text-sm text-[#77716E]">
+              {isAr
+                ? "شاهد كيف تنتقل حركة البيع الواحدة بين نقاط البيع والمخزن والمالية والرواتب آلياً"
+                : "Observe how a single cashier transaction propagates across inventory, GL, and HR"}
             </p>
           </div>
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {workflowSteps.map((step, idx) => (
-              <button
-                key={idx}
-                onClick={() => setActiveWorkflowStep(idx)}
-                className={`flex flex-col justify-between rounded-xl p-5 text-start border transition-all ${
-                  activeWorkflowStep === idx
-                    ? "border-brand bg-white shadow-md ring-2 ring-brand/20 dark:bg-slate-900"
-                    : "border-slate-200 bg-white/70 hover:bg-white dark:border-slate-800 dark:bg-slate-900/60"
-                }`}
-              >
-                <div>
-                  <Badge variant="outline" className="mb-3 text-[10px]">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {workflowSteps.map((step, idx) => {
+              const isSelected = activeWorkflowStep === idx;
+              return (
+                <button
+                  key={idx}
+                  onClick={() => setActiveWorkflowStep(idx)}
+                  className={`text-start p-5 rounded-2xl border transition-all ${
+                    isSelected
+                      ? "border-[#651E2C] bg-[#FFFFFF] shadow-lg ring-1 ring-[#651E2C]"
+                      : "border-[#DECFC0] bg-[#FFFFFF]/70 hover:bg-[#FFFFFF]"
+                  }`}
+                >
+                  <div className="text-xs font-bold text-[#651E2C] font-mono mb-2">
                     {step.badge}
-                  </Badge>
-                  <h3 className="font-bold text-sm text-slate-900 dark:text-white mb-2">
-                    {step.title}
+                  </div>
+                  <h3 className="font-bold text-sm text-[#262321] mb-1">
+                    {isAr ? step.titleAr : step.titleEn}
                   </h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                    {step.desc}
+                  <p className="text-xs text-[#77716E] leading-relaxed">
+                    {isAr ? step.descAr : step.descEn}
                   </p>
-                </div>
-                <div className="mt-4 flex items-center justify-between text-[11px] font-mono text-slate-400 border-t border-slate-100 pt-2 dark:border-slate-800">
-                  <span>الموديول: {step.module}</span>
-                  {activeWorkflowStep === idx && (
-                    <span className="text-brand font-bold">نشط الآن ✓</span>
-                  )}
-                </div>
-              </button>
-            ))}
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        {/* 4. Migration from Legacy ERPs */}
+        {/* 4. Bottom Conversion Banner */}
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-10 dark:border-slate-800 dark:bg-slate-900 space-y-6">
-            <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white text-center">
-              الانتقال السلس من جداول Excel والبرامج القديمة
+          <div className="rounded-3xl bg-[#35151D] text-[#FAF6F0] p-8 sm:p-12 text-center space-y-5 shadow-2xl">
+            <h2
+              className={`text-2xl sm:text-3xl lg:text-4xl font-normal tracking-tight ${
+                isAr ? "font-serif-ar" : "font-serif-en"
+              }`}
+            >
+              {isAr
+                ? "جاهز لربط عمليات منشأتك في دفتر واحد؟"
+                : "Ready to Bring Your Enterprise Into Balance?"}
             </h2>
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
-              <div className="space-y-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand/10 text-brand font-bold text-xs">
-                  01
-                </div>
-                <h3 className="font-bold text-sm text-slate-900 dark:text-white">
-                  استيراد الأصناف والأرصدة
-                </h3>
-                <p className="text-xs text-slate-500 leading-relaxed">
-                  ارفع ملفات Excel للأصناف، الباركود، وأرصدة المستودعات مع فحص التكرارات تلقائياً.
-                </p>
-              </div>
-              <div className="space-y-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand/10 text-brand font-bold text-xs">
-                  02
-                </div>
-                <h3 className="font-bold text-sm text-slate-900 dark:text-white">
-                  استيراد العملاء والموردين
-                </h3>
-                <p className="text-xs text-slate-500 leading-relaxed">
-                  ترحيل الأرصدة الافتتاحية للمديونيات مع بيانات الاتصال والسجلات الضريبية المعتمدة.
-                </p>
-              </div>
-              <div className="space-y-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand/10 text-brand font-bold text-xs">
-                  03
-                </div>
-                <h3 className="font-bold text-sm text-slate-900 dark:text-white">
-                  بدء العمل والتشغيل الفوري
-                </h3>
-                <p className="text-xs text-slate-500 leading-relaxed">
-                  ربط طابعات الكاشير وأجهزة الباركود والبدء في إصدار الفواتير دون أي توقف لعملياتك.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* 5. CTA */}
-        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 text-center">
-          <div className="rounded-2xl bg-brand p-8 sm:p-12 text-white space-y-4 shadow-xl shadow-brand/20">
-            <h2 className="text-2xl sm:text-3xl font-black">
-              استكشف الموديولات المخصصة لقطاعك الآن
-            </h2>
-            <p className="max-w-lg mx-auto text-xs sm:text-sm text-white/90">
-              اختر باقة نشاطك التجاري وابدأ بتجربتها مجاناً مع كامل المزايا وصلاحيات التخصيص.
+            <p className="text-xs sm:text-sm text-[#E7D6C1]/80 max-w-md mx-auto">
+              {isAr
+                ? "ابدأ تجربتك المجانية لمدة 14 يوماً بكامل المزايا والوحدات بدون الحاجة لبطاقة دفع."
+                : "Start your 14-day full feature trial with zero risk and instant cloud setup."}
             </p>
-            <div className="pt-2 flex justify-center gap-3">
+            <div className="pt-2">
               <Button
                 size="lg"
-                className="bg-white text-brand hover:bg-slate-100 font-bold"
+                className="bg-[#651E2C] text-[#FAF6F0] hover:bg-[#521723] rounded-full px-8 py-3.5 text-sm font-semibold shadow-lg"
                 render={<Link to="/signup" />}
                 nativeButton={false}
               >
-                بدء التجربة المجانية (14 يوماً)
+                <span>{isAr ? "ابدأ الآن مجاناً" : "Get Started Free"}</span>
+                {isAr ? <ArrowLeft className="h-4 w-4 ms-2" /> : <ArrowRight className="h-4 w-4 ms-2" />}
               </Button>
             </div>
           </div>
