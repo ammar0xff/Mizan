@@ -23,7 +23,7 @@ def _get_safe_backups_dir() -> str:
     candidates = [
         os.getenv("BACKUPS_DIR"),
         os.path.join(os.getcwd(), "backups"),
-        os.path.join(tempfile.gettempdir(), "vendora_backups"),
+        os.path.join(tempfile.gettempdir(), "mizan_backups"),
     ]
     for c in candidates:
         if c:
@@ -62,7 +62,7 @@ class BackupService:
         dest_path = os.path.join(self.backups_dir, filename)
 
         # Write backup header/metadata
-        payload = f"VENDORA_BACKUP::v1::tenant={tenant_id}::slug={tenant.slug}::time={timestamp}::type={backup_type}"
+        payload = f"MIZAN_BACKUP::v1::tenant={tenant_id}::slug={tenant.slug}::time={timestamp}::type={backup_type}"
         with open(dest_path, "w", encoding="utf-8") as f:
             f.write(payload)
 

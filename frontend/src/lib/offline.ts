@@ -6,7 +6,7 @@
  * replayed; HTTP failures with a body (4xx/5xx) are conflicts surfaced to the
  * cashier for manual resolution — they are NOT retried blindly.
  */
-const DB_NAME = "vendora";
+const DB_NAME = "mizan";
 const STORE = "sale_queue";
 
 export type QueueStatus = "waiting" | "syncing" | "synced" | "conflict";

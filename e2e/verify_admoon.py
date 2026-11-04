@@ -14,19 +14,19 @@ def test_admoon_and_multitenancy():
 
         # 1. Login as Superadmin (ammar)
         print("Logging in as Superadmin (ammar)...")
-        page.goto("http://localhost:5173/Vendora/login")
+        page.goto("http://localhost:5173/Mizan/login")
         page.wait_for_selector("input#u", timeout=10000)
         page.fill("input#u", "ammar")
         page.fill("input#p", "changeme")
         page.click("button[type='submit']")
 
         # Wait for dashboard
-        page.wait_for_url("**/Vendora/", timeout=15000)
+        page.wait_for_url("**/Mizan/", timeout=15000)
         time.sleep(1)
 
         # 2. Navigate to /admoon
         print("Navigating to /admoon SaaS Control Plane...")
-        page.goto("http://localhost:5173/Vendora/admoon")
+        page.goto("http://localhost:5173/Mizan/admoon")
         page.wait_for_selector("text=SaaS Control Plane", timeout=10000)
         time.sleep(1)
 
@@ -83,7 +83,7 @@ def test_admoon_and_multitenancy():
         imp_btn.click()
 
         # Wait for redirect into Monset Gym ERP
-        page.wait_for_url("**/Vendora/**", timeout=15000)
+        page.wait_for_url("**/Mizan/**", timeout=15000)
         time.sleep(2)
 
         page.screenshot(path=f"{SCREENSHOTS_DIR}/51_admoon_impersonated_gym_erp.png")
@@ -91,7 +91,7 @@ def test_admoon_and_multitenancy():
 
         # 7. Test Tenant Slug Resolver /c/monset-gym
         print("Testing tenant slug resolver /c/monset-gym...")
-        page.goto("http://localhost:5173/Vendora/c/monset-gym")
+        page.goto("http://localhost:5173/Mizan/c/monset-gym")
         time.sleep(2)
 
         page.screenshot(path=f"{SCREENSHOTS_DIR}/52_tenant_slug_resolver_gym.png")

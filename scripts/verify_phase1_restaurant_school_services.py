@@ -27,7 +27,7 @@ async def run():
     tenant_info = {
         "id": "c935140b-cb68-45ac-a6fe-3e6ccaf09d71",
         "name": "مجموعة فيندورا للشركات والأنشطة المتعددة",
-        "slug": "vendora-enterprise",
+        "slug": "mizan-enterprise",
         "sector": "general",
         "scale": "medium",
         "palette": {"name": "blue", "hue": 220},
@@ -48,13 +48,13 @@ async def run():
 
         # Pre-seed session before any JS runs
         await context.add_init_script(f"""
-            localStorage.setItem("vendora.session", JSON.stringify({{
+            localStorage.setItem("mizan.session", JSON.stringify({{
                 token: "{token}",
                 user: {json.dumps(user_info)},
                 tenant: {json.dumps(tenant_info)}
             }}));
-            localStorage.setItem("vendora.active_modules", JSON.stringify(["core", "inventory", "pos", "finance", "pharmacy", "restaurant", "school", "services", "hr"]));
-            localStorage.setItem("vendora.active_preset", "retail");
+            localStorage.setItem("mizan.active_modules", JSON.stringify(["core", "inventory", "pos", "finance", "pharmacy", "restaurant", "school", "services", "hr"]));
+            localStorage.setItem("mizan.active_preset", "retail");
         """)
 
         page = await context.new_page()
@@ -63,7 +63,7 @@ async def run():
         # 1. Restaurant Suite (Hall, KDS, Recipe BOM & Food Costing, Waste)
         # ====================================================================
         print(">>> Testing Restaurant Suite...")
-        await page.goto("http://localhost:5173/Vendora/restaurant/tables", wait_until="domcontentloaded")
+        await page.goto("http://localhost:5173/Mizan/restaurant/tables", wait_until="domcontentloaded")
         await page.wait_for_timeout(2000)
 
         # Navigate to Recipe BOM & Food Costing tab
@@ -100,7 +100,7 @@ async def run():
         # 2. School Suite (Students, Installments, Attendance, Gradebook)
         # ====================================================================
         print(">>> Testing School Suite...")
-        await page.goto("http://localhost:5173/Vendora/school/students", wait_until="domcontentloaded")
+        await page.goto("http://localhost:5173/Mizan/school/students", wait_until="domcontentloaded")
         await page.wait_for_timeout(3500)
         await page.screenshot(path=f"{screenshot_dir}/86_school_students_installments.png", full_page=True)
         print("  ✓ Captured 86_school_students_installments.png")
@@ -123,7 +123,7 @@ async def run():
         # 3. Consulting / Professional Services Suite
         # ====================================================================
         print(">>> Testing Consulting & Professional Services Suite...")
-        await page.goto("http://localhost:5173/Vendora/services", wait_until="domcontentloaded")
+        await page.goto("http://localhost:5173/Mizan/services", wait_until="domcontentloaded")
         await page.wait_for_timeout(3500)
         await page.screenshot(path=f"{screenshot_dir}/89_services_engagements_retainers.png", full_page=True)
         print("  ✓ Captured 89_services_engagements_retainers.png")

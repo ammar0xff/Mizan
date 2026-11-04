@@ -1,4 +1,4 @@
-"""API endpoints for Vendora Modular App Engine."""
+"""API endpoints for Mizan Modular App Engine."""
 from __future__ import annotations
 
 from dataclasses import asdict

@@ -13,7 +13,7 @@
       "key": "app_name",
       "label": "اسم المنشأة التجاري",
       "type": "string",
-      "default": "Vendora ERP",
+      "default": "Mizan ERP",
       "description": "الاسم الظاهر في ترويسة النظام والفواتير الرسمية"
     },
     {

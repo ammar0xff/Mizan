@@ -132,10 +132,10 @@ async def pwa_manifest(db: AsyncSession = Depends(get_db)):
     import os
     rows = (await db.execute(text("SELECT key, value FROM store_settings WHERE key IN ('store_name','logo_url','theme_color','theme_primary','theme_bg')"))).fetchall()
     s = {r.key: r.value for r in rows}
-    name = s.get("store_name") or "Vendora"
+    name = s.get("store_name") or "ميزان"
     logo = s.get("logo_url") or ""
-    theme_color = (s.get("theme_primary") or s.get("theme_color") or "#2b1b03").strip()
-    background_color = (s.get("theme_bg") or "#f3f5fa").strip()
+    theme_color = (s.get("theme_primary") or s.get("theme_color") or "#35151D").strip()
+    background_color = (s.get("theme_bg") or "#FAF6F0").strip()
     icons = []
     if logo:
         if logo.startswith("/"):

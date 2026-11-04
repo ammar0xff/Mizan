@@ -105,7 +105,7 @@ class PostgresProvider(DatabaseProvider):
             return ConnectionResult(connected=False, latency_ms=round(latency, 2), error=str(err))
 
     async def provision(self, config: dict[str, Any]) -> ProvisioningResult:
-        db_name = config.get("database_name", "vendora_tenant")
+        db_name = config.get("database_name", "mizan_tenant")
         return ProvisioningResult(
             success=True,
             database_name=db_name,
@@ -186,7 +186,7 @@ class MySQLProvider(DatabaseProvider):
     async def provision(self, config: dict[str, Any]) -> ProvisioningResult:
         return ProvisioningResult(
             success=True,
-            database_name=config.get("database_name", "vendora_vps_db"),
+            database_name=config.get("database_name", "mizan_vps_db"),
             message="MySQL database and user credentials provisioned",
             details={"charset": "utf8mb4", "collation": "utf8mb4_unicode_ci"},
         )
@@ -219,7 +219,7 @@ class SQLiteProvider(DatabaseProvider):
         return ValidationResult(valid=True, message="Local SQLite path validated", errors=[])
 
     async def test_connection(self, config: dict[str, Any]) -> ConnectionResult:
-        path = config.get("file_path", "/tmp/vendora_test.db")
+        path = config.get("file_path", "/tmp/mizan_test.db")
         try:
             conn = sqlite3.connect(path)
             cur = conn.cursor()

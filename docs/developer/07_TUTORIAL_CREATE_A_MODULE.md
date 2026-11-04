@@ -311,7 +311,7 @@ print("Discovered:", manifests["loyalty_rewards"].name)
 Navigate to `http://localhost:8000/docs`. You will see the **`loyalty-rewards`** group with all declared endpoints!
 
 ### 3. Test Zero-Code Settings:
-Open the browser at `http://localhost:5173/Vendora/modules` -> Locate **"نقاط الولاء ومكافآت العملاء"** -> Click **"إعدادات"**.  
+Open the browser at `http://localhost:5173/Mizan/modules` -> Locate **"نقاط الولاء ومكافآت العملاء"** -> Click **"إعدادات"**.  
 Mizan will automatically render the 4 input fields we declared in `manifest.json`!
 
 ---

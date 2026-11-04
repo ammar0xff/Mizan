@@ -1,4 +1,4 @@
-"""Shared helpers for Vendora E2E tests (live API + DB cleanup).
+"""Shared helpers for Mizan E2E tests (live API + DB cleanup).
 
 Every test creates its own rows tagged with a unique marker (name/barcode/
 invoice prefix). `Conftest` teardown hard-deletes those rows in FK-safe order

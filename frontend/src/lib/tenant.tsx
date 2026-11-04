@@ -74,7 +74,7 @@ export function parseTenantFromLocation(
   pathname: string = window.location.pathname,
   hostname: string = window.location.hostname
 ): TenantRouteInfo {
-  // 1. Check Subdomain (e.g. monset-gym.vendora.com or monset-gym.localhost)
+  // 1. Check Subdomain (e.g. monset-gym.mizan.app or monset-gym.localhost)
   if (hostname && !hostname.match(/^(\d{1,3}\.){3}\d{1,3}$/) && hostname !== "localhost") {
     const parts = hostname.split(".");
     if (parts.length >= 3 || (parts.length === 2 && parts[1] === "localhost")) {

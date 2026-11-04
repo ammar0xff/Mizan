@@ -432,7 +432,7 @@ export function ThermalReceiptSettingsModal({
                 {/* Footer Note */}
                 <div className="text-center text-[9px] text-stone-600 mt-2 border-t border-dotted border-stone-400 pt-2">
                   <p>{footerNote}</p>
-                  <p className="mt-1 font-sans text-stone-400">Powered by Vendora POS</p>
+                  <p className="mt-1 font-sans text-stone-400">Powered by Mizan POS</p>
                 </div>
               </div>
             </div>

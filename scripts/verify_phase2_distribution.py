@@ -32,7 +32,7 @@ async def run():
     tenant_info = {
         "id": "c935140b-cb68-45ac-a6fe-3e6ccaf09d71",
         "name": "مجموعة فيندورا للشركات والأنشطة المتعددة",
-        "slug": "vendora-enterprise",
+        "slug": "mizan-enterprise",
         "sector": "general",
         "scale": "medium",
         "palette": {"name": "blue", "hue": 220},
@@ -53,13 +53,13 @@ async def run():
 
         # Pre-seed session before any JS runs
         await context.add_init_script(f"""
-            localStorage.setItem("vendora.session", JSON.stringify({{
+            localStorage.setItem("mizan.session", JSON.stringify({{
                 token: "{token}",
                 user: {json.dumps(user_info)},
                 tenant: {json.dumps(tenant_info)}
             }}));
-            localStorage.setItem("vendora.active_modules", JSON.stringify({json.dumps(active_mods)}));
-            localStorage.setItem("vendora.active_preset", "wholesale");
+            localStorage.setItem("mizan.active_modules", JSON.stringify({json.dumps(active_mods)}));
+            localStorage.setItem("mizan.active_preset", "wholesale");
         """)
 
         page = await context.new_page()
@@ -68,7 +68,7 @@ async def run():
         # 1. WHOLESALE & DISTRIBUTION (/wholesale)
         # ==========================================
         print("Navigating to /wholesale...")
-        await page.goto("http://localhost:5173/Vendora/wholesale", wait_until="networkidle")
+        await page.goto("http://localhost:5173/Mizan/wholesale", wait_until="networkidle")
         await page.wait_for_timeout(2000)
         await page.screenshot(path=f"{screenshot_dir}/92_wholesale_tiered_pricing.png")
         print("Saved 92_wholesale_tiered_pricing.png")
@@ -95,7 +95,7 @@ async def run():
         # 2. LOGISTICS & FLEET (/logistics)
         # ==========================================
         print("Navigating to /logistics...")
-        await page.goto("http://localhost:5173/Vendora/logistics", wait_until="networkidle")
+        await page.goto("http://localhost:5173/Mizan/logistics", wait_until="networkidle")
         await page.wait_for_timeout(2000)
         await page.screenshot(path=f"{screenshot_dir}/96_logistics_consignments_waybills.png")
         print("Saved 96_logistics_consignments_waybills.png")
@@ -132,7 +132,7 @@ async def run():
         # 3. 3PL & WMS (/wms)
         # ==========================================
         print("Navigating to /wms...")
-        await page.goto("http://localhost:5173/Vendora/wms", wait_until="networkidle")
+        await page.goto("http://localhost:5173/Mizan/wms", wait_until="networkidle")
         await page.wait_for_timeout(2000)
         await page.screenshot(path=f"{screenshot_dir}/101_wms_bin_locations_grid.png")
         print("Saved 101_wms_bin_locations_grid.png")
@@ -159,7 +159,7 @@ async def run():
         # 4. ECOMMERCE HUB (/ecommerce)
         # ==========================================
         print("Navigating to /ecommerce...")
-        await page.goto("http://localhost:5173/Vendora/ecommerce", wait_until="networkidle")
+        await page.goto("http://localhost:5173/Mizan/ecommerce", wait_until="networkidle")
         await page.wait_for_timeout(2000)
         await page.screenshot(path=f"{screenshot_dir}/105_ecommerce_orders_fulfillment.png")
         print("Saved 105_ecommerce_orders_fulfillment.png")

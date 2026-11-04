@@ -10,7 +10,7 @@ Current as of 2026-11-01, post SaaS pivot. Verified against the running system.
 | API | `vendora-backend-six.vercel.app/api` (Vercel project `vendora-backend`) | Git-integrated on `master`, root `backend/` |
 | Storefront | `…/api/storefront` | Public, binds the founding tenant |
 | Database | Neon `ep-misty-tooth-aeavzg5g` / `neondb` | Pooled URL in Vercel env |
-| Legacy mirror | `ammar0xff.github.io/Vendora` | Pages auto-deploy on `frontend/**` |
+| Legacy mirror | `ammar0xff.github.io/Mizan` | Pages auto-deploy on `frontend/**` |
 
 ## Tenancy model (three enforcement layers)
 
@@ -76,7 +76,7 @@ new tables only; the tracked migrations own all column/constraint changes.
 - `components/app/shared.tsx` — PageHeader, StatCard, KpiTile, Delta, ListState
   (skeleton → error → empty → content), StatusBadge pills, TableShell, TablePagination.
 - State: TanStack Query (server) + Zustand (`stores/auth.ts`: token/user/tenant, persists
-  `vendora.session`, applies the tenant brand hue to `--brand-hue`).
+  `mizan.session`, applies the tenant brand hue to `--brand-hue`).
 - Offline POS: IndexedDB sale queue (`lib/offline.ts`) with replay + conflict classification.
 - PWA: app-shell service worker (network-first navigations, never caches `/api/`).
 

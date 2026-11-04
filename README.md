@@ -1,6 +1,6 @@
 # ميزان — Mizan
 
-[![CI/CD](https://github.com/ammar0xff/Vendora/actions/workflows/build.yml/badge.svg)](https://github.com/ammar0xff/Vendora/actions/workflows/build.yml)
+[![CI/CD](https://github.com/ammar0xff/Mizan/actions/workflows/ci.yml/badge.svg)](https://github.com/ammar0xff/Mizan/actions/workflows/ci.yml)
 
 **Multi-tenant SaaS** for Egyptian building-materials and hardware merchants: point of sale,
 inventory, invoicing, purchasing, customers & suppliers, treasuries, reports, and payroll —
@@ -15,7 +15,7 @@ Arabic-first, RTL, built for صالة العرض and the back office alike.
 | **API** | https://vendora-backend-six.vercel.app/api |
 | **API docs (OpenAPI)** | https://vendora-backend-six.vercel.app/api/docs |
 | **Public storefront (tenant #1)** | https://vendora-backend-six.vercel.app/api/storefront |
-| Legacy mirror | https://ammar0xff.github.io/Vendora |
+| Legacy mirror | https://ammar0xff.github.io/Mizan |
 
 The founding workspace (tenant #1) is **الشركة المصرية الألمانية للأدوات الصحية** — admin:
 `ammar` / `changeme`. New merchants self-serve through `/signup` → a 3-step onboarding

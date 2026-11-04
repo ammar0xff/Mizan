@@ -1,4 +1,4 @@
-# ميزان (Vendora) — Roadmap & Delivery Status
+# ميزان (Mizan) — Roadmap & Delivery Status
 
 Current as of 2026-11-03. All core operational ERP screens, multi-tenancy SaaS infrastructure, storefront modules, notification center, and advanced hardware/automation integrations are shipped, live in Docker, and verified via Playwright E2E suites.
 

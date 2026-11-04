@@ -31,7 +31,7 @@ export default function OnboardingWizard() {
   const draft: OwnerDraft | null = (() => {
     try {
       return JSON.parse(
-        sessionStorage.getItem("vendora.owner") ?? sessionStorage.getItem("mizan.owner") ?? "null"
+        sessionStorage.getItem("mizan.owner") ?? sessionStorage.getItem("vendora.owner") ?? "null"
       );
     } catch {
       return null;

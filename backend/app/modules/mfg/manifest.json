@@ -5,7 +5,7 @@
   "version": "1.0.0",
   "description": "إدارة شجرة المنتج متعددة المستويات (BOM)، مراكز العمل ومسارات التشغيل، تخطيط الاحتياجات (MRP)، أوامر الإنتاج، الرقابة على صالة التصنيع، وحساب كفاءة المعدات OEE",
   "category": "industry",
-  "author": "Vendora Industrial Solutions",
+  "author": "Mizan Industrial Solutions",
   "dependencies": ["core", "inventory", "purchases"],
   "permissions": [
     "mfg.view",

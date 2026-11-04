@@ -55,10 +55,10 @@ interface ModulesState {
 const DEFAULT_ACTIVE = ["core", "inventory", "pos", "finance", "hr"];
 
 export const useModulesStore = create<ModulesState>((set, get) => ({
-  activePreset: localStorage.getItem("vendora.active_preset") || "retail",
+  activePreset: localStorage.getItem("mizan.active_preset") || localStorage.getItem("vendora.active_preset") || "retail",
   activeModules: (() => {
     try {
-      const saved = localStorage.getItem("vendora.active_modules");
+      const saved = localStorage.getItem("mizan.active_modules") || localStorage.getItem("vendora.active_modules");
       return saved ? JSON.parse(saved) : DEFAULT_ACTIVE;
     } catch {
       return DEFAULT_ACTIVE;
@@ -79,8 +79,8 @@ export const useModulesStore = create<ModulesState>((set, get) => ({
         presets: BusinessPreset[];
       }>("/modules");
 
-      localStorage.setItem("vendora.active_preset", data.active_preset);
-      localStorage.setItem("vendora.active_modules", JSON.stringify(data.active_modules));
+      localStorage.setItem("mizan.active_preset", data.active_preset);
+      localStorage.setItem("mizan.active_modules", JSON.stringify(data.active_modules));
 
       set({
         activePreset: data.active_preset,
@@ -110,8 +110,8 @@ export const useModulesStore = create<ModulesState>((set, get) => ({
       }>("/modules/presets/apply", { preset_id: presetId });
 
       sound.success();
-      localStorage.setItem("vendora.active_preset", res.active_preset);
-      localStorage.setItem("vendora.active_modules", JSON.stringify(res.active_modules));
+      localStorage.setItem("mizan.active_preset", res.active_preset);
+      localStorage.setItem("mizan.active_modules", JSON.stringify(res.active_modules));
 
       set((state) => ({
         activePreset: res.active_preset,
@@ -137,7 +137,7 @@ export const useModulesStore = create<ModulesState>((set, get) => ({
       }>(`/modules/${moduleId}/toggle`, { enabled });
 
       sound.success();
-      localStorage.setItem("vendora.active_modules", JSON.stringify(res.active_modules));
+      localStorage.setItem("mizan.active_modules", JSON.stringify(res.active_modules));
 
       set((state) => ({
         activeModules: res.active_modules,

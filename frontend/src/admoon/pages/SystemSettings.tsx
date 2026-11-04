@@ -7,8 +7,8 @@ import { Button, Input } from "@/components/ui";
 import { toast } from "sonner";
 
 export default function SystemSettings() {
-  const [platformName, setPlatformName] = useState("Vendora Modular SaaS ERP");
-  const [supportEmail, setSupportEmail] = useState("admin@vendora.app");
+  const [platformName, setPlatformName] = useState("Mizan Modular SaaS ERP");
+  const [supportEmail, setSupportEmail] = useState("support@mizan.app");
 
   return (
     <div className="space-y-6">

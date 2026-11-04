@@ -5,7 +5,7 @@
   "version": "1.0.0",
   "description": "تذاكر الشغل والطباعة Job Dockets، تخطيط المونتاج وتوزيع الصفحات Imposition، جدولة ماكينات الطباعة وتغيير الأحبار، تكلفة ساعات التشغيل الميكانيكية MHR، ومخزون الورق والكرتون بالجراماج GSM",
   "category": "industry",
-  "author": "Vendora Industrial Solutions",
+  "author": "Mizan Industrial Solutions",
   "dependencies": ["core", "inventory", "purchases", "mfg"],
   "permissions": [
     "prn.view",

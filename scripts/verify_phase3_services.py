@@ -33,7 +33,7 @@ async def run():
     tenant_info = {
         "id": "c935140b-cb68-45ac-a6fe-3e6ccaf09d71",
         "name": "مجموعة فيندورا للأنشطة المتعددة والخدمات المتخصصة",
-        "slug": "vendora-enterprise",
+        "slug": "mizan-enterprise",
         "sector": "services",
         "scale": "medium",
         "palette": {"name": "blue", "hue": 220},
@@ -54,13 +54,13 @@ async def run():
 
         # Pre-seed session before any JS runs
         await context.add_init_script(f"""
-            localStorage.setItem("vendora.session", JSON.stringify({{
+            localStorage.setItem("mizan.session", JSON.stringify({{
                 token: "{token}",
                 user: {json.dumps(user_info)},
                 tenant: {json.dumps(tenant_info)}
             }}));
-            localStorage.setItem("vendora.active_modules", JSON.stringify({json.dumps(active_mods)}));
-            localStorage.setItem("vendora.active_preset", "clinic");
+            localStorage.setItem("mizan.active_modules", JSON.stringify({json.dumps(active_mods)}));
+            localStorage.setItem("mizan.active_preset", "clinic");
         """)
 
         page = await context.new_page()
@@ -69,7 +69,7 @@ async def run():
         # 1. CLINIC & HOSPITAL ERP (/clinic)
         # ==========================================
         print("Navigating to /clinic...")
-        await page.goto("http://localhost:5173/Vendora/clinic", wait_until="networkidle")
+        await page.goto("http://localhost:5173/Mizan/clinic", wait_until="networkidle")
         await page.wait_for_timeout(2000)
         await page.screenshot(path=f"{screenshot_dir}/109_clinic_patient_records.png")
         print("Saved 109_clinic_patient_records.png")
@@ -96,7 +96,7 @@ async def run():
         # 2. LAW FIRM & LEGAL PRACTICE (/law)
         # ==========================================
         print("Navigating to /law...")
-        await page.goto("http://localhost:5173/Vendora/law", wait_until="networkidle")
+        await page.goto("http://localhost:5173/Mizan/law", wait_until="networkidle")
         await page.wait_for_timeout(2000)
         await page.screenshot(path=f"{screenshot_dir}/113_law_cases_matters_ledger.png")
         print("Saved 113_law_cases_matters_ledger.png")
@@ -123,7 +123,7 @@ async def run():
         # 3. TRAVEL & TOURISM AGENCY (/travel)
         # ==========================================
         print("Navigating to /travel...")
-        await page.goto("http://localhost:5173/Vendora/travel", wait_until="networkidle")
+        await page.goto("http://localhost:5173/Mizan/travel", wait_until="networkidle")
         await page.wait_for_timeout(2000)
         await page.screenshot(path=f"{screenshot_dir}/117_travel_packages_itineraries.png")
         print("Saved 117_travel_packages_itineraries.png")
@@ -144,7 +144,7 @@ async def run():
         # 4. HOTEL & HOSPITALITY PMS (/hospitality)
         # ==========================================
         print("Navigating to /hospitality...")
-        await page.goto("http://localhost:5173/Vendora/hospitality", wait_until="networkidle")
+        await page.goto("http://localhost:5173/Mizan/hospitality", wait_until="networkidle")
         await page.wait_for_timeout(2000)
         await page.screenshot(path=f"{screenshot_dir}/120_hospitality_room_matrix.png")
         print("Saved 120_hospitality_room_matrix.png")
@@ -165,7 +165,7 @@ async def run():
         # 5. GYM & FITNESS SPORTS CLUB (/gym)
         # ==========================================
         print("Navigating to /gym...")
-        await page.goto("http://localhost:5173/Vendora/gym", wait_until="networkidle")
+        await page.goto("http://localhost:5173/Mizan/gym", wait_until="networkidle")
         await page.wait_for_timeout(2000)
         await page.screenshot(path=f"{screenshot_dir}/123_gym_memberships_lifecycle.png")
         print("Saved 123_gym_memberships_lifecycle.png")
@@ -192,7 +192,7 @@ async def run():
         # 6. SALON & BEAUTY SPA (/salon)
         # ==========================================
         print("Navigating to /salon...")
-        await page.goto("http://localhost:5173/Vendora/salon", wait_until="networkidle")
+        await page.goto("http://localhost:5173/Mizan/salon", wait_until="networkidle")
         await page.wait_for_timeout(2000)
         await page.screenshot(path=f"{screenshot_dir}/127_salon_appointments_calendar.png")
         print("Saved 127_salon_appointments_calendar.png")
@@ -213,7 +213,7 @@ async def run():
         # 7. CREATIVE, MEDIA & TRANSLATION AGENCY (/agency)
         # ==========================================
         print("Navigating to /agency...")
-        await page.goto("http://localhost:5173/Vendora/agency", wait_until="networkidle")
+        await page.goto("http://localhost:5173/Mizan/agency", wait_until="networkidle")
         await page.wait_for_timeout(2000)
         await page.screenshot(path=f"{screenshot_dir}/130_agency_projects_milestone_gates.png")
         print("Saved 130_agency_projects_milestone_gates.png")
@@ -234,7 +234,7 @@ async def run():
         # 8. FIELD SERVICE & MAINTENANCE (/field-service)
         # ==========================================
         print("Navigating to /field-service...")
-        await page.goto("http://localhost:5173/Vendora/field-service", wait_until="networkidle")
+        await page.goto("http://localhost:5173/Mizan/field-service", wait_until="networkidle")
         await page.wait_for_timeout(2000)
         await page.screenshot(path=f"{screenshot_dir}/133_field_service_work_orders_sla.png")
         print("Saved 133_field_service_work_orders_sla.png")

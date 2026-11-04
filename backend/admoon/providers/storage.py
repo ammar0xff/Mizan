@@ -56,7 +56,7 @@ class LocalStorageProvider(StorageProvider):
             candidates = [
                 os.getenv("UPLOADS_DIR"),
                 os.path.join(os.getcwd(), "uploads"),
-                os.path.join(tempfile.gettempdir(), "vendora_uploads"),
+                os.path.join(tempfile.gettempdir(), "mizan_uploads"),
             ]
             for c in candidates:
                 if c:
@@ -116,7 +116,7 @@ class S3StorageProvider(StorageProvider):
     """S3-compatible object storage (AWS S3, MinIO, Cloudflare R2)."""
 
     async def health_check(self, config: dict[str, Any]) -> StorageHealthResult:
-        bucket = config.get("bucket_name", "vendora-erp-assets")
+        bucket = config.get("bucket_name", "mizan-erp-assets")
         return StorageHealthResult(
             healthy=True,
             status="connected",
@@ -144,7 +144,7 @@ class FirebaseStorageProvider(StorageProvider):
     """Google Cloud / Firebase Storage."""
 
     async def health_check(self, config: dict[str, Any]) -> StorageHealthResult:
-        bucket = config.get("bucket_name", "vendora-app.appspot.com")
+        bucket = config.get("bucket_name", "mizan-app.appspot.com")
         return StorageHealthResult(
             healthy=True,
             status="cloud_synced",

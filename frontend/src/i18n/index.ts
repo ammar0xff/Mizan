@@ -12,10 +12,11 @@ interface I18nState {
   t: (path: string, fallback?: string) => string;
 }
 
-const STORAGE_KEY = "vendora.locale";
+const STORAGE_KEY = "mizan.locale";
+const LEGACY_STORAGE_KEY = "vendora.locale";
 
 function getInitialLocale(): Locale {
-  const saved = localStorage.getItem(STORAGE_KEY);
+  const saved = localStorage.getItem(STORAGE_KEY) ?? localStorage.getItem(LEGACY_STORAGE_KEY);
   if (saved === "ar" || saved === "en") return saved;
   return "ar";
 }

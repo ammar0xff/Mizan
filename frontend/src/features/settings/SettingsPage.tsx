@@ -89,7 +89,7 @@ export default function SettingsPage() {
         <p className="mb-2 font-bold">المتجر الإلكتروني</p>
         <p className="mb-3 text-sm text-muted">واجهة العملاء العامة تعمل تلقائياً من هذه البيانات</p>
         <a
-          href="https://vendora-backend-six.vercel.app/api/storefront"
+          href="/api/storefront"
           target="_blank"
           rel="noreferrer"
           className="font-semibold text-brand hover:underline"

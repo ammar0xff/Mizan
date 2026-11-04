@@ -29,7 +29,7 @@ version: "3.8"
 services:
   db:
     image: postgres:16-alpine
-    container_name: vendora-db-1
+    container_name: mizan-db-1
     restart: unless-stopped
     environment:
       POSTGRES_DB: inventory_db
@@ -45,7 +45,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: vendora-backend-1
+    container_name: mizan-backend-1
     restart: unless-stopped
     depends_on:
       - db

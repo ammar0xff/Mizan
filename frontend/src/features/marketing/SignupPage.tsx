@@ -22,8 +22,8 @@ export default function SignupPage() {
   const draft: { full_name?: string; username?: string } = (() => {
     try {
       return JSON.parse(
-        sessionStorage.getItem("vendora.owner") ??
-          sessionStorage.getItem("mizan.owner") ??
+        sessionStorage.getItem("mizan.owner") ??
+          sessionStorage.getItem("vendora.owner") ??
           "{}"
       );
     } catch {
@@ -47,7 +47,6 @@ export default function SignupPage() {
     try {
       sound.click();
       const payload = JSON.stringify({ full_name: fullName, username, password });
-      sessionStorage.setItem("vendora.owner", payload);
       sessionStorage.setItem("mizan.owner", payload);
       setSignupDraft();
       navigate("/onboarding");

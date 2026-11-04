@@ -120,7 +120,7 @@ async def get_storefront_html(db: AsyncSession) -> str:
 
 
 def _render(s: dict, products, categories) -> str:
-    name = s.get("store_name") or "Vendora"
+    name = s.get("store_name") or "ميزان"
     primary = s.get("theme_primary") or _DEFAULTS["theme_primary"]
     accent = s.get("theme_accent") or _DEFAULTS["theme_accent"]
     bg = s.get("theme_bg") or _DEFAULTS["theme_bg"]

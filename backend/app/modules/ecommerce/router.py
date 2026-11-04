@@ -319,8 +319,8 @@ async def seed_ecommerce_sample_data(
     stores = [
         EcomChannelStore(
             platform="Shopify",
-            store_name="متجر فيندورا فاشون الإلكتروني",
-            store_url="https://vendora-fashion.myshopify.com",
+            store_name="متجر ميزان فاشون الإلكتروني",
+            store_url="https://mizan-fashion.myshopify.com",
             sync_status="connected",
             last_sync_time="منذ 4 دقائق",
             buffer_stock_percent=10.0,
@@ -339,8 +339,8 @@ async def seed_ecommerce_sample_data(
         ),
         EcomChannelStore(
             platform="Salla",
-            store_name="متجر فيندورا الخليج - سلة",
-            store_url="https://salla.sa/vendora-gulf",
+            store_name="متجر ميزان الخليج - سلة",
+            store_url="https://salla.sa/mizan-gulf",
             sync_status="connected",
             last_sync_time="منذ 30 دقيقة",
             buffer_stock_percent=10.0,

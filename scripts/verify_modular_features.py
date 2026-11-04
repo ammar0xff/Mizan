@@ -12,7 +12,7 @@ async def run():
 
         # Step 1: Open Modules Page
         print("Navigating to Modules Marketplace...")
-        await page.goto("http://localhost:5173/Vendora/#/modules")
+        await page.goto("http://localhost:5173/Mizan/#/modules")
         await page.wait_for_timeout(2000)
 
         # Open upload modal
@@ -38,7 +38,7 @@ async def run():
 
         # Step 2: Test School Student Payment & Official Receipt
         print("Navigating to School Students Page...")
-        await page.goto("http://localhost:5173/Vendora/#/school/students")
+        await page.goto("http://localhost:5173/Mizan/#/school/students")
         await page.wait_for_timeout(1500)
 
         # Find student with balance due and click "تحصيل قسط"
@@ -69,7 +69,7 @@ async def run():
 
         # Step 3: Test Restaurant Dining Hall & Guest Check
         print("Navigating to Restaurant Tables...")
-        await page.goto("http://localhost:5173/Vendora/#/restaurant/tables")
+        await page.goto("http://localhost:5173/Mizan/#/restaurant/tables")
         await page.wait_for_timeout(1500)
 
         # Click an occupied table or occupy table 03

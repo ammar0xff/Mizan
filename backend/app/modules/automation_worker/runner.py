@@ -18,7 +18,7 @@ from app.models.shift import Shift, ShiftStatus
 from app.models.tenant import Tenant
 from app.modules.automation_worker.models import AutomationJobLog, AutomationSchedule
 
-logger = logging.getLogger("vendora.automation")
+logger = logging.getLogger("mizan.automation")
 
 
 async def auto_close_stale_shifts(db: AsyncSession) -> dict[str, Any]:

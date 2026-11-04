@@ -115,32 +115,32 @@ interface UiState {
   setAppearanceModalOpen: (open: boolean) => void;
 }
 
-const DENSITY_KEY = "vendora.density";
-const LAYOUT_KEY = "vendora.layout";
-const PALETTE_KEY = "vendora.palette";
-const THEME_KEY = "vendora.theme";
+const DENSITY_KEY = "mizan.density";
+const LAYOUT_KEY = "mizan.layout";
+const PALETTE_KEY = "mizan.palette";
+const THEME_KEY = "mizan.theme";
 
 function getInitialDensity(): ViewDensity {
   if (typeof window === "undefined") return "compact";
-  const saved = localStorage.getItem(DENSITY_KEY);
+  const saved = localStorage.getItem(DENSITY_KEY) ?? localStorage.getItem("vendora.density");
   return saved === "comfortable" || saved === "compact" ? saved : "compact";
 }
 
 function getInitialLayout(): LayoutMode {
   if (typeof window === "undefined") return "sidebar";
-  const saved = localStorage.getItem(LAYOUT_KEY) as LayoutMode;
+  const saved = (localStorage.getItem(LAYOUT_KEY) ?? localStorage.getItem("vendora.layout")) as LayoutMode;
   return saved === "sidebar" || saved === "rail" || saved === "topnav" ? saved : "sidebar";
 }
 
 function getInitialPalette(): ThemePalette {
   if (typeof window === "undefined") return "mizan";
-  const saved = localStorage.getItem(PALETTE_KEY) as ThemePalette;
+  const saved = (localStorage.getItem(PALETTE_KEY) ?? localStorage.getItem("vendora.palette")) as ThemePalette;
   return ["mizan", "slate", "cobalt", "emerald", "amber", "monokai"].includes(saved) ? saved : "mizan";
 }
 
 function getInitialThemeMode(): ThemeMode {
   if (typeof window === "undefined") return "light";
-  const saved = localStorage.getItem(THEME_KEY);
+  const saved = localStorage.getItem(THEME_KEY) ?? localStorage.getItem("vendora.theme");
   if (saved === "dark" || saved === "light") return saved;
   return document.documentElement.classList.contains("dark") ? "dark" : "light";
 }

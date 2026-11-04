@@ -32,7 +32,7 @@ async def run():
     tenant_info = {
         "id": "c935140b-cb68-45ac-a6fe-3e6ccaf09d71",
         "name": "مجموعة فيندورا للأنشطة المتعددة والتصنيع المتقدم",
-        "slug": "vendora-enterprise",
+        "slug": "mizan-enterprise",
         "sector": "manufacturing",
         "scale": "enterprise",
         "palette": {"name": "blue", "hue": 220},
@@ -52,19 +52,19 @@ async def run():
         )
 
         await context.add_init_script(f"""
-            localStorage.setItem("vendora.session", JSON.stringify({{
+            localStorage.setItem("mizan.session", JSON.stringify({{
                 token: "{token}",
                 user: {json.dumps(user_info)},
                 tenant: {json.dumps(tenant_info)}
             }}));
-            localStorage.setItem("vendora.active_modules", JSON.stringify({json.dumps(active_mods)}));
-            localStorage.setItem("vendora.active_preset", "phm");
+            localStorage.setItem("mizan.active_modules", JSON.stringify({json.dumps(active_mods)}));
+            localStorage.setItem("mizan.active_preset", "phm");
         """)
 
         page = await context.new_page()
 
         print("Navigating to /phm...")
-        await page.goto("http://localhost:5173/Vendora/phm", wait_until="networkidle")
+        await page.goto("http://localhost:5173/Mizan/phm", wait_until="networkidle")
         await page.wait_for_selector("text=EBR-2026-", timeout=10000)
         await page.wait_for_timeout(1000)
         await page.screenshot(path=f"{screenshot_dir}/145_phm_ebr_batch_records.png")

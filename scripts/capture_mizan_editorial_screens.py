@@ -2,7 +2,7 @@ import os
 import time
 from playwright.sync_api import sync_playwright
 
-BASE_URL = "http://localhost:5173/Vendora"
+BASE_URL = "http://localhost:5173/Mizan"
 OUT_DIR = "/home/ammar/.gemini/antigravity/brain/6d5afa1e-9da9-4298-949d-64f04df6ec73/audit_screens"
 os.makedirs(OUT_DIR, exist_ok=True)
 
@@ -49,9 +49,9 @@ def run():
             # Abort external network calls (e.g. google fonts) to avoid DNS timeouts in sandbox
             context.route(lambda url: "localhost" not in url and "127.0.0.1" not in url, lambda route: route.abort())
 
-            # Ensure correct language via vendora.locale before page scripts run
+            # Ensure correct language via mizan.locale before page scripts run
             desired_locale = pinfo["locale"]
-            context.add_init_script(f"localStorage.setItem('vendora.locale', '{desired_locale}');")
+            context.add_init_script(f"localStorage.setItem('mizan.locale', '{desired_locale}');")
 
             page = context.new_page()
             page.goto(target_url, wait_until="domcontentloaded", timeout=15000)

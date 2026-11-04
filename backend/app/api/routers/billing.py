@@ -156,9 +156,9 @@ async def create_checkout_session(
     elif payload.payment_method == "instapay":
         payment_meta = {
             "type": "instapay",
-            "ipa_address": "vendora.enterprise@instapay",
+            "ipa_address": "mizan.enterprise@instapay",
             "reference_note": invoice_ref,
-            "instructions": f"قم بالتحويل عبر تطبيق إنستاباي إلى العنوان (vendora.enterprise@instapay) مع كتابة الرقم المرجعي ({invoice_ref}) في خانة البيان.",
+            "instructions": f"قم بالتحويل عبر تطبيق إنستاباي إلى العنوان (mizan.enterprise@instapay) مع كتابة الرقم المرجعي ({invoice_ref}) في خانة البيان.",
         }
     else:  # card (Paymob)
         payment_meta = {

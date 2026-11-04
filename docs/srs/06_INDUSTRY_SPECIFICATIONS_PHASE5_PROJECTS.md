@@ -1,4 +1,4 @@
-# Vendora Modular ERP — Software Requirements Specification (SRS)
+# Mizan Modular ERP — Software Requirements Specification (SRS)
 ## Section 06: Phase 5 — Projects & Infrastructure
 
 ---

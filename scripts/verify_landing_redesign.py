@@ -22,7 +22,7 @@ async def test_and_capture():
         page = await context.new_page()
 
         print("\n--- 1. Testing Acceptance Criteria: POS Scan 3 Times ---")
-        await page.goto("http://localhost:5173/Vendora/", wait_until="networkidle")
+        await page.goto("http://localhost:5173/Mizan/", wait_until="networkidle")
         await page.wait_for_timeout(1000)
 
         # Scroll to demo section
@@ -180,7 +180,7 @@ async def test_and_capture():
                 else:
                     await p_page.add_init_script("document.documentElement.classList.remove('dark')")
 
-                await p_page.goto("http://localhost:5173/Vendora/", wait_until="networkidle")
+                await p_page.goto("http://localhost:5173/Mizan/", wait_until="networkidle")
                 await p_page.wait_for_timeout(1000)
 
                 # Check total height at 390

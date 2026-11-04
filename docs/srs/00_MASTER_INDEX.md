@@ -1,10 +1,10 @@
-# Vendora Modular ERP — Software Requirements Specification (SRS)
+# Mizan Modular ERP — Software Requirements Specification (SRS)
 ## Master Index & Architecture Blueprint for 30 Business Types
 
 ---
 
 ### Document Information
-- **System**: Vendora Multi-Tenant SaaS & Offline Modular ERP Platform
+- **System**: Mizan Multi-Tenant SaaS & Offline Modular ERP Platform
 - **Scope**: Master Architecture, Shared ERP Core, 15 Cross-Industry Engines, 30 Industry-Specific Business Types
 - **Standard**: ISO/IEC/IEEE 29148:2018 (Systems and Software Engineering — Life cycle processes — Requirements engineering)
 - **Version**: 3.0.0
@@ -14,7 +14,7 @@
 
 ## 1. Executive Summary & Architectural Philosophy
 
-Vendora ERP adopts a **Layered Modular Architecture** designed to support 30 distinct business types without code duplication or vendor lock-in. Rather than developing 30 disconnected silos, the platform establishes:
+Mizan ERP adopts a **Layered Modular Architecture** designed to support 30 distinct business types without code duplication or vendor lock-in. Rather than developing 30 disconnected silos, the platform establishes:
 
 1. **Shared ERP Core**: A common, robust foundation handling multi-tenancy, authorization (RBAC), chart of accounts, general ledger, sales orders, purchase orders, inventory ledgers, employee records, and audit logging.
 2. **15 Reusable Cross-Industry Engines**: Autonomous, decoupled engines (e.g., Workflow, Scheduling, Pricing, Subscription Billing, Quality Management, Document Management, Printing & Hardware).
@@ -27,14 +27,14 @@ Vendora ERP adopts a **Layered Modular Architecture** designed to support 30 dis
 
 ```mermaid
 flowchart TD
-    VendoraCore["Vendora Shared ERP Core (83 Core Reqs)"]
+    MizanCore["Mizan Shared ERP Core (83 Core Reqs)"]
     
-    VendoraCore --> Phase1["Phase 1: Core Business Systems"]
-    VendoraCore --> Phase2["Phase 2: Distribution & Logistics"]
-    VendoraCore --> Phase3["Phase 3: Service-Based Systems"]
-    VendoraCore --> Phase4["Phase 4: Manufacturing & Production"]
-    VendoraCore --> Phase5["Phase 5: Projects & Infrastructure"]
-    VendoraCore --> Phase6["Phase 6: Highly Specialized Systems"]
+    MizanCore --> Phase1["Phase 1: Core Business Systems"]
+    MizanCore --> Phase2["Phase 2: Distribution & Logistics"]
+    MizanCore --> Phase3["Phase 3: Service-Based Systems"]
+    MizanCore --> Phase4["Phase 4: Manufacturing & Production"]
+    MizanCore --> Phase5["Phase 5: Projects & Infrastructure"]
+    MizanCore --> Phase6["Phase 6: Highly Specialized Systems"]
 
     Phase1 --> B01["01. Retail ERP (RET)"]
     Phase1 --> B02["02. Restaurant / Café ERP (RES)"]
@@ -81,13 +81,13 @@ This specification is organized into detailed documents, each referencing shared
 
 | Document | Path | Scope |
 |---|---|---|
-| **Shared ERP Core SRS** | [`01_SHARED_ERP_CORE_SRS.md`](file:///home/ammar/projects/Vendora/docs/srs/01_SHARED_ERP_CORE_SRS.md) | CORE (01-15), FIN (01-15), CRM (01-08), PUR (01-08), INV (01-10), HR (01-10), SYS (01-10), NFR (01-15), 15 Engines |
-| **Phase 1: Core Business Systems** | [`02_INDUSTRY_SPECIFICATIONS_PHASE1_CORE.md`](file:///home/ammar/projects/Vendora/docs/srs/02_INDUSTRY_SPECIFICATIONS_PHASE1_CORE.md) | Retail (RET), Restaurant (RES), Pharmacy (PHA), Consulting (CON), School (EDU) |
-| **Phase 2: Distribution & Logistics** | [`03_INDUSTRY_SPECIFICATIONS_PHASE2_DISTRIBUTION.md`](file:///home/ammar/projects/Vendora/docs/srs/03_INDUSTRY_SPECIFICATIONS_PHASE2_DISTRIBUTION.md) | Wholesale (WHO), Logistics (LOG), 3PL / WMS (WMS), E-commerce (ECS) |
-| **Phase 3: Service-Based Systems** | [`04_INDUSTRY_SPECIFICATIONS_PHASE3_SERVICES.md`](file:///home/ammar/projects/Vendora/docs/srs/04_INDUSTRY_SPECIFICATIONS_PHASE3_SERVICES.md) | Clinic/Hospital (HLT), Law (LAW), Travel (TRV), Hotel (HOT), Gym (GYM), Salon (SAL), Agency (AGE), Field Service (FSM) |
-| **Phase 4: Manufacturing & Production** | [`05_INDUSTRY_SPECIFICATIONS_PHASE4_MANUFACTURING.md`](file:///home/ammar/projects/Vendora/docs/srs/05_INDUSTRY_SPECIFICATIONS_PHASE4_MANUFACTURING.md) | Discrete (MFG), Food Process (FOD), Pharma/Chemical (PHM), Printing/Packaging (PRN) |
-| **Phase 5: Projects & Infrastructure** | [`06_INDUSTRY_SPECIFICATIONS_PHASE5_PROJECTS.md`](file:///home/ammar/projects/Vendora/docs/srs/06_INDUSTRY_SPECIFICATIONS_PHASE5_PROJECTS.md) | Construction (CST), Real Estate (RE), Agriculture (AGR), Energy/Power (ENG) |
-| **Phase 6: Specialized Systems** | [`07_INDUSTRY_SPECIFICATIONS_PHASE6_SPECIALIZED.md`](file:///home/ammar/projects/Vendora/docs/srs/07_INDUSTRY_SPECIFICATIONS_PHASE6_SPECIALIZED.md) | Banking (BNK), Insurance (INS), Government/Nonprofit (GOV), Entertainment (ENT), Oil & Gas (OIL) |
+| **Shared ERP Core SRS** | [`01_SHARED_ERP_CORE_SRS.md`](file:///home/ammar/projects/Mizan/docs/srs/01_SHARED_ERP_CORE_SRS.md) | CORE (01-15), FIN (01-15), CRM (01-08), PUR (01-08), INV (01-10), HR (01-10), SYS (01-10), NFR (01-15), 15 Engines |
+| **Phase 1: Core Business Systems** | [`02_INDUSTRY_SPECIFICATIONS_PHASE1_CORE.md`](file:///home/ammar/projects/Mizan/docs/srs/02_INDUSTRY_SPECIFICATIONS_PHASE1_CORE.md) | Retail (RET), Restaurant (RES), Pharmacy (PHA), Consulting (CON), School (EDU) |
+| **Phase 2: Distribution & Logistics** | [`03_INDUSTRY_SPECIFICATIONS_PHASE2_DISTRIBUTION.md`](file:///home/ammar/projects/Mizan/docs/srs/03_INDUSTRY_SPECIFICATIONS_PHASE2_DISTRIBUTION.md) | Wholesale (WHO), Logistics (LOG), 3PL / WMS (WMS), E-commerce (ECS) |
+| **Phase 3: Service-Based Systems** | [`04_INDUSTRY_SPECIFICATIONS_PHASE3_SERVICES.md`](file:///home/ammar/projects/Mizan/docs/srs/04_INDUSTRY_SPECIFICATIONS_PHASE3_SERVICES.md) | Clinic/Hospital (HLT), Law (LAW), Travel (TRV), Hotel (HOT), Gym (GYM), Salon (SAL), Agency (AGE), Field Service (FSM) |
+| **Phase 4: Manufacturing & Production** | [`05_INDUSTRY_SPECIFICATIONS_PHASE4_MANUFACTURING.md`](file:///home/ammar/projects/Mizan/docs/srs/05_INDUSTRY_SPECIFICATIONS_PHASE4_MANUFACTURING.md) | Discrete (MFG), Food Process (FOD), Pharma/Chemical (PHM), Printing/Packaging (PRN) |
+| **Phase 5: Projects & Infrastructure** | [`06_INDUSTRY_SPECIFICATIONS_PHASE5_PROJECTS.md`](file:///home/ammar/projects/Mizan/docs/srs/06_INDUSTRY_SPECIFICATIONS_PHASE5_PROJECTS.md) | Construction (CST), Real Estate (RE), Agriculture (AGR), Energy/Power (ENG) |
+| **Phase 6: Specialized Systems** | [`07_INDUSTRY_SPECIFICATIONS_PHASE6_SPECIALIZED.md`](file:///home/ammar/projects/Mizan/docs/srs/07_INDUSTRY_SPECIFICATIONS_PHASE6_SPECIALIZED.md) | Banking (BNK), Insurance (INS), Government/Nonprofit (GOV), Entertainment (ENT), Oil & Gas (OIL) |
 
 ---
 

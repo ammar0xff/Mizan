@@ -34,7 +34,7 @@ async def run():
     tenant_info = {
         "id": "c935140b-cb68-45ac-a6fe-3e6ccaf09d71",
         "name": "مجموعة فيندورا للأنشطة المتعددة والتصنيع المتقدم",
-        "slug": "vendora-enterprise",
+        "slug": "mizan-enterprise",
         "sector": "projects_infrastructure",
         "scale": "enterprise",
         "palette": {"name": "blue", "hue": 220},
@@ -55,13 +55,13 @@ async def run():
 
         # Pre-seed session before any JS runs
         await context.add_init_script(f"""
-            localStorage.setItem("vendora.session", JSON.stringify({{
+            localStorage.setItem("mizan.session", JSON.stringify({{
                 token: "{token}",
                 user: {json.dumps(user_info)},
                 tenant: {json.dumps(tenant_info)}
             }}));
-            localStorage.setItem("vendora.active_modules", JSON.stringify({json.dumps(active_mods)}));
-            localStorage.setItem("vendora.active_preset", "cst");
+            localStorage.setItem("mizan.active_modules", JSON.stringify({json.dumps(active_mods)}));
+            localStorage.setItem("mizan.active_preset", "cst");
         """)
 
         page = await context.new_page()
@@ -70,7 +70,7 @@ async def run():
         # 1. CONSTRUCTION / CONTRACTING (/cst)
         # ==========================================
         print("Navigating to /cst...")
-        await page.goto("http://localhost:5173/Vendora/cst", wait_until="networkidle")
+        await page.goto("http://localhost:5173/Mizan/cst", wait_until="networkidle")
         await page.wait_for_selector("text=المشروعات وعقود المقاولات (Projects)")
         await page.wait_for_timeout(1000)
         await page.screenshot(path=f"{screenshot_dir}/153_cst_projects_wbs_overview.png")
@@ -98,7 +98,7 @@ async def run():
         # 2. REAL ESTATE & PROPERTY MANAGEMENT (/rec)
         # ==========================================
         print("Navigating to /rec...")
-        await page.goto("http://localhost:5173/Vendora/rec", wait_until="networkidle")
+        await page.goto("http://localhost:5173/Mizan/rec", wait_until="networkidle")
         await page.wait_for_timeout(2000)
         await page.screenshot(path=f"{screenshot_dir}/157_rec_properties_portfolio_gla.png")
         print("Saved 157_rec_properties_portfolio_gla.png")
@@ -125,7 +125,7 @@ async def run():
         # 3. COMMERCIAL AGRICULTURE & LIVESTOCK (/agr)
         # ==========================================
         print("Navigating to /agr...")
-        await page.goto("http://localhost:5173/Vendora/agr", wait_until="networkidle")
+        await page.goto("http://localhost:5173/Mizan/agr", wait_until="networkidle")
         await page.wait_for_timeout(2000)
         await page.screenshot(path=f"{screenshot_dir}/161_agr_farm_plots_pivot_sectors.png")
         print("Saved 161_agr_farm_plots_pivot_sectors.png")
@@ -152,7 +152,7 @@ async def run():
         # 4. ENERGY & POWER PLANT ERP (/eng)
         # ==========================================
         print("Navigating to /eng...")
-        await page.goto("http://localhost:5173/Vendora/eng", wait_until="networkidle")
+        await page.goto("http://localhost:5173/Mizan/eng", wait_until="networkidle")
         await page.wait_for_timeout(2000)
         await page.screenshot(path=f"{screenshot_dir}/165_eng_functional_assets_kks.png")
         print("Saved 165_eng_functional_assets_kks.png")

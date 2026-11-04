@@ -65,7 +65,7 @@ export function useBranch() {
     queryFn: () => api.get<Warehouse[]>("/stock/warehouses"),
     staleTime: 5 * 60_000,
   });
-  const [branchId, setBranchId] = useState<string | null>(() => localStorage.getItem("vendora.branch"));
+  const [branchId, setBranchId] = useState<string | null>(() => localStorage.getItem("mizan.branch") ?? localStorage.getItem("vendora.branch"));
   const current = data?.find((w) => w.id === branchId) ?? data?.find((w) => w.id === user?.default_warehouse_id) ?? data?.[0];
   return { warehouses: data ?? [], branchId: current?.id ?? null, branchName: current?.name ?? "…", setBranchId };
 }
@@ -372,7 +372,7 @@ function AppTopbar({ onOpenMenu, onOpenSearch }: { onOpenMenu: () => void; onOpe
               value={branchId ?? ""}
               onValueChange={(v) => {
                 sound.click();
-                localStorage.setItem("vendora.branch", String(v));
+                localStorage.setItem("mizan.branch", String(v));
                 setBranchId(String(v));
               }}
             >

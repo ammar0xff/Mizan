@@ -1,4 +1,4 @@
-"""Comprehensive E2E verification of Vendora ERP Monetization & Plan Gating.
+"""Comprehensive E2E verification of Mizan ERP Monetization & Plan Gating.
 
 Verifies:
 1. Public & in-app pricing page (/pricing) with Egyptian currency and toggle.
@@ -118,7 +118,7 @@ async def run():
         tenant_info = {
             "id": "c935140b-cb68-45ac-a6fe-3e6ccaf09d71",
             "name": "مجموعة فيندورا للأنشطة المتعددة والتصنيع المتقدم",
-            "slug": "vendora-enterprise",
+            "slug": "mizan-enterprise",
             "sector": "specialized_sectors",
             "scale": "enterprise",
             "palette": {"name": "blue", "hue": 220},
@@ -131,12 +131,12 @@ async def run():
 
         # Pre-seed session
         await context.add_init_script(f"""
-            localStorage.setItem("vendora.session", JSON.stringify({{
+            localStorage.setItem("mizan.session", JSON.stringify({{
                 token: "{token}",
                 user: {json.dumps(user_info)},
                 tenant: {json.dumps(tenant_info)}
             }}));
-            localStorage.setItem("vendora.tenant", JSON.stringify({json.dumps(tenant_info)}));
+            localStorage.setItem("mizan.tenant", JSON.stringify({json.dumps(tenant_info)}));
             localStorage.setItem("admoon.session", JSON.stringify({{
                 token: "{token}",
                 user: {json.dumps(user_info)}
@@ -147,7 +147,7 @@ async def run():
 
         # A. Public / Pricing Page
         print("Navigating to /pricing...")
-        await page.goto("http://localhost:5173/Vendora/pricing", wait_until="networkidle")
+        await page.goto("http://localhost:5173/Mizan/pricing", wait_until="networkidle")
         await page.wait_for_timeout(1000)
         shot1 = f"{SCREENSHOT_DIR}/189_pricing_page_plans_and_live_quotas.png"
         await page.screenshot(path=shot1, full_page=True)
@@ -190,7 +190,7 @@ async def run():
 
         # C. Admoon Billing Invoices
         print("Navigating to /admoon/billing-invoices...")
-        await page.goto("http://localhost:5173/Vendora/admoon/billing-invoices", wait_until="networkidle")
+        await page.goto("http://localhost:5173/Mizan/admoon/billing-invoices", wait_until="networkidle")
         await page.wait_for_timeout(1000)
         shot5 = f"{SCREENSHOT_DIR}/193_admoon_billing_invoices_live_mrr_table.png"
         await page.screenshot(path=shot5, full_page=True)
@@ -198,7 +198,7 @@ async def run():
 
         # D. Admoon Subscriptions
         print("Navigating to /admoon/subscriptions...")
-        await page.goto("http://localhost:5173/Vendora/admoon/subscriptions", wait_until="networkidle")
+        await page.goto("http://localhost:5173/Mizan/admoon/subscriptions", wait_until="networkidle")
         await page.wait_for_timeout(1000)
         shot6 = f"{SCREENSHOT_DIR}/194_admoon_subscriptions_distribution_and_tiers.png"
         await page.screenshot(path=shot6, full_page=True)

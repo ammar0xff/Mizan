@@ -44,11 +44,18 @@ interface AuthState {
   can: (perm: string) => boolean;
 }
 
-const KEY = "vendora.session";
+const KEY = "mizan.session";
+const LEGACY_KEY = "vendora.session";
+const TENANT_KEY = "mizan.tenant";
+const LEGACY_TENANT_KEY = "vendora.tenant";
 
 function persist(token: string | null, user: User | null, tenant: TenantInfo | null) {
-  if (token) localStorage.setItem(KEY, JSON.stringify({ token, user, tenant }));
-  else localStorage.removeItem(KEY);
+  if (token) {
+    localStorage.setItem(KEY, JSON.stringify({ token, user, tenant }));
+  } else {
+    localStorage.removeItem(KEY);
+    localStorage.removeItem(LEGACY_KEY);
+  }
 }
 
 /** Apply the tenant's chosen brand hue to the document (onboarding wizard option). */
@@ -60,7 +67,7 @@ export function applyBrandHue(hue?: number) {
 
 function load(): { token: string | null; user: User | null } {
   try {
-    const raw = localStorage.getItem(KEY);
+    const raw = localStorage.getItem(KEY) ?? localStorage.getItem(LEGACY_KEY);
     if (raw) return JSON.parse(raw);
   } catch {
     /* corrupted session — start fresh */
@@ -74,8 +81,12 @@ export const useAuth = create<AuthState>((set, get) => ({
   setTenant: (tenant) => {
     set({ tenant });
     applyBrandHue(tenant?.palette?.hue);
-    if (tenant) localStorage.setItem("vendora.tenant", JSON.stringify(tenant));
-    else localStorage.removeItem("vendora.tenant");
+    if (tenant) {
+      localStorage.setItem(TENANT_KEY, JSON.stringify(tenant));
+    } else {
+      localStorage.removeItem(TENANT_KEY);
+      localStorage.removeItem(LEGACY_TENANT_KEY);
+    }
   },
   login: (token, user) => {
     persist(token, user, get().tenant);
@@ -92,7 +103,9 @@ export const useAuth = create<AuthState>((set, get) => ({
   },
   logout: () => {
     localStorage.removeItem(KEY);
-    localStorage.removeItem("vendora.tenant");
+    localStorage.removeItem(LEGACY_KEY);
+    localStorage.removeItem(TENANT_KEY);
+    localStorage.removeItem(LEGACY_TENANT_KEY);
     set({ token: null, user: null, tenant: null });
   },
   can: (perm) => {

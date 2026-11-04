@@ -467,7 +467,7 @@ async def provision_tenant(
         "owner_username": data.owner_username,
         "routing": {
             "path_root": f"/{clean_slug}",
-            "subdomain": f"{clean_slug}.vendora.app",
+            "subdomain": f"{clean_slug}.mizan.app",
             "custom_domain": data.custom_domain,
         },
     }
@@ -946,7 +946,7 @@ async def test_db_provider(
     _superadmin: User = Depends(require_superadmin),
 ):
     prov = get_db_provider(engine)
-    res = await prov.test_connection({"db_connection_uri": uri, "host": "localhost", "database_name": "vendora"})
+    res = await prov.test_connection({"db_connection_uri": uri, "host": "localhost", "database_name": "mizan"})
     return {
         "engine": engine,
         "connected": res.connected,

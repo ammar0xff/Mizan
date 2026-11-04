@@ -1,4 +1,4 @@
-"""Seed realistic Egyptian SaaS billing invoices and subscriptions for Vendora."""
+"""Seed realistic Egyptian SaaS billing invoices and subscriptions for Mizan."""
 import asyncio
 import uuid
 from datetime import UTC, datetime, timedelta

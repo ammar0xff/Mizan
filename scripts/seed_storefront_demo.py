@@ -1,4 +1,4 @@
-"""Seed demo storefront settings, coupons, and customer web orders for Vendora tenants."""
+"""Seed demo storefront settings, coupons, and customer web orders for Mizan tenants."""
 import asyncio
 import uuid
 from datetime import UTC, datetime, timedelta
@@ -50,8 +50,8 @@ async def seed_storefront():
                     allow_pickup=True,
                     allow_dine_in=True,
                     is_active=True,
-                    social_instagram="https://instagram.com/vendora.erp",
-                    social_facebook="https://facebook.com/vendora.erp",
+                    social_instagram="https://instagram.com/mizan.erp",
+                    social_facebook="https://facebook.com/mizan.erp",
                 )
                 session.add(cfg)
                 print("✓ Seeded StorefrontConfig")

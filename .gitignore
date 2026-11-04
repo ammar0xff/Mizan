@@ -42,7 +42,7 @@ e2e/.venv/
 # Frontend
 frontend/node_modules/
 frontend/dist/
-vendora-erp-design.zip
+mizan-erp-design.zip
 request.txt
 
 # secrets & local artifacts

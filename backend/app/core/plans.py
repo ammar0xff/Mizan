@@ -1,4 +1,4 @@
-"""Vendora SaaS Subscription Plans & Quotas Definition."""
+"""Mizan SaaS Subscription Plans & Quotas Definition."""
 from __future__ import annotations
 
 from typing import Any, Dict

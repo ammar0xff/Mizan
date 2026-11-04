@@ -1,4 +1,4 @@
-"""Universal Modular App Engine for Vendora ERP.
+"""Universal Modular App Engine for Mizan ERP.
 
 Provides a pluggable module registry, business presets (Retail, Restaurant,
 School, Services, Clinic), dependency resolution, and tenant-scoped module

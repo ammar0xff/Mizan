@@ -16,27 +16,27 @@ def test_full_admoon_panel():
 
         # 1. Login as Superadmin (ammar)
         print("Logging in as Superadmin (ammar)...")
-        page.goto("http://localhost:5173/Vendora/login")
+        page.goto("http://localhost:5173/Mizan/login")
         page.wait_for_selector("input#u", timeout=10000)
         page.fill("input#u", "ammar")
         page.fill("input#p", "changeme")
         page.click("button[type='submit']")
 
         # Wait for app ready
-        page.wait_for_url("**/Vendora/", timeout=15000)
+        page.wait_for_url("**/Mizan/", timeout=15000)
         time.sleep(1)
 
-        # 2. Navigate to /Vendora/admoon (Dashboard)
+        # 2. Navigate to /Mizan/admoon (Dashboard)
         print("1. Testing Admoon Executive Dashboard...")
-        page.goto("http://localhost:5173/Vendora/admoon")
+        page.goto("http://localhost:5173/Mizan/admoon")
         page.wait_for_selector("text=مركز قيادة المنصة", timeout=12000)
         time.sleep(1.5)
         page.screenshot(path=f"{SCREENSHOTS_DIR}/60_admoon_dashboard.png")
         print("Saved 60_admoon_dashboard.png")
 
-        # 3. Navigate to /Vendora/admoon/tenants
+        # 3. Navigate to /Mizan/admoon/tenants
         print("2. Testing Tenants Management Table...")
-        page.goto("http://localhost:5173/Vendora/admoon/tenants")
+        page.goto("http://localhost:5173/Mizan/admoon/tenants")
         page.wait_for_selector("text=إدارة الشركات والمستأجرين", timeout=10000)
         time.sleep(1)
         page.screenshot(path=f"{SCREENSHOTS_DIR}/61_admoon_tenants.png")
@@ -52,9 +52,9 @@ def test_full_admoon_panel():
             page.locator("button:has-text('إلغاء')").click()
             time.sleep(0.5)
 
-        # 4. Navigate to /Vendora/admoon/wizard (Tenant Creation Wizard)
+        # 4. Navigate to /Mizan/admoon/wizard (Tenant Creation Wizard)
         print("3. Testing Multi-Step Provisioning Wizard...")
-        page.goto("http://localhost:5173/Vendora/admoon/wizard")
+        page.goto("http://localhost:5173/Mizan/admoon/wizard")
         page.wait_for_selector("text=المعلومات الأساسية وهوية المنشأة", timeout=10000)
         
         # Fill Step 1
@@ -100,7 +100,7 @@ def test_full_admoon_panel():
 
         # 5. Inspect First Tenant Details Page (13 Tabs)
         print("4. Testing Tenant Details Drill-Down & Tabs...")
-        page.goto("http://localhost:5173/Vendora/admoon/tenants")
+        page.goto("http://localhost:5173/Mizan/admoon/tenants")
         page.wait_for_selector("a[href*='admoon/tenants/']", timeout=10000)
         href = page.locator("a[href*='admoon/tenants/']").first.get_attribute("href")
         print(f"Navigating to Tenant Details: {href}...")
@@ -131,7 +131,7 @@ def test_full_admoon_panel():
 
         # 6. Test Database Providers Page
         print("5. Testing Database Providers & Connection Tests...")
-        page.goto("http://localhost:5173/Vendora/admoon/databases")
+        page.goto("http://localhost:5173/Mizan/admoon/databases")
         page.wait_for_selector("text=محركات وقواعد بيانات المنظومة", timeout=10000)
         time.sleep(1)
         test_conn_btn = page.locator("button:has-text('اختبار الاتصال')").first
@@ -143,7 +143,7 @@ def test_full_admoon_panel():
 
         # 7. Test Module Catalog Page
         print("6. Testing Module Catalog & Specialized Collections...")
-        page.goto("http://localhost:5173/Vendora/admoon/modules")
+        page.goto("http://localhost:5173/Mizan/admoon/modules")
         page.wait_for_selector("text=كتالوج وحدات ومجموعات ERP النمطية", timeout=10000)
         time.sleep(1)
         page.screenshot(path=f"{SCREENSHOTS_DIR}/65_admoon_module_catalog.png")
@@ -151,7 +151,7 @@ def test_full_admoon_panel():
 
         # 8. Test Infrastructure Quotas Page
         print("7. Testing Infrastructure Quotas...")
-        page.goto("http://localhost:5173/Vendora/admoon/infrastructure")
+        page.goto("http://localhost:5173/Mizan/admoon/infrastructure")
         page.wait_for_selector("text=إدارة البنية التحتية والموارد", timeout=10000)
         time.sleep(1)
         page.screenshot(path=f"{SCREENSHOTS_DIR}/66_admoon_infrastructure.png")
@@ -159,7 +159,7 @@ def test_full_admoon_panel():
 
         # 9. Test Subscriptions & Pricing Page
         print("8. Testing Subscriptions Tiers...")
-        page.goto("http://localhost:5173/Vendora/admoon/subscriptions")
+        page.goto("http://localhost:5173/Mizan/admoon/subscriptions")
         page.wait_for_selector("text=باقات وخطط الاشتراك", timeout=10000)
         time.sleep(1)
         page.screenshot(path=f"{SCREENSHOTS_DIR}/67_admoon_subscriptions.png")
@@ -167,7 +167,7 @@ def test_full_admoon_panel():
 
         # 10. Test Audit Logs Page
         print("9. Testing Audit Logs...")
-        page.goto("http://localhost:5173/Vendora/admoon/audit-logs")
+        page.goto("http://localhost:5173/Mizan/admoon/audit-logs")
         page.wait_for_selector("text=السجل الرقابي والتدقيق الأمني", timeout=10000)
         time.sleep(1)
         page.screenshot(path=f"{SCREENSHOTS_DIR}/68_admoon_audit_logs.png")

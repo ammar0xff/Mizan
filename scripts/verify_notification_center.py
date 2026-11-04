@@ -83,15 +83,15 @@ async def run_verification():
 
         # Inject auth state
         await page.add_init_script(f"""
-            window.localStorage.setItem('vendora.session', JSON.stringify({json.dumps(session_payload)}));
-            window.localStorage.setItem('vendora.active_modules', JSON.stringify({json.dumps(tenant_info["active_modules"])}));
+            window.localStorage.setItem('mizan.session', JSON.stringify({json.dumps(session_payload)}));
+            window.localStorage.setItem('mizan.active_modules', JSON.stringify({json.dumps(tenant_info["active_modules"])}));
         """)
 
         # ---------------------------------------------------------
         # Step 1: Navigate to Dashboard and verify Notification Bell & Badge
         # ---------------------------------------------------------
         print("\n--> Step 1: Loading ERP Dashboard and Checking Notification Bell Badge...")
-        await page.goto("http://localhost:5173/Vendora/c/german-egyptian", wait_until="networkidle")
+        await page.goto("http://localhost:5173/Mizan/c/german-egyptian", wait_until="networkidle")
         await page.wait_for_timeout(3000)
 
         # Locate Notification Bell trigger

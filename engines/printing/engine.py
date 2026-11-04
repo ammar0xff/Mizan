@@ -1,4 +1,4 @@
-"""Vendora Print Management Engine implementation.
+"""Mizan Print Management Engine implementation.
 
 Handles template loading, variable interpolation, paper formatting,
 and thermal/document print job generation.

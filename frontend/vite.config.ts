@@ -8,11 +8,11 @@ export default defineConfig({
     react(),
     tailwindcss(),
     {
-      name: "redirect-vendora-slash",
+      name: "redirect-mizan-slash",
       configureServer(server) {
         server.middlewares.use((req, res, next) => {
-          if (req.url === "/Vendora") {
-            res.writeHead(301, { Location: "/Vendora/" });
+          if (req.url === "/Mizan" || req.url === "/Vendora") {
+            res.writeHead(301, { Location: "/Mizan/" });
             res.end();
             return;
           }
@@ -21,7 +21,7 @@ export default defineConfig({
       },
     },
   ],
-  base: process.env.VITE_BASE ?? (process.env.VERCEL ? "/" : "/Vendora/"),
+  base: process.env.VITE_BASE ?? (process.env.VERCEL ? "/" : "/Mizan/"),
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),

@@ -1,5 +1,5 @@
-"""Pluggable Module Loader & Auto-Discovery Engine for Vendora ERP.
-
+"""Pluggable Module Loader & Auto-Discovery Engine for Mizan ERP.
+ 
 Scans the `modules/` directory, discovers self-contained modules via `manifest.json`,
 manages module-level configuration schemas & persistence, and dynamically registers
 API routers.
@@ -19,7 +19,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.settings import StoreSetting
 
-logger = logging.getLogger("vendora.modules")
+logger = logging.getLogger("mizan.modules")
 
 MODULES_DIR = Path(__file__).resolve().parent
 

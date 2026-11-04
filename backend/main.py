@@ -108,7 +108,7 @@ async def lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(title="Inventory ERP API", version="1.0.0", lifespan=lifespan)
+app = FastAPI(title="Mizan ERP API", version="1.0.0", lifespan=lifespan)
 
 logger = logging.getLogger("validation")
 
@@ -164,7 +164,7 @@ app.include_router(router)
 
 @app.get("/")
 async def root():
-    return {"name": "Vendora Inventory ERP API", "docs": "/docs", "health": "/health"}
+    return {"name": "Mizan ERP API", "docs": "/docs", "health": "/health"}
 
 
 @app.get("/health")

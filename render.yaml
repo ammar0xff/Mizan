@@ -1,4 +1,4 @@
-# Vendora backend on Render (free tier).
+# Mizan backend on Render (free tier).
 #
 # Render Blueprint -> New Blueprint Instance -> this GitHub repo.
 # It provisions a free PostgreSQL instance and a web service from the
@@ -7,21 +7,21 @@
 # After the services are created:
 #   1. Open the backend service -> Environment.
 #   2. Set SECRET_KEY to the auto-generated value below (or click "Generate").
-#   3. Copy the backend URL (https://vendora-backend.onrender.com) and set it
+#   3. Copy the backend URL (https://mizan-backend.onrender.com) and set it
 #      as the GitHub Actions variable PAGES_API_URL = <that-url> (no trailing /).
 #   4. The Deploy to GitHub Pages workflow will build against it.
 
 databases:
-  - name: vendora-db
+  - name: mizan-db
     plan: free
     databaseName: inventory_db
     user: postgres
 
 services:
   - type: web
-    name: vendora-backend
+    name: mizan-backend
     runtime: docker
-    repo: https://github.com/ammar0xff/Vendora.git
+    repo: https://github.com/ammar0xff/Mizan.git
     branch: master
     dockerfilePath: backend/Dockerfile
     autoDeploy: true
@@ -29,7 +29,7 @@ services:
     envVars:
       - key: DATABASE_URL
         fromDatabase:
-          name: vendora-db
+          name: mizan-db
           property: connectionString
       - key: SECRET_KEY
         sync: false

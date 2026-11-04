@@ -1,6 +1,6 @@
 {
   "version": "2.0.0",
-  "engine_name": "Vendora Print Management Engine",
+  "engine_name": "Mizan Print Management Engine",
   "default_currency": "ج.م",
   "default_locale": "ar-EG",
   "paper_profiles": {

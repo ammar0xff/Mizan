@@ -1,9 +1,9 @@
-# Koyeb declarative deploy for the Vendora backend (free tier).
+# Koyeb declarative deploy for the Mizan backend (free tier).
 # Docs: https://www.koyeb.com/docs/reference/configuration
 #
 # Usage:
 #   koyeb app create
-#   koyeb service create vendora-backend --app vendora --git github.com/ammar0xff/Vendora \
+#   koyeb service create mizan-backend --app mizan --git github.com/ammar0xff/Mizan \
 #     --git-branch master --dockerfile ./backend/Dockerfile --port 8000
 #
 # or via dashboard: Create Web Service -> Git -> repo -> Dockerfile -> backend/Dockerfile, port 8000.
@@ -15,12 +15,12 @@
 #   APP_ENV        = production
 
 app:
-  name: vendora
+  name: mizan
 
 services:
-  - name: vendora-backend
+  - name: mizan-backend
     git:
-      repository: ammar0xff/Vendora
+      repository: ammar0xff/Mizan
       branch: master
     dockerfile: backend/Dockerfile
     instance_type: nano          # free tier: 0.1 vCPU / 512 MB

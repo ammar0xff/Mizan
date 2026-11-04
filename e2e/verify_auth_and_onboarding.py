@@ -14,7 +14,7 @@ def test_login_and_onboarding():
 
         # 1. Test Login Page
         print("Navigating to login page...")
-        page.goto("http://localhost:5173/Vendora/login")
+        page.goto("http://localhost:5173/Mizan/login")
         page.wait_for_selector("input#u", timeout=10000)
         time.sleep(1)
 
@@ -40,7 +40,7 @@ def test_login_and_onboarding():
 
         # 3. Test Signup -> Onboarding
         print("Navigating to signup page...")
-        page.goto("http://localhost:5173/Vendora/signup")
+        page.goto("http://localhost:5173/Mizan/signup")
         page.wait_for_selector("input#fn", timeout=10000)
         time.sleep(0.5)
 
@@ -84,7 +84,7 @@ def test_login_and_onboarding():
         page.click("button:has-text('أنشئ مساحة عملي الآن')")
 
         # Wait for redirect to dashboard
-        page.wait_for_url("**/Vendora/", timeout=20000)
+        page.wait_for_url("**/Mizan/", timeout=20000)
         time.sleep(3)
 
         theme_attr = page.evaluate("document.documentElement.getAttribute('data-theme')")

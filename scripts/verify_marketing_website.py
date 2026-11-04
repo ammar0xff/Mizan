@@ -16,7 +16,7 @@ async def main():
 
         # 1. Landing Page
         print("Navigating to Landing Page...")
-        await page.goto("http://localhost:5173/Vendora/", wait_until="networkidle")
+        await page.goto("http://localhost:5173/Mizan/", wait_until="networkidle")
         await page.wait_for_timeout(1500)
         await page.screenshot(path=f"{SCREENSHOTS_DIR}/219_mizan_marketing_hero_and_showcase.png")
         print("Captured 219_mizan_marketing_hero_and_showcase.png")
@@ -34,63 +34,63 @@ async def main():
 
         # 2. Product Page
         print("Navigating to Product Page...")
-        await page.goto("http://localhost:5173/Vendora/product", wait_until="networkidle")
+        await page.goto("http://localhost:5173/Mizan/product", wait_until="networkidle")
         await page.wait_for_timeout(1000)
         await page.screenshot(path=f"{SCREENSHOTS_DIR}/221_mizan_marketing_product_architecture.png")
         print("Captured 221_mizan_marketing_product_architecture.png")
 
         # 3. Features Page
         print("Navigating to Features Page...")
-        await page.goto("http://localhost:5173/Vendora/features", wait_until="networkidle")
+        await page.goto("http://localhost:5173/Mizan/features", wait_until="networkidle")
         await page.wait_for_timeout(1000)
         await page.screenshot(path=f"{SCREENSHOTS_DIR}/222_mizan_marketing_features_catalog.png")
         print("Captured 222_mizan_marketing_features_catalog.png")
 
         # 4. Industries Page
         print("Navigating to Industries Page...")
-        await page.goto("http://localhost:5173/Vendora/industries", wait_until="networkidle")
+        await page.goto("http://localhost:5173/Mizan/industries", wait_until="networkidle")
         await page.wait_for_timeout(1000)
         await page.screenshot(path=f"{SCREENSHOTS_DIR}/223_mizan_marketing_industries_verticals.png")
         print("Captured 223_mizan_marketing_industries_verticals.png")
 
         # 5. Pricing Page
         print("Navigating to Pricing Page...")
-        await page.goto("http://localhost:5173/Vendora/pricing", wait_until="networkidle")
+        await page.goto("http://localhost:5173/Mizan/pricing", wait_until="networkidle")
         await page.wait_for_timeout(1000)
         await page.screenshot(path=f"{SCREENSHOTS_DIR}/224_mizan_marketing_pricing_plans.png")
         print("Captured 224_mizan_marketing_pricing_plans.png")
 
         # 6. Docs Portal Homepage
         print("Navigating to Docs Portal...")
-        await page.goto("http://localhost:5173/Vendora/docs", wait_until="networkidle")
+        await page.goto("http://localhost:5173/Mizan/docs", wait_until="networkidle")
         await page.wait_for_timeout(1000)
         await page.screenshot(path=f"{SCREENSHOTS_DIR}/225_mizan_docs_portal_home.png")
         print("Captured 225_mizan_docs_portal_home.png")
 
         # 7. Docs Article Page (Introduction)
         print("Navigating to Docs Article (introduction)...")
-        await page.goto("http://localhost:5173/Vendora/docs/introduction", wait_until="networkidle")
+        await page.goto("http://localhost:5173/Mizan/docs/introduction", wait_until="networkidle")
         await page.wait_for_timeout(1000)
         await page.screenshot(path=f"{SCREENSHOTS_DIR}/226_mizan_docs_article_introduction.png")
         print("Captured 226_mizan_docs_article_introduction.png")
 
         # 8. Blog Index
         print("Navigating to Blog Page...")
-        await page.goto("http://localhost:5173/Vendora/blog", wait_until="networkidle")
+        await page.goto("http://localhost:5173/Mizan/blog", wait_until="networkidle")
         await page.wait_for_timeout(1000)
         await page.screenshot(path=f"{SCREENSHOTS_DIR}/227_mizan_blog_index.png")
         print("Captured 227_mizan_blog_index.png")
 
         # 9. Blog Post Page
         print("Navigating to Blog Article (postgresql-rls-multi-tenancy)...")
-        await page.goto("http://localhost:5173/Vendora/blog/postgresql-rls-multi-tenancy", wait_until="networkidle")
+        await page.goto("http://localhost:5173/Mizan/blog/postgresql-rls-multi-tenancy", wait_until="networkidle")
         await page.wait_for_timeout(1000)
         await page.screenshot(path=f"{SCREENSHOTS_DIR}/228_mizan_blog_article_rls.png")
         print("Captured 228_mizan_blog_article_rls.png")
 
         # 10. Contact Page
         print("Navigating to Contact Page...")
-        await page.goto("http://localhost:5173/Vendora/contact", wait_until="networkidle")
+        await page.goto("http://localhost:5173/Mizan/contact", wait_until="networkidle")
         await page.wait_for_timeout(1000)
         await page.screenshot(path=f"{SCREENSHOTS_DIR}/229_mizan_marketing_contact_demo.png")
         print("Captured 229_mizan_marketing_contact_demo.png")

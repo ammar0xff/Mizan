@@ -5,7 +5,7 @@ from playwright.async_api import async_playwright
 SCREENSHOTS_DIR = "/home/ammar/.gemini/antigravity/brain/6d5afa1e-9da9-4298-949d-64f04df6ec73/audit_screens"
 os.makedirs(SCREENSHOTS_DIR, exist_ok=True)
 
-BASE_URL = "http://localhost:5173/Vendora"
+BASE_URL = "http://localhost:5173/Mizan"
 
 async def run():
     async with async_playwright() as p:

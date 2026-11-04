@@ -1,10 +1,10 @@
-# Vendora Modular ERP — Software Requirements Specification (SRS)
+# Mizan Modular ERP — Software Requirements Specification (SRS)
 ## Section 01: Shared ERP Core Platform Specification
 
 ---
 
 ### Scope
-This document specifies the formal software requirements for the foundational layer of Vendora ERP. All 30 industry packages inherit and build directly upon these shared capabilities.
+This document specifies the formal software requirements for the foundational layer of Mizan ERP. All 30 industry packages inherit and build directly upon these shared capabilities.
 
 ---
 

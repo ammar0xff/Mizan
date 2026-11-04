@@ -277,7 +277,7 @@ export default function AdmoonLayout() {
                   Control Plane
                 </span>
               </div>
-              <p className="text-[10px] text-muted-foreground">Vendora Multi-Tenant SaaS Master</p>
+              <p className="text-[10px] text-muted-foreground">Mizan Multi-Tenant SaaS Master</p>
             </div>
           </Link>
 

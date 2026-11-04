@@ -1,4 +1,4 @@
-"""One-shot remediation for the Vercel/Neon Vendora database.
+"""One-shot remediation for the Vercel/Neon Mizan database.
 
 Brings a database that lived through the pre-refactor era (and accumulated e2e
 test pollution) to the current production state:
@@ -149,7 +149,7 @@ def main():
     url = sys.argv[1]
     apply = "--apply" in sys.argv
     mode = "APPLY" if apply else "DRY RUN"
-    print(f"═══ Vendora remote remediation — {mode} ═══")
+    print(f"═══ Mizan remote remediation — {mode} ═══")
 
     if apply:
         backup(url)

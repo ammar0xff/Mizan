@@ -188,7 +188,7 @@ export default function ModulesPage() {
         <div>
           <div className="flex items-center gap-2 text-xs font-semibold text-primary">
             <Blocks className="size-4" />
-            <span>نظام الوحدات المرن (Vendora Modular App Engine)</span>
+            <span>نظام الوحدات المرن (Mizan Modular App Engine)</span>
           </div>
           <h1 className="mt-1 flex items-center gap-2.5 text-2xl font-black tracking-tight text-foreground">
             سوق الإضافات وحزم الأنشطة

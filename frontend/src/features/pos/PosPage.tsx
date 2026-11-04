@@ -53,7 +53,8 @@ interface SplitPart { method: string; amount: string; wallet_id: string }
 interface SaleResult { id: string; invoice_number: string }
 interface HeldBill { id: string; cart: CartItem[]; mode: "retail" | "wholesale"; at: string }
 
-const HELD_KEY = "vendora.held_bills";
+const HELD_KEY = "mizan.held_bills";
+const LEGACY_HELD_KEY = "vendora.held_bills";
 
 function buildSaleBody(args: {
   warehouseId: string; shiftId: string | null; mode: "retail" | "wholesale";
@@ -104,7 +105,7 @@ export default function PosPage() {
   const [walletId, setWalletId] = useState("");
   const [saleDone, setSaleDone] = useState<SaleResult | null>(null);
   const [held, setHeld] = useState<HeldBill[]>(() => {
-    try { return JSON.parse(localStorage.getItem(HELD_KEY) ?? "[]"); } catch { return []; }
+    try { return JSON.parse(localStorage.getItem(HELD_KEY) ?? localStorage.getItem(LEGACY_HELD_KEY) ?? "[]"); } catch { return []; }
   });
   const [resumeOpen, setResumeOpen] = useState(false);
   const [openShiftFor, setOpenShiftFor] = useState<Warehouse | null>(null);

@@ -6,7 +6,7 @@ from playwright.sync_api import sync_playwright
 SCREENSHOTS_DIR = "/home/ammar/.gemini/antigravity/brain/6d5afa1e-9da9-4298-949d-64f04df6ec73/audit_screens"
 os.makedirs(SCREENSHOTS_DIR, exist_ok=True)
 
-BASE_URL = "http://localhost:5173/Vendora"
+BASE_URL = "http://localhost:5173/Mizan"
 
 def run_verification():
     with sync_playwright() as p:
@@ -17,13 +17,13 @@ def run_verification():
         )
         page = context.new_page()
 
-        print("1. Loading official Vendora Landing Page...")
+        print("1. Loading official Mizan Landing Page...")
         page.goto(f"{BASE_URL}/", wait_until="networkidle")
-        page.wait_for_selector("text=Vendora ERP")
+        page.wait_for_selector("text=Mizan ERP")
         page.wait_for_timeout(1000)
         
         # Verify branding and key elements
-        assert page.locator("text=Vendora ERP").count() > 0, "Missing Vendora ERP header"
+        assert page.locator("text=Mizan ERP").count() > 0, "Missing Mizan ERP header"
         assert page.locator("text=منظومة ERP متعددة المستأجرين").count() > 0, "Missing multi-tenant badge"
         assert page.locator("text=14+").count() > 0, "Missing 14+ modules metric"
         assert page.locator("text=monset-gym").count() > 0, "Missing demo slug button"
@@ -57,7 +57,7 @@ def run_verification():
         print("4. Testing Thermal Receipt & Printing Engine...")
         page.locator("#printing").scroll_into_view_if_needed()
         page.wait_for_timeout(600)
-        assert page.locator("text=VENDORA ERP · فندق ومطعم الواحة").count() > 0, "Missing thermal invoice text"
+        assert page.locator("text=MIZAN ERP · فندق ومطعم الواحة").count() > 0, "Missing thermal invoice text"
         page.screenshot(path=f"{SCREENSHOTS_DIR}/73_official_landing_printing_engine.png", full_page=False)
         print("  -> Saved 73_official_landing_printing_engine.png")
 

@@ -203,7 +203,7 @@ export default function AdmoonDashboard() {
       }
 
       toast.success(`تم الدخول بنجاح كمدير لمنشأة "${tenant.name}"`);
-      window.location.href = "/Vendora/";
+      window.location.href = import.meta.env.BASE_URL ?? "/";
     } catch (err) {
       toast.error(err instanceof ApiError ? err.message : "تعذر الدخول كمدير المنشأة");
     }
