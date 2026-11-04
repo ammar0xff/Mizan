@@ -186,6 +186,7 @@ export default function LoginPage(props: LoginPageProps = {}) {
                   onChange={(e) => setUsername(e.target.value)}
                   required
                   autoFocus
+                  autoComplete="username"
                   placeholder={isAr ? "اسم المستخدم (مثال: admin)" : "Username (e.g. admin)"}
                   className="w-full rounded-xl border border-[#DECFC0] bg-[#FAF6F0] py-2.5 ps-10 pe-3 text-sm text-[#262321] placeholder:text-[#77716E]/70 focus:border-[#651E2C] focus:bg-[#FFFFFF] focus:outline-none transition-colors"
                 />
@@ -213,6 +214,7 @@ export default function LoginPage(props: LoginPageProps = {}) {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  autoComplete="current-password"
                   placeholder="••••••••"
                   className="w-full rounded-xl border border-[#DECFC0] bg-[#FAF6F0] py-2.5 ps-10 pe-10 text-sm text-[#262321] placeholder:text-[#77716E]/70 focus:border-[#651E2C] focus:bg-[#FFFFFF] focus:outline-none transition-colors"
                 />

@@ -171,6 +171,7 @@ export default function SignupPage() {
                   onChange={(e) => setFullName(e.target.value)}
                   required
                   autoFocus
+                  autoComplete="name"
                   placeholder={isAr ? "مثال: م. أحمد كمال" : "e.g. John Doe"}
                   className="w-full rounded-xl border border-[#DECFC0] bg-[#FAF6F0] py-2.5 ps-10 pe-3 text-sm text-[#262321] placeholder:text-[#77716E]/70 focus:border-[#651E2C] focus:bg-[#FFFFFF] focus:outline-none transition-colors"
                 />
@@ -189,6 +190,7 @@ export default function SignupPage() {
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   required
+                  autoComplete="username"
                   placeholder={isAr ? "مثال: mizan_admin" : "e.g. mizan_admin"}
                   className="w-full rounded-xl border border-[#DECFC0] bg-[#FAF6F0] py-2.5 ps-10 pe-3 text-sm text-[#262321] placeholder:text-[#77716E]/70 focus:border-[#651E2C] focus:bg-[#FFFFFF] focus:outline-none transition-colors font-mono"
                 />
@@ -208,6 +210,7 @@ export default function SignupPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   minLength={6}
+                  autoComplete="new-password"
                   placeholder="••••••••"
                   className="w-full rounded-xl border border-[#DECFC0] bg-[#FAF6F0] py-2.5 ps-10 pe-3 text-sm text-[#262321] placeholder:text-[#77716E]/70 focus:border-[#651E2C] focus:bg-[#FFFFFF] focus:outline-none transition-colors"
                 />

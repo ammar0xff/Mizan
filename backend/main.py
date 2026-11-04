@@ -127,6 +127,10 @@ async def log_validation_error(request: Request, exc: RequestValidationError):
     return JSONResponse(status_code=422, content={"detail": safe_errors})
 
 
+# Add CSRF protection middleware (inner)
+add_csrf_middleware(app)
+
+# Add CORS middleware (outermost — guarantees headers on all responses, including errors)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS,
@@ -134,9 +138,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Add CSRF protection middleware
-add_csrf_middleware(app)
 
 def _resolve_writable_dir(path: str) -> str:
     """Return the path if writable, else a writable mirror under /tmp."""

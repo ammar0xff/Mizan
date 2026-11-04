@@ -1314,6 +1314,23 @@ MIGRATIONS = [
         END
         $fn$;
     """),
+
+    # v33 — tenant routing, multi-tenancy columns, and user superadmin
+    ("v33_tenant_routing_and_superadmin", """
+        ALTER TABLE tenants ADD COLUMN IF NOT EXISTS slug varchar(64);
+        ALTER TABLE tenants ADD COLUMN IF NOT EXISTS custom_domain varchar(128);
+        ALTER TABLE tenants ADD COLUMN IF NOT EXISTS status varchar(32) NOT NULL DEFAULT 'active';
+        ALTER TABLE tenants ADD COLUMN IF NOT EXISTS deployment_mode varchar(32) NOT NULL DEFAULT 'cloud_saas';
+        ALTER TABLE tenants ADD COLUMN IF NOT EXISTS business_type varchar(64) NOT NULL DEFAULT 'retail';
+        ALTER TABLE tenants ADD COLUMN IF NOT EXISTS tech_stack jsonb NOT NULL DEFAULT '{}'::jsonb;
+        ALTER TABLE tenants ADD COLUMN IF NOT EXISTS active_modules jsonb NOT NULL DEFAULT '[]'::jsonb;
+        ALTER TABLE tenants ADD COLUMN IF NOT EXISTS limits jsonb NOT NULL DEFAULT '{}'::jsonb;
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_tenants_slug ON tenants(slug);
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_tenants_custom_domain ON tenants(custom_domain);
+
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS is_superadmin boolean NOT NULL DEFAULT false;
+        ALTER TABLE payroll_periods ADD COLUMN IF NOT EXISTS tenant_id uuid;
+    """),
 ]
 
 def ensure_foundation():
