@@ -4,7 +4,23 @@ import tailwindcss from "@tailwindcss/vite";
 import { fileURLToPath } from "node:url";
 
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [
+    react(),
+    tailwindcss(),
+    {
+      name: "redirect-vendora-slash",
+      configureServer(server) {
+        server.middlewares.use((req, res, next) => {
+          if (req.url === "/Vendora") {
+            res.writeHead(301, { Location: "/Vendora/" });
+            res.end();
+            return;
+          }
+          next();
+        });
+      },
+    },
+  ],
   base: process.env.VITE_BASE ?? "/Vendora/",
   resolve: {
     alias: {
