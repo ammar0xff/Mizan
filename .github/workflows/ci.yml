@@ -71,6 +71,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Create dummy firebase credentials
+        run: echo "{}" > firebase-service-account.json
+
       - name: Start stack (db + backend)
         run: docker compose up -d --build
 
@@ -112,6 +115,10 @@ jobs:
         run: |
           pip install -q -r requirements.txt -r requirements-dev.txt
           python -m pytest tests/ -q --no-header
+
+      - name: Debug container logs on failure
+        if: failure()
+        run: docker compose logs
 
   ci-manage:
     name: Manage script check
