@@ -21,7 +21,7 @@ export default defineConfig({
       },
     },
   ],
-  base: process.env.VITE_BASE ?? "/Vendora/",
+  base: process.env.VITE_BASE ?? (process.env.VERCEL ? "/" : "/Vendora/"),
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),
