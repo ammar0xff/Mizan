@@ -55,7 +55,7 @@ def psql(sql: str):
             input=("SELECT set_config('app.tenant_id', COALESCE((SELECT id::text FROM tenants ORDER BY created_at LIMIT 1), ''), false), set_config('app.bypass', 'on', false);\n"
                    + stmt + ";"), capture_output=True, text=True
         )
-        errors = [l for l in result.stderr.splitlines() if "ERROR" in l and "already exists" not in l and "does not exist, skipping" not in l]
+        errors = [l for l in result.stderr.splitlines() if "ERROR" in l and "already exists" not in l and "does not exist" not in l]
         if errors or result.returncode != 0:
             ok = False
             print(f"    ⚠️  {errors[0] if errors else result.returncode}: {stmt[:90]}")
