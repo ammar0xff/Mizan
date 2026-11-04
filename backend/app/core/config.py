@@ -18,6 +18,9 @@ class Settings(BaseSettings):
         "https://ammar0xff.github.io",
         "https://mizan-app-liart.vercel.app",
     ]
+    CORS_ORIGIN_REGEX: str = (
+        r"^https:\/\/(mizan(-app)?(-[a-z0-9]+)?-ammar0xfs-projects\.vercel\.app|mizan-app-liart\.vercel\.app|ammar0xff\.github\.io)$"
+    )
     IS_PRODUCTION: bool = False
     # ⚠️ CORS_ORIGINS must NOT contain wildcard ("*") when credentials are enabled
 

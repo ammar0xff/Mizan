@@ -48,7 +48,9 @@ async function request<T>(
     if (csrf) headers["X-CSRF-Token"] = decodeURIComponent(csrf);
   }
 
-  const url = new URL(RAW_BASE + path, window.location.origin);
+  const base = RAW_BASE.replace(/\/+$/, "");
+  const cleanPath = path.startsWith("/") ? path : `/${path}`;
+  const url = new URL(base + cleanPath, window.location.origin);
   for (const [k, v] of Object.entries(opts.query ?? {})) {
     if (v !== undefined && v !== "") url.searchParams.set(k, String(v));
   }

@@ -101,10 +101,14 @@ install_tenancy_events()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-        # Ensure safe_deposit exists in the doc_type_enum (added after initial creation)
-        await conn.execute(text("ALTER TYPE doc_type_enum ADD VALUE IF NOT EXISTS 'safe_deposit'"))
+    if not os.environ.get("VERCEL"):
+        try:
+            async with engine.begin() as conn:
+                await conn.run_sync(Base.metadata.create_all)
+                # Ensure safe_deposit exists in the doc_type_enum (added after initial creation)
+                await conn.execute(text("ALTER TYPE doc_type_enum ADD VALUE IF NOT EXISTS 'safe_deposit'"))
+        except Exception as e:
+            logging.getLogger("startup").warning("Lifespan DB initialization notice: %s", e)
     yield
 
 
@@ -134,10 +138,21 @@ add_csrf_middleware(app)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS,
+    allow_origin_regex=settings.CORS_ORIGIN_REGEX,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "SAMEORIGIN"
+    if settings.is_production:
+        response.headers["Strict-Transport-Security"] = "max-age=63072000; includeSubDomains; preload"
+    return response
 
 def _resolve_writable_dir(path: str) -> str:
     """Return the path if writable, else a writable mirror under /tmp."""

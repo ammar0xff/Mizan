@@ -31,7 +31,16 @@ def _async_engine_settings(url: str) -> tuple[str, dict]:
 
 _async_url, _connect_args = _async_engine_settings(_async_url(settings.DATABASE_URL))
 _connect_args.setdefault("server_settings", {})["search_path"] = "public"
-engine = create_async_engine(_async_url, connect_args=_connect_args, echo=False, pool_pre_ping=True)
+engine = create_async_engine(
+    _async_url,
+    connect_args=_connect_args,
+    echo=False,
+    pool_pre_ping=True,
+    pool_size=5,
+    max_overflow=5,
+    pool_recycle=300,
+    pool_timeout=15,
+)
 AsyncSessionLocal = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
 
 
