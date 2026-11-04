@@ -25,8 +25,13 @@ export default function TenantScopeLayout() {
     return <Navigate to={`/${tenantSlug}`} replace />;
   }
 
+  // If slug is missing or literal 'undefined'/'null', redirect to home
+  if (!tenantSlug || tenantSlug === "undefined" || tenantSlug === "null") {
+    return <Navigate to="/" replace />;
+  }
+
   useEffect(() => {
-    if (!tenantSlug) {
+    if (!tenantSlug || tenantSlug === "undefined" || tenantSlug === "null") {
       setLoading(false);
       return;
     }

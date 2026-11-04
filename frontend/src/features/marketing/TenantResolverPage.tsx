@@ -14,9 +14,8 @@ export default function TenantResolverPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!tenantSlug) {
-      setError("الرابط التعريفي للمنشأة غير محدد");
-      setLoading(false);
+    if (!tenantSlug || tenantSlug === "undefined" || tenantSlug === "null") {
+      navigate("/", { replace: true });
       return;
     }
 

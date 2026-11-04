@@ -112,6 +112,11 @@ async def resolve_tenant_slug(slug_or_domain: str, db: AsyncSession = Depends(ge
     Returns basic company routing profile, active modules, and palette for client app bootstrap.
     """
     clean_identifier = slug_or_domain.strip().lower()
+    if not clean_identifier or clean_identifier in ("undefined", "null", "none"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="المعرف المطلوب غير صالح",
+        )
     stmt = select(Tenant).where(
         (func.lower(Tenant.slug) == clean_identifier)
         | (func.lower(Tenant.custom_domain) == clean_identifier)

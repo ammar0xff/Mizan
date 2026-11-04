@@ -88,7 +88,13 @@ export default function OnboardingWizard() {
       useAuth.getState().setTenant(r.tenant);
       sessionStorage.removeItem("mizan.owner");
       sessionStorage.removeItem("vendora.owner");
-      nav("/", { replace: true });
+
+      const targetSlug = r.tenant?.slug;
+      if (targetSlug && targetSlug !== "undefined" && targetSlug !== "null") {
+        nav(`/c/${targetSlug}/pos`, { replace: true });
+      } else {
+        nav("/pos", { replace: true });
+      }
     } catch (err) {
       if (err instanceof ApiError && err.status === 409) {
         setError("اسم المستخدم محجوز — ارجع للخطوة السابقة واختر اسمًا آخر.");

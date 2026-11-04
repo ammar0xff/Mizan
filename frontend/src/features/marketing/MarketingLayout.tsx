@@ -41,7 +41,7 @@ export function MarketingLayout({ children }: MarketingLayoutProps) {
   }, [location.pathname]);
 
   const isAr = locale === "ar";
-  const appDestination = tenant ? `/c/${tenant.slug}` : "/pos";
+  const appDestination = (tenant?.slug && tenant.slug !== "undefined" && tenant.slug !== "null") ? `/c/${tenant.slug}` : "/pos";
 
   // Navigation Links matching Image 1 (EN) and Image 2 (AR)
   const navLinksEn = [

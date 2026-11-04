@@ -96,13 +96,13 @@ export function parseTenantFromLocation(
   }
 
   // Pattern A: /c/:tenantSlug/*
-  if (segments[0] === "c" && segments[1]) {
+  if (segments[0] === "c" && segments[1] && segments[1] !== "undefined" && segments[1] !== "null") {
     const slug = segments[1];
     return { slug, root: `/c/${slug}`, isSubdomain: false };
   }
 
   // Pattern B: /:tenantSlug/* (where first segment is not a reserved SaaS path)
-  if (!RESERVED_ROOT_PATHS.has(segments[0])) {
+  if (!RESERVED_ROOT_PATHS.has(segments[0]) && segments[0] !== "undefined" && segments[0] !== "null") {
     const slug = segments[0];
     return { slug, root: `/${slug}`, isSubdomain: false };
   }
@@ -118,13 +118,14 @@ export function useTenantNav() {
   const authTenant = useAuth((s) => s.tenant);
 
   const parsed = parseTenantFromLocation(location.pathname);
-  const tenantSlug = parsed.slug || authTenant?.slug || null;
+  const validAuthSlug = authTenant?.slug && authTenant.slug !== "undefined" && authTenant.slug !== "null" ? authTenant.slug : null;
+  const tenantSlug = parsed.slug || validAuthSlug || null;
 
   // If the URL already has a prefix (/c/monset-gym or /monset-gym), use it.
   // Otherwise if authenticated with a tenant slug and not on subdomain, default to /c/:slug.
   let tenantRoot = parsed.root;
-  if (!tenantRoot && !parsed.isSubdomain && authTenant?.slug && location.pathname !== "/admoon") {
-    tenantRoot = `/c/${authTenant.slug}`;
+  if (!tenantRoot && !parsed.isSubdomain && validAuthSlug && location.pathname !== "/admoon") {
+    tenantRoot = `/c/${validAuthSlug}`;
   }
 
   /**

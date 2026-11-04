@@ -5,6 +5,8 @@ a workspace tenant is created with a tailored demo dataset → they run on
 a trial; the banner routes them to pricing where a subscription request
 is recorded until payment integration lands.
 """
+import re
+import unicodedata
 import uuid
 from datetime import UTC, datetime, timedelta
 
@@ -103,14 +105,34 @@ async def signup(data: SignupRequest, request: Request, db: AsyncSession = Depen
     if existing.scalar():
         raise HTTPException(status_code=409, detail="اسم المستخدم محجوز — اختر اسمًا آخر")
 
+    # Generate a unique URL slug for the tenant
+    normalized = unicodedata.normalize("NFKD", data.company_name).encode("ascii", "ignore").decode("ascii").lower()
+    cleaned = re.sub(r"[^a-z0-9]+", "-", normalized).strip("-")
+    candidate = cleaned[:32] if cleaned and len(cleaned) >= 3 else f"tenant-{uuid.uuid4().hex[:6]}"
+
+    base_candidate = candidate
+    suffix_counter = 1
+    while True:
+        exists = (await db.execute(select(Tenant.id).where(Tenant.slug == candidate))).scalar_one_or_none()
+        if not exists:
+            break
+        candidate = f"{base_candidate}-{suffix_counter}"
+        suffix_counter += 1
+
+    tenant_slug = candidate
     hue = PALETTE_HUES.get(data.palette, 250)
     tenant = Tenant(
         id=uuid.uuid4(),
         name=data.company_name.strip(),
+        slug=tenant_slug,
         sector=data.sector,
         scale=data.scale,
         palette={"name": data.palette, "hue": hue},
         features=data.features,
+        active_modules=data.features if data.features else ["pos", "inventory"],
+        status="active",
+        deployment_mode="cloud_saas",
+        business_type="retail",
         plan="trial",
         trial_ends_at=datetime.now(UTC) + timedelta(days=TRIAL_DAYS),
     )
@@ -144,9 +166,15 @@ async def signup(data: SignupRequest, request: Request, db: AsyncSession = Depen
     ).model_dump()
     from fastapi.responses import JSONResponse
     resp = JSONResponse(content={**body, "tenant": {
-        "id": str(tenant.id), "name": tenant.name, "plan": tenant.plan,
-        "trial_ends_at": tenant.trial_ends_at.isoformat(), "palette": tenant.palette,
+        "id": str(tenant.id),
+        "name": tenant.name,
+        "slug": tenant.slug,
+        "sector": tenant.sector,
+        "plan": tenant.plan,
+        "trial_ends_at": tenant.trial_ends_at.isoformat(),
+        "palette": tenant.palette,
         "features": tenant.features,
+        "active_modules": tenant.active_modules,
     }})
     resp.set_cookie(
         key="access_token", value=token["access_token"],

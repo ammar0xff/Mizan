@@ -44,7 +44,8 @@ export default function LoginPage(props: LoginPageProps = {}) {
 
   const authTenant = useAuth((s) => s.tenant);
   const currentTenant = props.tenant || authTenant;
-  const targetSlug = props.tenantSlug || currentTenant?.slug;
+  const rawSlug = props.tenantSlug || currentTenant?.slug;
+  const targetSlug = rawSlug && rawSlug !== "undefined" && rawSlug !== "null" ? rawSlug : undefined;
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();

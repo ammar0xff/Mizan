@@ -62,6 +62,9 @@ async def me(current_user: User = Depends(get_current_user), db: AsyncSession = 
     if user.tenant_id:
         t = await db.get(Tenant, user.tenant_id)
         if t:
+            if not t.slug:
+                t.slug = f"tenant-{str(t.id)[:8]}"
+                await db.commit()
             tenant_info = {
                 "id": str(t.id),
                 "name": t.name,
