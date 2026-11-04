@@ -11,6 +11,8 @@ import { Button } from "@/components/kit/button";
 import { MarketingLayout } from "./MarketingLayout";
 import { useTranslation } from "@/i18n";
 import { assetUrl } from "@/lib/utils";
+import { motion } from "motion/react";
+import { MizanMagnetic } from "@/components/motion/MizanMagnetic";
 
 export default function AboutPage() {
   const { locale } = useTranslation();
@@ -119,24 +121,28 @@ export default function AboutPage() {
               </p>
 
               <div className="pt-2 flex flex-wrap gap-4">
-                <Button
-                  nativeButton={false}
-                  render={<Link to="/signup" />}
-                  size="lg"
-                  className="rounded-xl bg-[#651E2C] px-7 py-3.5 text-xs font-bold text-white shadow-md hover:bg-[#521723]"
-                >
-                  <span>{isAr ? "انضم إلينا اليوم" : "Join Us Today"}</span>
-                  <ArrowIcon className="size-4 ms-2" />
-                </Button>
-                <Button
-                  nativeButton={false}
-                  render={<Link to="/contact" />}
-                  variant="outline"
-                  size="lg"
-                  className="rounded-xl border-[#E7D6C1] bg-white px-7 py-3.5 text-xs font-bold text-[#262321] hover:bg-[#FAF6F0] shadow-xs"
-                >
-                  <span>{isAr ? "تواصل مع فريقنا" : "Contact Our Team"}</span>
-                </Button>
+                <MizanMagnetic>
+                  <Button
+                    nativeButton={false}
+                    render={<Link to="/signup" />}
+                    size="lg"
+                    className="rounded-xl bg-[#651E2C] px-7 py-3.5 text-xs font-bold text-white shadow-md hover:bg-[#521723]"
+                  >
+                    <span>{isAr ? "انضم إلينا اليوم" : "Join Us Today"}</span>
+                    <ArrowIcon className="size-4 ms-2" />
+                  </Button>
+                </MizanMagnetic>
+                <MizanMagnetic>
+                  <Button
+                    nativeButton={false}
+                    render={<Link to="/contact" />}
+                    variant="outline"
+                    size="lg"
+                    className="rounded-xl border-[#E7D6C1] bg-white px-7 py-3.5 text-xs font-bold text-[#262321] hover:bg-[#FAF6F0] shadow-xs"
+                  >
+                    <span>{isAr ? "تواصل مع فريقنا" : "Contact Our Team"}</span>
+                  </Button>
+                </MizanMagnetic>
               </div>
             </div>
           </div>
@@ -146,8 +152,10 @@ export default function AboutPage() {
             {pillars.map((pil, idx) => {
               const Icon = pil.icon;
               return (
-                <div
+                <motion.div
                   key={idx}
+                  whileHover={{ y: -6 }}
+                  transition={{ duration: 0.25, ease: "easeOut" }}
                   className="flex flex-col items-center text-center space-y-4 rounded-3xl border border-[#E7D6C1] bg-white/70 p-8 shadow-xs hover:bg-white hover:shadow-md transition-all"
                 >
                   <div className="flex size-16 items-center justify-center rounded-full bg-[#F5EBDD] border border-[#E7D6C1] text-[#651E2C] shadow-xs">
@@ -161,7 +169,7 @@ export default function AboutPage() {
                   <p className="text-xs sm:text-sm text-[#77716E] leading-relaxed max-w-xs">
                     {isAr ? pil.descAr : pil.descEn}
                   </p>
-                </div>
+                </motion.div>
               );
             })}
           </div>
@@ -181,9 +189,11 @@ export default function AboutPage() {
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
               {teamMembers.map((member, idx) => (
-                <div
+                <motion.div
                   key={idx}
-                  className="flex flex-col items-center text-center space-y-3 group"
+                  whileHover={{ y: -4 }}
+                  transition={{ duration: 0.2 }}
+                  className="flex flex-col items-center text-center space-y-3 group cursor-default"
                 >
                   <div className="size-24 rounded-full overflow-hidden border-2 border-[#E7D6C1] shadow-md group-hover:border-[#651E2C] group-hover:scale-105 transition-all p-1 bg-white">
                     <img
@@ -200,7 +210,7 @@ export default function AboutPage() {
                       {isAr ? member.roleAr : member.roleEn}
                     </p>
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
           </div>

@@ -20,6 +20,8 @@ import { Button } from "@/components/kit/button";
 import { MarketingLayout } from "./MarketingLayout";
 import { MizanDashboardHeroMockup } from "./components/MizanDashboardHeroMockup";
 import { BuildingMaterialsPosDemo } from "./components/BuildingMaterialsPosDemo";
+import { MizanScrollStory } from "./components/MizanScrollStory";
+import { MizanMagnetic } from "@/components/motion/MizanMagnetic";
 import { PLANS } from "./plans";
 import { useTranslation } from "@/i18n";
 import { assetUrl } from "@/lib/utils";
@@ -187,27 +189,31 @@ export default function LandingPage() {
 
                 {/* CTAs matching mockup */}
                 <div className="flex flex-wrap items-center gap-4 pt-2">
-                  <Button
-                    size="lg"
-                    className="bg-[#651E2C] text-[#FAF6F0] hover:bg-[#521723] rounded-full px-7 py-3.5 text-sm sm:text-base font-medium shadow-lg hover:shadow-xl hover:scale-105 transition-all"
-                    render={<Link to="/signup" />}
-                    nativeButton={false}
-                  >
-                    <span>{isAr ? "اكتشف ميزان" : "Start Free Trial"}</span>
-                    {isAr ? (
-                      <ArrowLeft className="h-4 w-4 ms-2" />
-                    ) : (
-                      <ArrowRight className="h-4 w-4 ms-2" />
-                    )}
-                  </Button>
+                  <MizanMagnetic>
+                    <Button
+                      size="lg"
+                      className="bg-[#651E2C] text-[#FAF6F0] hover:bg-[#521723] rounded-full px-7 py-3.5 text-sm sm:text-base font-medium shadow-lg hover:shadow-xl hover:scale-105 transition-all"
+                      render={<Link to="/signup" />}
+                      nativeButton={false}
+                    >
+                      <span>{isAr ? "اكتشف ميزان" : "Start Free Trial"}</span>
+                      {isAr ? (
+                        <ArrowLeft className="h-4 w-4 ms-2" />
+                      ) : (
+                        <ArrowRight className="h-4 w-4 ms-2" />
+                      )}
+                    </Button>
+                  </MizanMagnetic>
 
-                  <a
-                    href="#demo"
-                    className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 hover:bg-white/10 px-6 py-3.5 text-sm sm:text-base font-medium text-[#FAF6F0] backdrop-blur-sm transition-all hover:border-white/30"
-                  >
-                    <Play className="h-4 w-4 fill-current text-[#D4626E]" />
-                    <span>{isAr ? "استكشف المنصة" : "Watch Demo"}</span>
-                  </a>
+                  <MizanMagnetic>
+                    <a
+                      href="#demo"
+                      className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 hover:bg-white/10 px-6 py-3.5 text-sm sm:text-base font-medium text-[#FAF6F0] backdrop-blur-sm transition-all hover:border-white/30"
+                    >
+                      <Play className="h-4 w-4 fill-current text-[#D4626E]" />
+                      <span>{isAr ? "استكشف المنصة" : "Watch Demo"}</span>
+                    </a>
+                  </MizanMagnetic>
                 </div>
 
                 {/* Metrics row at bottom of hero */}
@@ -392,6 +398,15 @@ export default function LandingPage() {
                 )}
               </div>
             </div>
+          </div>
+        </section>
+
+        {/* ================================================================= */}
+        {/* 2.5 PINNED SCROLL STORYTELLING — Seamless End-to-End Workflow     */}
+        {/* ================================================================= */}
+        <section className="bg-[#FAF6F0] border-b border-[#E6DCD2]">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <MizanScrollStory />
           </div>
         </section>
 

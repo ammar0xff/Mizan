@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { sound } from "@/lib/sound";
 import { useTranslation } from "@/i18n";
 import { assetUrl } from "@/lib/utils";
+import { MizanMagnetic } from "@/components/motion/MizanMagnetic";
 
 export default function ContactPage() {
   const { locale } = useTranslation();
@@ -227,13 +228,20 @@ export default function ContactPage() {
                               key={t.id}
                               type="button"
                               onClick={() => setInquiryType(t.id as any)}
-                              className={`rounded-xl border py-2.5 px-3 text-center transition-all ${
+                              className={`relative rounded-xl border py-2.5 px-3 text-center transition-colors ${
                                 inquiryType === t.id
-                                  ? "border-[#651E2C] bg-[#651E2C]/5 text-[#651E2C] font-bold"
+                                  ? "border-[#651E2C] text-[#651E2C] font-bold"
                                   : "border-[#E7D6C1] bg-[#FAF6F0] text-[#77716E] hover:border-[#651E2C]/40"
                               }`}
                             >
-                              {isAr ? t.labelAr : t.labelEn}
+                              {inquiryType === t.id && (
+                                <motion.div
+                                  layoutId="inquiryPillHighlight"
+                                  transition={{ type: "spring", stiffness: 450, damping: 30 }}
+                                  className="absolute inset-0 rounded-xl bg-[#651E2C]/10 border border-[#651E2C] z-[-1]"
+                                />
+                              )}
+                              <span>{isAr ? t.labelAr : t.labelEn}</span>
                             </button>
                           ))}
                         </div>
@@ -337,22 +345,24 @@ export default function ContactPage() {
                         />
                       </div>
 
-                      <Button
-                        type="submit"
-                        disabled={isSubmitting}
-                        className="w-full bg-[#651E2C] text-white hover:bg-[#521723] rounded-xl py-3 text-xs font-bold shadow-md transition-all flex items-center justify-center gap-2"
-                      >
-                        <Send className="size-3.5" />
-                        <span>
-                          {isSubmitting
-                            ? isAr
-                              ? "جاري إرسال الطلب..."
-                              : "Transmitting..."
-                            : isAr
-                            ? "تأكيد طلب العرض التوضيحي المباشر"
-                            : "Confirm Architecture Walkthrough Request"}
-                        </span>
-                      </Button>
+                      <MizanMagnetic className="w-full">
+                        <Button
+                          type="submit"
+                          disabled={isSubmitting}
+                          className="w-full bg-[#651E2C] text-white hover:bg-[#521723] rounded-xl py-3 text-xs font-bold shadow-md transition-all flex items-center justify-center gap-2"
+                        >
+                          <Send className="size-3.5" />
+                          <span>
+                            {isSubmitting
+                              ? isAr
+                                ? "جاري إرسال الطلب..."
+                                : "Transmitting..."
+                              : isAr
+                              ? "تأكيد طلب العرض التوضيحي المباشر"
+                              : "Confirm Architecture Walkthrough Request"}
+                          </span>
+                        </Button>
+                      </MizanMagnetic>
                     </motion.form>
                   )}
                 </AnimatePresence>

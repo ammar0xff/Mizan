@@ -16,6 +16,7 @@ import { DOC_SECTIONS, getAllDocArticles } from "./docsData";
 import { useUiStore } from "@/stores/ui";
 import { useI18nStore } from "@/i18n";
 import { MizanLogo } from "@/components/MizanLogo";
+import { MizanReadingProgress } from "@/components/motion/MizanReadingProgress";
 
 interface DocsLayoutProps {
   children?: React.ReactNode;
@@ -83,6 +84,7 @@ export function DocsLayout({ children }: DocsLayoutProps) {
       dir={dir}
       className="min-h-screen flex flex-col bg-[#FAF6F0] font-body text-[#262321] transition-colors selection:bg-[#651E2C] selection:text-white"
     >
+      <MizanReadingProgress color="#651E2C" height={2.5} />
       {/* 1. Docs Top Bar */}
       <header className="sticky top-0 z-40 w-full border-b border-[#E7D6C1] bg-[#FAF6F0]/95 backdrop-blur-md">
         <div className="flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">

@@ -21,6 +21,8 @@ import { MarketingLayout } from "./MarketingLayout";
 import { Button } from "@/components/kit/button";
 import { useTranslation } from "@/i18n";
 import { MizanLogo } from "@/components/MizanLogo";
+import { motion } from "motion/react";
+import { MizanMagnetic } from "@/components/motion/MizanMagnetic";
 import { toast } from "sonner";
 
 export default function DashboardShowcasePage() {
@@ -150,45 +152,61 @@ export default function DashboardShowcasePage() {
 
             {/* Light / Dark Mode Toggle Buttons */}
             <div className="pt-2 flex justify-center items-center gap-3">
-              <div className="inline-flex items-center rounded-full border border-[#E7D6C1] bg-white p-1.5 shadow-xs">
+              <div className="relative inline-flex items-center rounded-full border border-[#E7D6C1] bg-white p-1.5 shadow-xs">
                 <button
                   type="button"
                   onClick={() => setThemeMode("light")}
-                  className={`flex items-center gap-2 rounded-full px-5 py-2 text-xs font-bold transition-all ${
+                  className={`relative z-10 flex items-center gap-2 rounded-full px-5 py-2 text-xs font-bold transition-colors ${
                     isLight
-                      ? "bg-[#651E2C] text-white shadow-xs"
+                      ? "text-white"
                       : "text-[#77716E] hover:text-[#262321]"
                   }`}
                 >
+                  {isLight && (
+                    <motion.div
+                      layoutId="dashThemeTogglePill"
+                      transition={{ type: "spring", stiffness: 450, damping: 30 }}
+                      className="absolute inset-0 rounded-full bg-[#651E2C] shadow-xs z-[-1]"
+                    />
+                  )}
                   <Sun className="size-3.5" />
                   <span>{isAr ? "النمط الفاتح (Light)" : "Warm Ivory (Light)"}</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setThemeMode("dark")}
-                  className={`flex items-center gap-2 rounded-full px-5 py-2 text-xs font-bold transition-all ${
+                  className={`relative z-10 flex items-center gap-2 rounded-full px-5 py-2 text-xs font-bold transition-colors ${
                     !isLight
-                      ? "bg-[#35151D] text-white shadow-xs"
+                      ? "text-white"
                       : "text-[#77716E] hover:text-[#262321]"
                   }`}
                 >
+                  {!isLight && (
+                    <motion.div
+                      layoutId="dashThemeTogglePill"
+                      transition={{ type: "spring", stiffness: 450, damping: 30 }}
+                      className="absolute inset-0 rounded-full bg-[#35151D] shadow-xs z-[-1]"
+                    />
+                  )}
                   <Moon className="size-3.5" />
                   <span>{isAr ? "النمط الداكن (Dark)" : "Deep Merlot (Dark)"}</span>
                 </button>
               </div>
 
-              <Button
-                size="sm"
-                onClick={handlePrintTest}
-                className={`rounded-full px-4 py-2 text-xs font-bold transition-all ${
-                  isLight
-                    ? "border border-[#E7D6C1] bg-white text-[#262321] hover:bg-[#FAF6F0]"
-                    : "border border-white/20 bg-[#35151D] text-white hover:bg-[#521723]"
-                }`}
-              >
-                <Printer className="size-3.5 me-1.5" />
-                <span>{printedReceipt ? (isAr ? "تم إرسال النبضة!" : "Pulsed!") : isAr ? "طباعة تجريبية" : "Test Print"}</span>
-              </Button>
+              <MizanMagnetic>
+                <Button
+                  size="sm"
+                  onClick={handlePrintTest}
+                  className={`rounded-full px-4 py-2 text-xs font-bold transition-all ${
+                    isLight
+                      ? "border border-[#E7D6C1] bg-white text-[#262321] hover:bg-[#FAF6F0]"
+                      : "border border-white/20 bg-[#35151D] text-white hover:bg-[#521723]"
+                  }`}
+                >
+                  <Printer className="size-3.5 me-1.5" />
+                  <span>{printedReceipt ? (isAr ? "تم إرسال النبضة!" : "Pulsed!") : isAr ? "طباعة تجريبية" : "Test Print"}</span>
+                </Button>
+              </MizanMagnetic>
             </div>
           </div>
 

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion, useReducedMotion } from "motion/react";
+import { MizanMagnetic } from "@/components/motion/MizanMagnetic";
 import {
   Search,
   ArrowRight,
@@ -200,25 +201,29 @@ export default function FeatureDetailPage() {
               </p>
 
               <div className="pt-2 flex flex-wrap items-center gap-4">
-                <Button
-                  nativeButton={false}
-                  render={<Link to="/signup" />}
-                  size="lg"
-                  className="rounded-xl bg-[#651E2C] px-7 py-3.5 text-xs font-bold text-white shadow-md hover:bg-[#521723] transition-all"
-                >
-                  <span>{isAr ? "ابدأ تجربة مجانية" : "Start Free Trial"}</span>
-                  <ArrowIcon className="size-4 ms-2" />
-                </Button>
+                <MizanMagnetic>
+                  <Button
+                    nativeButton={false}
+                    render={<Link to="/signup" />}
+                    size="lg"
+                    className="rounded-xl bg-[#651E2C] px-7 py-3.5 text-xs font-bold text-white shadow-md hover:bg-[#521723] transition-all"
+                  >
+                    <span>{isAr ? "ابدأ تجربة مجانية" : "Start Free Trial"}</span>
+                    <ArrowIcon className="size-4 ms-2" />
+                  </Button>
+                </MizanMagnetic>
 
-                <Button
-                  nativeButton={false}
-                  render={<Link to="/demo" />}
-                  variant="outline"
-                  size="lg"
-                  className="rounded-xl border-[#E7D6C1] bg-white px-7 py-3.5 text-xs font-bold text-[#262321] hover:bg-[#FAF6F0] transition-all shadow-xs"
-                >
-                  <span>{isAr ? "شاهد المعاينة الحية" : "Live Demo"}</span>
-                </Button>
+                <MizanMagnetic>
+                  <Button
+                    nativeButton={false}
+                    render={<Link to="/demo" />}
+                    variant="outline"
+                    size="lg"
+                    className="rounded-xl border-[#E7D6C1] bg-white px-7 py-3.5 text-xs font-bold text-[#262321] hover:bg-[#FAF6F0] transition-all shadow-xs"
+                  >
+                    <span>{isAr ? "شاهد المعاينة الحية" : "Live Demo"}</span>
+                  </Button>
+                </MizanMagnetic>
               </div>
             </div>
 
@@ -267,40 +272,61 @@ export default function FeatureDetailPage() {
                 />
               </div>
 
-              {/* Filter Pills */}
-              <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
+              {/* Filter Pills with sliding layoutId indicator */}
+              <div className="relative flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
                 <button
                   type="button"
                   onClick={() => setActiveFilter("all")}
-                  className={`rounded-full px-4 py-2 text-xs font-semibold transition-all ${
+                  className={`relative z-10 rounded-full px-4 py-2 text-xs font-semibold transition-colors ${
                     activeFilter === "all"
-                      ? "bg-[#651E2C] text-white shadow-xs"
+                      ? "text-white"
                       : "bg-[#FAF6F0] border border-[#E7D6C1] text-[#77716E] hover:text-[#262321]"
                   }`}
                 >
-                  {isAr ? "الكل (842)" : "All (842)"}
+                  {activeFilter === "all" && (
+                    <motion.div
+                      layoutId="featureFilterPill"
+                      transition={{ type: "spring", stiffness: 450, damping: 30 }}
+                      className="absolute inset-0 rounded-full bg-[#651E2C] shadow-xs z-[-1]"
+                    />
+                  )}
+                  <span>{isAr ? "الكل (842)" : "All (842)"}</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setActiveFilter("low")}
-                  className={`rounded-full px-4 py-2 text-xs font-semibold transition-all ${
+                  className={`relative z-10 rounded-full px-4 py-2 text-xs font-semibold transition-colors ${
                     activeFilter === "low"
-                      ? "bg-[#651E2C] text-white shadow-xs"
+                      ? "text-white"
                       : "bg-[#FAF6F0] border border-[#E7D6C1] text-[#77716E] hover:text-[#262321]"
                   }`}
                 >
-                  {isAr ? "منخفض المخزون (14)" : "Low Stock (14)"}
+                  {activeFilter === "low" && (
+                    <motion.div
+                      layoutId="featureFilterPill"
+                      transition={{ type: "spring", stiffness: 450, damping: 30 }}
+                      className="absolute inset-0 rounded-full bg-[#651E2C] shadow-xs z-[-1]"
+                    />
+                  )}
+                  <span>{isAr ? "منخفض المخزون (14)" : "Low Stock (14)"}</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setActiveFilter("critical")}
-                  className={`rounded-full px-4 py-2 text-xs font-semibold transition-all ${
+                  className={`relative z-10 rounded-full px-4 py-2 text-xs font-semibold transition-colors ${
                     activeFilter === "critical"
-                      ? "bg-[#651E2C] text-white shadow-xs"
+                      ? "text-white"
                       : "bg-[#FAF6F0] border border-[#E7D6C1] text-[#77716E] hover:text-[#262321]"
                   }`}
                 >
-                  {isAr ? "نفذت الكمية (3)" : "Critical / Out (3)"}
+                  {activeFilter === "critical" && (
+                    <motion.div
+                      layoutId="featureFilterPill"
+                      transition={{ type: "spring", stiffness: 450, damping: 30 }}
+                      className="absolute inset-0 rounded-full bg-[#651E2C] shadow-xs z-[-1]"
+                    />
+                  )}
+                  <span>{isAr ? "نفذت الكمية (3)" : "Critical / Out (3)"}</span>
                 </button>
               </div>
             </div>

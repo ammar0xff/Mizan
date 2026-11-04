@@ -735,3 +735,36 @@ html[dir="rtl"] .hero-concentric-arcs {
     radial-gradient(circle at 10% 10%, transparent 640px, rgba(184, 107, 118, 0.06) 641px, transparent 642px);
 }
 
+/* ── Lenis Smooth Scrolling Styles ── */
+html.lenis, html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis.lenis-smooth iframe {
+  pointer-events: none;
+}
+
+/* ── Text Masked Reveal Utility ── */
+.editorial-mask-line {
+  display: block;
+  overflow: hidden;
+}
+
+.editorial-mask-inner {
+  display: inline-block;
+  will-change: transform, opacity;
+}
+
+

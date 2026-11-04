@@ -28,6 +28,7 @@ import {
 import { toast as sonnerToast } from "sonner";
 import { useTranslation } from "@/i18n";
 import { motion, AnimatePresence } from "motion/react";
+import { MizanMagnetic } from "@/components/motion/MizanMagnetic";
 
 interface CheckoutResult {
   invoice_ref: string;
@@ -268,30 +269,50 @@ export default function PricingPage() {
 
           {/* Billing Cycle & Currency Toggles */}
           <div className="pt-4 flex flex-wrap items-center justify-center gap-4">
-            {/* Monthly / Annual Toggle */}
-            <div className="inline-flex items-center rounded-full border border-[#E7D6C1] bg-white p-1 shadow-xs">
+            {/* Monthly / Annual Toggle with sliding layoutId indicator */}
+            <div className="relative inline-flex items-center rounded-full border border-[#E7D6C1] bg-white p-1 shadow-xs">
               <button
                 type="button"
                 onClick={() => setBillingCycle("monthly")}
-                className={`rounded-full px-5 py-2 text-xs font-semibold transition-all ${
+                className={`relative z-10 rounded-full px-5 py-2 text-xs font-semibold transition-colors ${
                   billingCycle === "monthly"
-                    ? "bg-[#651E2C] text-white shadow-xs"
+                    ? "text-white"
                     : "text-[#77716E] hover:text-[#262321]"
                 }`}
               >
-                {isAr ? "الدفع الشهري" : "Monthly Billing"}
+                {billingCycle === "monthly" && (
+                  <motion.div
+                    layoutId="billingToggleActive"
+                    transition={{ type: "spring", stiffness: 450, damping: 30 }}
+                    className="absolute inset-0 rounded-full bg-[#651E2C] shadow-xs z-[-1]"
+                  />
+                )}
+                <span>{isAr ? "الدفع الشهري" : "Monthly Billing"}</span>
               </button>
               <button
                 type="button"
                 onClick={() => setBillingCycle("annual")}
-                className={`rounded-full px-5 py-2 text-xs font-semibold transition-all flex items-center gap-1.5 ${
+                className={`relative z-10 rounded-full px-5 py-2 text-xs font-semibold transition-colors flex items-center gap-1.5 ${
                   billingCycle === "annual"
-                    ? "bg-[#651E2C] text-white shadow-xs"
+                    ? "text-white"
                     : "text-[#77716E] hover:text-[#262321]"
                 }`}
               >
+                {billingCycle === "annual" && (
+                  <motion.div
+                    layoutId="billingToggleActive"
+                    transition={{ type: "spring", stiffness: 450, damping: 30 }}
+                    className="absolute inset-0 rounded-full bg-[#651E2C] shadow-xs z-[-1]"
+                  />
+                )}
                 <span>{isAr ? "الدفع السنوي" : "Annual Billing"}</span>
-                <span className="rounded-full bg-[#B86B76]/20 px-2 py-0.5 text-[10px] font-bold text-[#651E2C]">
+                <span
+                  className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                    billingCycle === "annual"
+                      ? "bg-white/20 text-white"
+                      : "bg-[#B86B76]/20 text-[#651E2C]"
+                  }`}
+                >
                   {isAr ? "وفر 20%" : "Save 20%"}
                 </span>
               </button>
@@ -416,9 +437,18 @@ export default function PricingPage() {
                     </div>
 
                     <div className="border-y border-[#E7D6C1] py-5">
-                      <div className="flex items-baseline gap-1.5">
+                      <div className="flex items-baseline gap-1.5 overflow-hidden">
                         <span className="font-display text-4xl sm:text-5xl font-normal text-[#262321] font-mono">
-                          {symbol}{price.toLocaleString()}
+                          {symbol}
+                          <motion.span
+                            key={price}
+                            initial={{ opacity: 0, y: -8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.25 }}
+                            className="inline-block"
+                          >
+                            {price.toLocaleString()}
+                          </motion.span>
                         </span>
                         <span className="text-xs font-semibold text-[#77716E]">
                           {period}
@@ -449,27 +479,29 @@ export default function PricingPage() {
                   </div>
 
                   <div className="mt-8 pt-6 border-t border-[#E7D6C1]">
-                    <Button
-                      onClick={() => handlePlanClick(plan)}
-                      size="lg"
-                      className={`w-full rounded-xl py-3 text-xs font-bold transition-all ${
-                        isPopular
-                          ? "bg-[#651E2C] text-white hover:bg-[#521723] shadow-md"
-                          : "border border-[#E7D6C1] bg-[#FAF6F0] text-[#262321] hover:bg-[#E7D6C1]"
-                      }`}
-                    >
-                      {isCurrent
-                        ? isAr
-                          ? "باقاتك الحالية المفعلة"
-                          : "Current Active Plan"
-                        : user
-                        ? isAr
-                          ? "ترقية واشتراك فوري"
-                          : "Upgrade & Subscribe"
-                        : isAr
-                        ? "ابدأ الفترة التجريبية"
-                        : "Start 14-Day Free Trial"}
-                    </Button>
+                    <MizanMagnetic className="w-full">
+                      <Button
+                        onClick={() => handlePlanClick(plan)}
+                        size="lg"
+                        className={`w-full rounded-xl py-3 text-xs font-bold transition-all ${
+                          isPopular
+                            ? "bg-[#651E2C] text-white hover:bg-[#521723] shadow-md"
+                            : "border border-[#E7D6C1] bg-[#FAF6F0] text-[#262321] hover:bg-[#E7D6C1]"
+                        }`}
+                      >
+                        {isCurrent
+                          ? isAr
+                            ? "باقاتك الحالية المفعلة"
+                            : "Current Active Plan"
+                          : user
+                          ? isAr
+                            ? "ترقية واشتراك فوري"
+                            : "Upgrade & Subscribe"
+                          : isAr
+                          ? "ابدأ الفترة التجريبية"
+                          : "Start 14-Day Free Trial"}
+                      </Button>
+                    </MizanMagnetic>
                   </div>
                 </div>
               );

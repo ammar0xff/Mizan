@@ -10,6 +10,8 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/kit/button";
 import { MarketingLayout } from "./MarketingLayout";
+import { MizanModularArchitectureShowcase } from "./components/MizanModularArchitectureShowcase";
+import { MizanMagnetic } from "@/components/motion/MizanMagnetic";
 import { useTranslation } from "@/i18n";
 
 export default function ProductPage() {
@@ -105,6 +107,11 @@ export default function ProductPage() {
                 ))}
               </div>
             </div>
+          </div>
+
+          {/* Interactive Ecosystem Canvas */}
+          <div className="pt-10 max-w-6xl mx-auto">
+            <MizanModularArchitectureShowcase />
           </div>
         </div>
 
@@ -267,15 +274,17 @@ export default function ProductPage() {
                 : "Start your 14-day full feature trial with zero risk and instant cloud setup."}
             </p>
             <div className="pt-2">
-              <Button
-                size="lg"
-                className="bg-[#651E2C] text-[#FAF6F0] hover:bg-[#521723] rounded-full px-8 py-3.5 text-sm font-semibold shadow-lg"
-                render={<Link to="/signup" />}
-                nativeButton={false}
-              >
-                <span>{isAr ? "ابدأ الآن مجاناً" : "Get Started Free"}</span>
-                {isAr ? <ArrowLeft className="h-4 w-4 ms-2" /> : <ArrowRight className="h-4 w-4 ms-2" />}
-              </Button>
+              <MizanMagnetic>
+                <Button
+                  size="lg"
+                  className="bg-[#651E2C] text-[#FAF6F0] hover:bg-[#521723] rounded-full px-8 py-3.5 text-sm font-semibold shadow-lg"
+                  render={<Link to="/signup" />}
+                  nativeButton={false}
+                >
+                  <span>{isAr ? "ابدأ الآن مجاناً" : "Get Started Free"}</span>
+                  {isAr ? <ArrowLeft className="h-4 w-4 ms-2" /> : <ArrowRight className="h-4 w-4 ms-2" />}
+                </Button>
+              </MizanMagnetic>
             </div>
           </div>
         </div>

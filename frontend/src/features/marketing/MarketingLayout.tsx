@@ -15,6 +15,11 @@ import {
 import { useAuth } from "@/stores/auth";
 import { useTranslation } from "@/i18n";
 import { MizanLogo } from "@/components/MizanLogo";
+import { SmoothScroll } from "@/components/SmoothScroll";
+import { MizanReadingProgress } from "@/components/motion/MizanReadingProgress";
+import { MizanCursor } from "@/components/motion/MizanCursor";
+import { MizanMagnetic } from "@/components/motion/MizanMagnetic";
+import { pageTransitionVariant } from "@/lib/motion";
 
 interface MarketingLayoutProps {
   children?: React.ReactNode;
@@ -111,12 +116,15 @@ export function MarketingLayout({ children }: MarketingLayoutProps) {
   const currentNav = isAr ? navLinksAr : navLinksEn;
 
   return (
-    <div
-      dir={dir}
-      className={`min-h-screen flex flex-col bg-[#FAF6F0] text-[#262321] transition-colors duration-150 selection:bg-[#651E2C] selection:text-[#FAF6F0] ${
-        isAr ? "font-body" : "font-sans"
-      }`}
-    >
+    <SmoothScroll>
+      <MizanReadingProgress color="#B86B76" height={2.5} />
+      <MizanCursor />
+      <div
+        dir={dir}
+        className={`min-h-screen flex flex-col bg-[#FAF6F0] text-[#262321] transition-colors duration-150 selection:bg-[#651E2C] selection:text-[#FAF6F0] ${
+          isAr ? "font-body" : "font-sans"
+        }`}
+      >
       {/* 1. Top Navigation Bar — Warm Ivory Light background matching design */}
       <header className="sticky top-0 z-50 w-full border-b border-[#E6DCD2] bg-[#FAF6F0]/95 backdrop-blur-md">
         <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
@@ -225,13 +233,15 @@ export function MarketingLayout({ children }: MarketingLayoutProps) {
 
             {/* Authenticated Dashboard button vs Guest Auth Actions */}
             {token && user ? (
-              <Link
-                to={appDestination}
-                className="inline-flex items-center gap-1.5 px-5 py-2 rounded-full bg-[#651E2C] text-[#FAF6F0] text-xs font-semibold hover:bg-[#521723] shadow-sm transition-all"
-              >
-                <span>{isAr ? "لوحة التحكم" : "Dashboard"}</span>
-                {isAr ? <ArrowLeft className="h-3.5 w-3.5" /> : <ArrowRight className="h-3.5 w-3.5" />}
-              </Link>
+              <MizanMagnetic>
+                <Link
+                  to={appDestination}
+                  className="inline-flex items-center gap-1.5 px-5 py-2 rounded-full bg-[#651E2C] text-[#FAF6F0] text-xs font-semibold hover:bg-[#521723] shadow-sm transition-all"
+                >
+                  <span>{isAr ? "لوحة التحكم" : "Dashboard"}</span>
+                  {isAr ? <ArrowLeft className="h-3.5 w-3.5" /> : <ArrowRight className="h-3.5 w-3.5" />}
+                </Link>
+              </MizanMagnetic>
             ) : (
               <div className="flex items-center gap-2 sm:gap-3">
                 <Link
@@ -241,13 +251,15 @@ export function MarketingLayout({ children }: MarketingLayoutProps) {
                   {isAr ? "تسجيل الدخول" : "Sign In"}
                 </Link>
 
-                <Link
-                  to="/signup"
-                  className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-[#651E2C] text-[#FAF6F0] text-xs sm:text-sm font-semibold hover:bg-[#521723] shadow-sm transition-all hover:scale-[1.02]"
-                >
-                  <span>{isAr ? "ابدأ الآن" : "Get Started"}</span>
-                  {isAr ? <ArrowLeft className="h-3.5 w-3.5" /> : <ArrowRight className="h-3.5 w-3.5" />}
-                </Link>
+                <MizanMagnetic>
+                  <Link
+                    to="/signup"
+                    className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-[#651E2C] text-[#FAF6F0] text-xs sm:text-sm font-semibold hover:bg-[#521723] shadow-sm transition-all hover:scale-[1.02]"
+                  >
+                    <span>{isAr ? "ابدأ الآن" : "Get Started"}</span>
+                    {isAr ? <ArrowLeft className="h-3.5 w-3.5" /> : <ArrowRight className="h-3.5 w-3.5" />}
+                  </Link>
+                </MizanMagnetic>
               </div>
             )}
 
@@ -322,8 +334,16 @@ export function MarketingLayout({ children }: MarketingLayoutProps) {
         </AnimatePresence>
       </header>
 
-      {/* 2. Main Page Content */}
-      <main className="flex-1">{children}</main>
+      {/* 2. Main Page Content with Editorial Page Transition */}
+      <motion.main
+        key={location.pathname}
+        variants={pageTransitionVariant}
+        initial="initial"
+        animate="animate"
+        className="flex-1"
+      >
+        {children}
+      </motion.main>
 
       {/* 3. Official Deep Merlot Luxury Footer (#35151D) matching Image 4 */}
       <footer className="border-t border-[#481822] bg-[#35151D] text-[#E7D6C1]">
@@ -498,6 +518,7 @@ export function MarketingLayout({ children }: MarketingLayoutProps) {
         </div>
       </footer>
     </div>
+  </SmoothScroll>
   );
 }
 
