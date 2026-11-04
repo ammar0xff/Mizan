@@ -212,3 +212,28 @@ jobs:
           context: backend
           push: true
           tags: ghcr.io/${{ steps.owner.outputs.owner }}/mizan-backend:beta
+
+  # ─── Vercel Deploy Hooks (Manual dispatch or verified production trigger) ─
+  deploy-vercel:
+    name: Deploy to Vercel (Production)
+    needs: [ci-frontend, ci-backend, ci-e2e, ci-manage]
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Trigger Frontend Deploy Hook
+        if: env.FRONTEND_HOOK != ''
+        env:
+          FRONTEND_HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK_FRONTEND }}
+        run: |
+          echo "Triggering Vercel deployment for mizan-app (frontend)..."
+          curl -fsSL -X POST "$FRONTEND_HOOK"
+          echo -e "\nFrontend deployment hook triggered successfully."
+
+      - name: Trigger Backend Deploy Hook
+        if: env.BACKEND_HOOK != ''
+        env:
+          BACKEND_HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK_BACKEND }}
+        run: |
+          echo "Triggering Vercel deployment for vendora-backend (backend)..."
+          curl -fsSL -X POST "$BACKEND_HOOK"
+          echo -e "\nBackend deployment hook triggered successfully."
