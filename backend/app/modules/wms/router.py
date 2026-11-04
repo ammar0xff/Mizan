@@ -210,7 +210,7 @@ async def execute_putaway(
     bin_loc.current_product_name = body.current_product_name
     bin_loc.current_quantity = body.current_quantity
     await db.commit()
-    return {"status": "success", "bin_code": bin_loc.bin_code, "status": bin_loc.status}
+    return {"status": "success", "bin_code": bin_loc.bin_code, "bin_status": bin_loc.status}
 
 
 @router.post("/bins/{id}/empty")
@@ -229,7 +229,7 @@ async def empty_bin(
     bin_loc.current_product_name = ""
     bin_loc.current_quantity = 0
     await db.commit()
-    return {"status": "success", "bin_code": bin_loc.bin_code, "status": "empty"}
+    return {"status": "success", "bin_code": bin_loc.bin_code, "bin_status": "empty"}
 
 
 @router.get("/waves")

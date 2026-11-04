@@ -1,10 +1,13 @@
 """Tenant Storefront Router: Public Catalog, E-Commerce Checkout, and Back-Office Management."""
 from __future__ import annotations
 
+import logging
 import random
 import uuid
 from datetime import UTC, datetime
 from typing import Any
+
+logger = logging.getLogger(__name__)
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
