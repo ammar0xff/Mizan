@@ -60,6 +60,7 @@ SECTORS = [
 SCALES = ["small", "medium", "large"]
 
 PALETTE_HUES = {
+    "mizan": 350,
     "slate": 240,
     "cobalt": 250,
     "emerald": 155,
@@ -75,7 +76,7 @@ class SignupRequest(BaseModel):
     company_name: str = Field(min_length=2, max_length=128)
     sector: str
     scale: str
-    palette: str = "cobalt"
+    palette: str = "mizan"
     features: list[str] = Field(default_factory=list)
     owner_username: str = Field(min_length=3, max_length=64, pattern=r"^[a-zA-Z0-9_.-]+$")
     owner_password: str = Field(min_length=6, max_length=128)

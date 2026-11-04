@@ -76,7 +76,7 @@ class ProvisionTenantRequest(BaseModel):
     business_type: str = Field(default="retail")
     sector: str = Field(default="retail")
     scale: str = Field(default="medium")
-    palette: str = Field(default="cobalt")
+    palette: str = Field(default="mizan")
     plan: str = Field(default="pro")
     deployment_mode: str = Field(default="cloud_saas")
     tech_stack: TechStackConfig = Field(default_factory=TechStackConfig)
@@ -433,7 +433,7 @@ async def provision_tenant(
         status="active",
         plan=data.plan,
         deployment_mode=data.deployment_mode,
-        palette={"name": data.palette, "hue": 250},
+        palette={"name": data.palette, "hue": 350 if data.palette == "mizan" else 250},
         tech_stack=data.tech_stack.model_dump(),
         active_modules=data.active_modules,
         trial_ends_at=datetime.now(UTC) + timedelta(days=data.trial_days),

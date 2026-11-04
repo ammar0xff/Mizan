@@ -16,6 +16,7 @@ import { useUiStore, type ThemePalette } from "@/stores/ui";
 import { Button, ErrorBox, Input } from "@/components/ui";
 import { FEATURE_OPTIONS, PALETTE_OPTIONS, SCALE_OPTIONS, SECTOR_OPTIONS } from "./plans";
 import { cn } from "@/lib/utils";
+import { MizanLogo } from "@/components/MizanLogo";
 
 interface OwnerDraft {
   full_name: string;
@@ -41,7 +42,7 @@ export default function OnboardingWizard() {
   const [sector, setSector] = useState("retail");
   const [company, setCompany] = useState("");
   const [scale, setScale] = useState("medium");
-  const [palette, setPalette] = useState<string>("cobalt");
+  const [palette, setPalette] = useState<string>("mizan");
   const [features, setFeatures] = useState<string[]>(["pos", "inventory"]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -86,6 +87,7 @@ export default function OnboardingWizard() {
       useAuth.getState().setUser(me);
       useAuth.getState().setTenant(r.tenant);
       sessionStorage.removeItem("mizan.owner");
+      sessionStorage.removeItem("vendora.owner");
       nav("/", { replace: true });
     } catch (err) {
       if (err instanceof ApiError && err.status === 409) {
@@ -102,14 +104,8 @@ export default function OnboardingWizard() {
   return (
     <div className="grid min-h-svh place-items-center bg-background p-4 text-foreground">
       <div className="w-full max-w-xl">
-        <Link to="/" className="mb-6 flex items-center justify-center gap-2.5">
-          <span className="grid size-10 place-items-center rounded-xl bg-primary text-primary-foreground font-black shadow-xs">
-            V
-          </span>
-          <div className="flex flex-col">
-            <span className="text-xl font-bold tracking-tight">Vendora ERP</span>
-            <span className="text-[10px] text-muted-foreground font-medium">المنظومة السحابية المتكاملة</span>
-          </div>
+        <Link to="/" className="mb-6 flex items-center justify-center gap-3">
+          <MizanLogo size="lg" />
         </Link>
 
         <div className="rounded-2xl border border-border bg-card p-6 sm:p-8 shadow-sm">

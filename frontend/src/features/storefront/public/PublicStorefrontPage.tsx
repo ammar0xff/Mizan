@@ -975,7 +975,7 @@ export default function PublicStorefrontPage() {
             {config?.store_title || tenantName || "متجر فيندورا الرقمي"}
           </p>
           <p className="text-[11px]">
-            مدعوم بواسطة منصة <strong className="text-foreground">Vendora ERP</strong> — حلول التجارة وإدارة الأعمال السحابية.
+            مدعوم بواسطة منصة <strong className="text-foreground">ميزان ERP</strong> — حلول التجارة وإدارة الأعمال السحابية.
           </p>
         </div>
       </footer>

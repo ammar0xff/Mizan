@@ -131,7 +131,7 @@ export default function Dashboard() {
         <div>
           <h1 className="text-xl font-black text-foreground">مركز قيادة المنصة (Control Plane)</h1>
           <p className="text-xs text-muted-foreground mt-0.5">
-            مراقبة شاملة لكافة الشركات، بيئات الاستضافة، حزم التشغيل، والنمو المالي لمنصة Vendora ERP.
+            مراقبة شاملة لكافة الشركات، بيئات الاستضافة، حزم التشغيل، والنمو المالي لمنصة ميزان ERP.
           </p>
         </div>
         <div className="flex items-center gap-2">

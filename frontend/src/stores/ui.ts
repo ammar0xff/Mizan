@@ -3,7 +3,7 @@ import { isSoundMuted, setSoundMuted, sound } from "@/lib/sound";
 
 export type ViewDensity = "compact" | "comfortable";
 export type LayoutMode = "sidebar" | "rail" | "topnav";
-export type ThemePalette = "slate" | "cobalt" | "emerald" | "amber" | "monokai";
+export type ThemePalette = "mizan" | "slate" | "cobalt" | "emerald" | "amber" | "monokai";
 export type ThemeMode = "light" | "dark";
 
 export interface PaletteMeta {
@@ -15,6 +15,13 @@ export interface PaletteMeta {
 }
 
 export const THEME_PALETTES: PaletteMeta[] = [
+  {
+    id: "mizan",
+    name: "ميزان الفاخر (Warm Editorial Luxury)",
+    nameEn: "Mizan Editorial Luxury",
+    swatch: "#651E2C",
+    description: "الهوية الرسمية الفاخرة لمنظومة ميزان — درجات العنابي الملكي والأكس بلود وخلفية العاج الدافئ.",
+  },
   {
     id: "slate",
     name: "سليت متوازن (Neutral SaaS)",
@@ -126,9 +133,9 @@ function getInitialLayout(): LayoutMode {
 }
 
 function getInitialPalette(): ThemePalette {
-  if (typeof window === "undefined") return "slate";
+  if (typeof window === "undefined") return "mizan";
   const saved = localStorage.getItem(PALETTE_KEY) as ThemePalette;
-  return ["slate", "cobalt", "emerald", "amber", "monokai"].includes(saved) ? saved : "slate";
+  return ["mizan", "slate", "cobalt", "emerald", "amber", "monokai"].includes(saved) ? saved : "mizan";
 }
 
 function getInitialThemeMode(): ThemeMode {

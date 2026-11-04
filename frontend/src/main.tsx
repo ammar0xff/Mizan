@@ -9,7 +9,7 @@ import "./styles.css";
 
 document.documentElement.classList.toggle(
   "dark",
-  (localStorage.getItem("vendora.theme") ?? "dark") === "dark",
+  (localStorage.getItem("vendora.theme") ?? "light") === "dark",
 );
 
 const queryClient = new QueryClient({

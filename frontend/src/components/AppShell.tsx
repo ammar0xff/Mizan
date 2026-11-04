@@ -6,7 +6,6 @@ import {
   Clock,
   LogOut,
   Menu,
-  Scale,
   Search,
   Settings,
   ShieldCheck,
@@ -28,6 +27,7 @@ import { useModulesStore } from "@/stores/modules";
 import { useI18nStore } from "@/i18n";
 import { AutomationWorkerModal } from "@/features/automation/AutomationWorkerModal";
 import { MizanAppLauncher } from "@/components/MizanAppLauncher";
+import { MizanLogo } from "@/components/MizanLogo";
 import { Avatar, AvatarFallback } from "@/components/kit/avatar";
 import { Badge } from "@/components/kit/badge";
 import { Button } from "@/components/kit/button";
@@ -91,8 +91,8 @@ function AppSidebar({ onNavigate }: { onNavigate?: () => void }) {
         onClick={onNavigate}
         className="flex h-16 items-center gap-3 border-b border-sidebar-border px-5 transition hover:bg-sidebar-accent/50"
       >
-        <span className="flex size-9 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground font-bold">
-          <Scale className="size-5" aria-hidden />
+        <span className="flex size-9 items-center justify-center rounded-lg bg-sidebar-primary/20 p-1 border border-sidebar-border/30">
+          <MizanLogo size="sm" variant="icon" theme="dark" />
         </span>
         <div className="flex flex-col leading-tight">
           <div className="flex items-center gap-1.5">
@@ -213,10 +213,10 @@ function AppRail({ onNavigate }: { onNavigate?: () => void }) {
       {/* Brand Icon */}
       <Link
         to={tenantTo("/")}
-        className="mb-4 flex size-10 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground font-bold shadow-xs transition hover:scale-105"
+        className="mb-4 flex size-10 items-center justify-center rounded-lg bg-sidebar-primary/20 p-1 border border-sidebar-border/30 shadow-xs transition hover:scale-105"
         title="ميزان ERP"
       >
-        <Scale className="size-5" aria-hidden />
+        <MizanLogo size="sm" variant="icon" theme="dark" />
       </Link>
 
       {/* Nav Icons */}

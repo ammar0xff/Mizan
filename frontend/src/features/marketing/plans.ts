@@ -142,6 +142,7 @@ export const SCALE_OPTIONS = [
 ];
 
 export const PALETTE_OPTIONS = [
+  { value: "mizan", hue: 350, label: "ميزان الفاخر (Warm Editorial Luxury)", desc: "الهوية الرسمية الفاخرة لمنظومة ميزان — درجات العنابي الملكي والأكس بلود وخلفية العاج الدافئ", swatch: "#651E2C" },
   { value: "slate", hue: 240, label: "سليت متوازن (Neutral SaaS)", desc: "مظهر حيادي راقٍ يعتمد على الحدود الدقيقة والتباين الصريح", swatch: "oklch(0.42 0.02 250)" },
   { value: "cobalt", hue: 250, label: "أزرق مؤسسي (Enterprise Cobalt)", desc: "نمط أنظمة تخطيط الموارد الكبرى (SAP / Oracle) ذو طابع رسمي", swatch: "oklch(0.45 0.16 250)" },
   { value: "emerald", hue: 155, label: "زمردي مالي (Emerald Ledger)", desc: "مثالي للدفاتر المالية، التدقيق المحاسبي، وإدارة الخزائن", swatch: "oklch(0.48 0.14 155)" },

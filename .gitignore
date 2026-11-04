@@ -56,3 +56,5 @@ deploy-logs/
 /download
 /*.png
 scripts/ref_crops/
+.vercel
+.env*
