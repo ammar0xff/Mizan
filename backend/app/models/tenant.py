@@ -15,25 +15,25 @@ class Tenant(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, server_default=text("gen_random_uuid()"))
     name: Mapped[str] = mapped_column(Text, nullable=False)
-    sector: Mapped[str] = mapped_column(String(32), nullable=False, default="plumbing")
-    scale: Mapped[str] = mapped_column(String(16), nullable=False, default="medium")
+    sector: Mapped[str] = mapped_column(String(32), nullable=False, default="plumbing", server_default=text("'plumbing'"))
+    scale: Mapped[str] = mapped_column(String(16), nullable=False, default="medium", server_default=text("'medium'"))
     # wizard choices: {"primary_hue": "...", ...} applied by the frontend as token overrides
-    palette: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict)
+    palette: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict, server_default=text("'{}'::jsonb"))
     # optional feature toggles chosen in the wizard, e.g. ["credit", "quotations", "hr"]
-    features: Mapped[list] = mapped_column(JSONB, nullable=False, default=list)
-    plan: Mapped[str] = mapped_column(String(16), nullable=False, default="trial")
+    features: Mapped[list] = mapped_column(JSONB, nullable=False, default=list, server_default=text("'[]'::jsonb"))
+    plan: Mapped[str] = mapped_column(String(16), nullable=False, default="trial", server_default=text("'trial'"))
     trial_ends_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     storefront_slug: Mapped[str | None] = mapped_column(String(64), unique=True, nullable=True)
 
     # Multi-tenancy routing & custom tech stack config
     slug: Mapped[str | None] = mapped_column(String(64), unique=True, nullable=True, index=True)
     custom_domain: Mapped[str | None] = mapped_column(String(128), unique=True, nullable=True, index=True)
-    status: Mapped[str] = mapped_column(String(32), nullable=False, default="active")
-    deployment_mode: Mapped[str] = mapped_column(String(32), nullable=False, default="cloud_saas")
-    business_type: Mapped[str] = mapped_column(String(64), nullable=False, default="retail")
-    tech_stack: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict)
-    active_modules: Mapped[list] = mapped_column(JSONB, nullable=False, default=list)
-    limits: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict)
+    status: Mapped[str] = mapped_column(String(32), nullable=False, default="active", server_default=text("'active'"))
+    deployment_mode: Mapped[str] = mapped_column(String(32), nullable=False, default="cloud_saas", server_default=text("'cloud_saas'"))
+    business_type: Mapped[str] = mapped_column(String(64), nullable=False, default="retail", server_default=text("'retail'"))
+    tech_stack: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict, server_default=text("'{}'::jsonb"))
+    active_modules: Mapped[list] = mapped_column(JSONB, nullable=False, default=list, server_default=text("'[]'::jsonb"))
+    limits: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict, server_default=text("'{}'::jsonb"))
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
@@ -48,7 +48,7 @@ class Subscription(Base):
         UUID(as_uuid=True), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=False, index=True
     )
     plan: Mapped[str] = mapped_column(String(16), nullable=False)
-    status: Mapped[str] = mapped_column(String(32), nullable=False, default="requested")
+    status: Mapped[str] = mapped_column(String(32), nullable=False, default="requested", server_default=text("'requested'"))
     contact_phone: Mapped[str | None] = mapped_column(String(32), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
@@ -62,8 +62,8 @@ class HostingConfig(Base):
     tenant_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=False, unique=True, index=True
     )
-    hosting_mode: Mapped[str] = mapped_column(String(32), nullable=False, default="cloud_saas")
-    deployment_provider: Mapped[str] = mapped_column(String(64), nullable=False, default="docker_compose")
+    hosting_mode: Mapped[str] = mapped_column(String(32), nullable=False, default="cloud_saas", server_default=text("'cloud_saas'"))
+    deployment_provider: Mapped[str] = mapped_column(String(64), nullable=False, default="docker_compose", server_default=text("'docker_compose'"))
     app_host: Mapped[str | None] = mapped_column(String(128), nullable=True)
     domain: Mapped[str | None] = mapped_column(String(128), nullable=True)
     port: Mapped[int] = mapped_column(default=8000)
@@ -87,8 +87,8 @@ class DatabaseConfig(Base):
     tenant_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=False, unique=True, index=True
     )
-    provider: Mapped[str] = mapped_column(String(32), nullable=False, default="postgresql")
-    strategy: Mapped[str] = mapped_column(String(32), nullable=False, default="shared_db")
+    provider: Mapped[str] = mapped_column(String(32), nullable=False, default="postgresql", server_default=text("'postgresql'"))
+    strategy: Mapped[str] = mapped_column(String(32), nullable=False, default="shared_db", server_default=text("'shared_db'"))
     host: Mapped[str | None] = mapped_column(String(128), nullable=True)
     port: Mapped[int | None] = mapped_column(nullable=True)
     database_name: Mapped[str | None] = mapped_column(String(64), nullable=True)
@@ -110,7 +110,7 @@ class StorageConfig(Base):
     tenant_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=False, unique=True, index=True
     )
-    provider: Mapped[str] = mapped_column(String(32), nullable=False, default="local")
+    provider: Mapped[str] = mapped_column(String(32), nullable=False, default="local", server_default=text("'local'"))
     bucket_name: Mapped[str | None] = mapped_column(String(128), nullable=True)
     endpoint: Mapped[str | None] = mapped_column(String(255), nullable=True)
     region: Mapped[str | None] = mapped_column(String(64), nullable=True)
@@ -128,12 +128,12 @@ class ProvisioningJob(Base):
     tenant_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=False, index=True
     )
-    job_type: Mapped[str] = mapped_column(String(32), nullable=False, default="new_tenant")
-    current_step: Mapped[str] = mapped_column(String(64), nullable=False, default="validating")
+    job_type: Mapped[str] = mapped_column(String(32), nullable=False, default="new_tenant", server_default=text("'new_tenant'"))
+    current_step: Mapped[str] = mapped_column(String(64), nullable=False, default="validating", server_default=text("'validating'"))
     progress_percent: Mapped[int] = mapped_column(default=0)
-    status: Mapped[str] = mapped_column(String(32), nullable=False, default="queued")
+    status: Mapped[str] = mapped_column(String(32), nullable=False, default="queued", server_default=text("'queued'"))
     error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
-    step_logs: Mapped[list] = mapped_column(JSONB, nullable=False, default=list)
+    step_logs: Mapped[list] = mapped_column(JSONB, nullable=False, default=list, server_default=text("'[]'::jsonb"))
     started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
@@ -149,7 +149,7 @@ class PlatformAuditLog(Base):
     action: Mapped[str] = mapped_column(String(64), nullable=False)
     ip_address: Mapped[str | None] = mapped_column(String(45), nullable=True)
     user_agent: Mapped[str | None] = mapped_column(Text, nullable=True)
-    details: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict)
+    details: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict, server_default=text("'{}'::jsonb"))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 
@@ -162,8 +162,8 @@ class BackupRecord(Base):
     tenant_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=False, index=True
     )
-    backup_type: Mapped[str] = mapped_column(String(32), nullable=False, default="full_database")
-    provider: Mapped[str] = mapped_column(String(32), nullable=False, default="local")
+    backup_type: Mapped[str] = mapped_column(String(32), nullable=False, default="full_database", server_default=text("'full_database'"))
+    provider: Mapped[str] = mapped_column(String(32), nullable=False, default="local", server_default=text("'local'"))
     destination: Mapped[str] = mapped_column(Text, nullable=False)
     file_size_mb: Mapped[float] = mapped_column(default=0.0)
     status: Mapped[str] = mapped_column(String(32), default="completed")

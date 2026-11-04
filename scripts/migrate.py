@@ -448,6 +448,28 @@ MIGRATIONS = [
     ("v29_multi_tenancy", """
         CREATE TABLE IF NOT EXISTS tenants (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), name text NOT NULL, sector text NOT NULL DEFAULT 'plumbing', scale text NOT NULL DEFAULT 'medium', palette jsonb NOT NULL DEFAULT '{}'::jsonb, features jsonb NOT NULL DEFAULT '[]'::jsonb, plan text NOT NULL DEFAULT 'trial', trial_ends_at timestamptz, storefront_slug text UNIQUE, created_at timestamptz NOT NULL DEFAULT now());
         CREATE TABLE IF NOT EXISTS subscriptions (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), tenant_id uuid NOT NULL REFERENCES tenants(id) ON DELETE CASCADE, plan text NOT NULL, status text NOT NULL DEFAULT 'requested', contact_phone text, created_at timestamptz NOT NULL DEFAULT now());
+        DO $fn$
+        BEGIN
+            IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='tenants' AND column_name='status') THEN
+                ALTER TABLE tenants ALTER COLUMN status SET DEFAULT 'active';
+            END IF;
+            IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='tenants' AND column_name='deployment_mode') THEN
+                ALTER TABLE tenants ALTER COLUMN deployment_mode SET DEFAULT 'cloud_saas';
+            END IF;
+            IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='tenants' AND column_name='business_type') THEN
+                ALTER TABLE tenants ALTER COLUMN business_type SET DEFAULT 'retail';
+            END IF;
+            IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='tenants' AND column_name='tech_stack') THEN
+                ALTER TABLE tenants ALTER COLUMN tech_stack SET DEFAULT '{}'::jsonb;
+            END IF;
+            IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='tenants' AND column_name='active_modules') THEN
+                ALTER TABLE tenants ALTER COLUMN active_modules SET DEFAULT '[]'::jsonb;
+            END IF;
+            IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='tenants' AND column_name='limits') THEN
+                ALTER TABLE tenants ALTER COLUMN limits SET DEFAULT '{}'::jsonb;
+            END IF;
+        END
+        $fn$;
         INSERT INTO tenants (id, name, sector, scale, palette, features, plan) SELECT gen_random_uuid(), 'المصرية الألمانية للأدوات الصحية', 'plumbing', 'large', '{}'::jsonb, '[]'::jsonb, 'enterprise' WHERE NOT EXISTS (SELECT 1 FROM tenants);
         ALTER TABLE accounting_periods ADD COLUMN IF NOT EXISTS tenant_id uuid REFERENCES tenants(id);
         ALTER TABLE archived_documents ADD COLUMN IF NOT EXISTS tenant_id uuid REFERENCES tenants(id);
@@ -1349,6 +1371,28 @@ def ensure_foundation():
             storefront_slug text UNIQUE,
             created_at timestamptz NOT NULL DEFAULT now()
         );
+        DO $fn$
+        BEGIN
+            IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='tenants' AND column_name='status') THEN
+                ALTER TABLE tenants ALTER COLUMN status SET DEFAULT 'active';
+            END IF;
+            IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='tenants' AND column_name='deployment_mode') THEN
+                ALTER TABLE tenants ALTER COLUMN deployment_mode SET DEFAULT 'cloud_saas';
+            END IF;
+            IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='tenants' AND column_name='business_type') THEN
+                ALTER TABLE tenants ALTER COLUMN business_type SET DEFAULT 'retail';
+            END IF;
+            IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='tenants' AND column_name='tech_stack') THEN
+                ALTER TABLE tenants ALTER COLUMN tech_stack SET DEFAULT '{}'::jsonb;
+            END IF;
+            IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='tenants' AND column_name='active_modules') THEN
+                ALTER TABLE tenants ALTER COLUMN active_modules SET DEFAULT '[]'::jsonb;
+            END IF;
+            IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='tenants' AND column_name='limits') THEN
+                ALTER TABLE tenants ALTER COLUMN limits SET DEFAULT '{}'::jsonb;
+            END IF;
+        END
+        $fn$;
         INSERT INTO tenants (id, name, sector, scale, palette, features, plan)
         SELECT gen_random_uuid(), 'المصرية الألمانية للأدوات الصحية', 'plumbing', 'large', '{}'::jsonb, '[]'::jsonb, 'enterprise'
         WHERE NOT EXISTS (SELECT 1 FROM tenants);
