@@ -73,6 +73,7 @@ const AdmoonSystemSettings = lazy(() => import("@/admoon/pages/SystemSettings"))
 // Marketing Website & Documentation Portal Pages
 const ProductPage = lazy(() => import("@/features/marketing/ProductPage"));
 const FeaturesPage = lazy(() => import("@/features/marketing/FeaturesPage"));
+const FeatureDetailPage = lazy(() => import("@/features/marketing/FeatureDetailPage"));
 const IndustriesPage = lazy(() => import("@/features/marketing/IndustriesPage"));
 const AboutPage = lazy(() => import("@/features/marketing/AboutPage"));
 const ContactPage = lazy(() => import("@/features/marketing/ContactPage"));
@@ -254,6 +255,8 @@ export default function App() {
       {/* Official Marketing Website Routes */}
       <Route path="/product" element={<Page><ProductPage /></Page>} />
       <Route path="/features" element={<Page><FeaturesPage /></Page>} />
+      <Route path="/features/details" element={<Page><FeatureDetailPage /></Page>} />
+      <Route path="/features/:slug" element={<Page><FeatureDetailPage /></Page>} />
       <Route path="/industries" element={<Page><IndustriesPage /></Page>} />
       <Route path="/pricing" element={<Page><PricingPage /></Page>} />
       <Route path="/about" element={<Page><AboutPage /></Page>} />

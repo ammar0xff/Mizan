@@ -218,10 +218,10 @@ export default function FeaturesPage() {
                   </div>
 
                   <Link
-                    to="/signup"
+                    to={feat.id === "inventory" ? "/features/inventory" : `/features/${feat.id}`}
                     className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#651E2C] hover:text-[#521723] pt-2"
                   >
-                    <span>{isAr ? "تفعيل هذه الوحدة" : "Activate This Module"}</span>
+                    <span>{isAr ? "استكشف تفاصيل الميزة" : "Explore Feature Details"}</span>
                     {isAr ? <ArrowLeft className="h-3.5 w-3.5" /> : <ArrowRight className="h-3.5 w-3.5" />}
                   </Link>
                 </div>

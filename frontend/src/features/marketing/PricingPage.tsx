@@ -74,6 +74,7 @@ export default function PricingPage() {
   const isAr = locale === "ar";
 
   const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("monthly");
+  const [currency, setCurrency] = useState<"USD" | "EGP">("USD");
   const [phone, setPhone] = useState("");
 
   // Live Subscription Status (if logged in)
@@ -265,8 +266,9 @@ export default function PricingPage() {
               : "Choose the package tailored to your business scale. No hidden fees, upgrade or adjust branches anytime."}
           </p>
 
-          {/* Billing Cycle Toggle */}
-          <div className="pt-4 flex items-center justify-center">
+          {/* Billing Cycle & Currency Toggles */}
+          <div className="pt-4 flex flex-wrap items-center justify-center gap-4">
+            {/* Monthly / Annual Toggle */}
             <div className="inline-flex items-center rounded-full border border-[#E7D6C1] bg-white p-1 shadow-xs">
               <button
                 type="button"
@@ -292,6 +294,32 @@ export default function PricingPage() {
                 <span className="rounded-full bg-[#B86B76]/20 px-2 py-0.5 text-[10px] font-bold text-[#651E2C]">
                   {isAr ? "وفر 20%" : "Save 20%"}
                 </span>
+              </button>
+            </div>
+
+            {/* Currency Switcher */}
+            <div className="inline-flex items-center rounded-full border border-[#E7D6C1] bg-white p-1 shadow-xs">
+              <button
+                type="button"
+                onClick={() => setCurrency("USD")}
+                className={`rounded-full px-4 py-2 text-xs font-bold transition-all ${
+                  currency === "USD"
+                    ? "bg-[#651E2C] text-white shadow-xs"
+                    : "text-[#77716E] hover:text-[#262321]"
+                }`}
+              >
+                USD ($)
+              </button>
+              <button
+                type="button"
+                onClick={() => setCurrency("EGP")}
+                className={`rounded-full px-4 py-2 text-xs font-bold transition-all ${
+                  currency === "EGP"
+                    ? "bg-[#651E2C] text-white shadow-xs"
+                    : "text-[#77716E] hover:text-[#262321]"
+                }`}
+              >
+                EGP (ج.م)
               </button>
             </div>
           </div>
@@ -340,21 +368,33 @@ export default function PricingPage() {
           )}
         </div>
 
-        {/* 2. Three Editorial Luxury Pricing Cards */}
+        {/* 2. Three Editorial Luxury Pricing Cards matching Screen 6 (06_pricing.png) */}
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-3 items-stretch">
             {commercialPlans.map((plan) => {
               const isPopular = plan.popular;
               const isCurrent = isCurrentPlan(plan.id);
-              const price = billingCycle === "annual" ? Math.round(plan.price_annual_egp / 12) : plan.price_egp;
+
+              const usdRates: Record<string, { monthly: number; annual: number }> = {
+                starter: { monthly: 49, annual: 39 },
+                pro: { monthly: 99, annual: 79 },
+                enterprise: { monthly: 199, annual: 159 },
+              };
+
+              const price = currency === "USD"
+                ? (billingCycle === "annual" ? (usdRates[plan.id]?.annual ?? 49) : (usdRates[plan.id]?.monthly ?? 49))
+                : (billingCycle === "annual" ? Math.round(plan.price_annual_egp / 12) : plan.price_egp);
+
+              const symbol = currency === "USD" ? "$" : "";
+              const period = currency === "USD" ? (isAr ? "/ شهر" : "/ mo") : (isAr ? "ج.م / شهر" : "EGP / mo");
 
               return (
                 <div
                   key={plan.id}
-                  className={`relative flex flex-col justify-between rounded-2xl transition-all duration-300 p-8 sm:p-10 ${
+                  className={`relative flex flex-col justify-between rounded-3xl transition-all duration-300 p-8 sm:p-10 ${
                     isPopular
-                      ? "border-2 border-[#651E2C] bg-white shadow-xl shadow-[#651E2C]/5 ring-1 ring-[#651E2C]"
-                      : "border border-[#E7D6C1] bg-white/80 hover:bg-white shadow-xs"
+                      ? "border-2 border-[#651E2C] bg-gradient-to-b from-[#F7E7E9] via-white to-white shadow-xl shadow-[#651E2C]/10 ring-1 ring-[#651E2C]"
+                      : "border border-[#E7D6C1] bg-white/90 hover:bg-white shadow-xs"
                   }`}
                 >
                   {isPopular && (
@@ -365,7 +405,7 @@ export default function PricingPage() {
 
                   <div className="space-y-6">
                     <div>
-                      <h3 className="font-display text-2xl font-normal text-[#262321]">
+                      <h3 className="font-display text-2xl font-bold text-[#262321]">
                         {isAr
                           ? plan.name.split("(")[0].trim()
                           : plan.id.charAt(0).toUpperCase() + plan.id.slice(1)}
@@ -376,21 +416,19 @@ export default function PricingPage() {
                     </div>
 
                     <div className="border-y border-[#E7D6C1] py-5">
-                      <div className="flex items-baseline gap-2">
+                      <div className="flex items-baseline gap-1.5">
                         <span className="font-display text-4xl sm:text-5xl font-normal text-[#262321] font-mono">
-                          {price.toLocaleString()}
+                          {symbol}{price.toLocaleString()}
                         </span>
                         <span className="text-xs font-semibold text-[#77716E]">
-                          {isAr ? "ج.م / شهر" : "EGP / month"}
+                          {period}
                         </span>
                       </div>
-                      {billingCycle === "annual" && (
-                        <p className="mt-1 text-[11px] text-[#B86B76] font-medium font-mono">
-                          {isAr
-                            ? `يُسدد ${plan.price_annual_egp.toLocaleString()} ج.م سنوياً`
-                            : `Billed ${plan.price_annual_egp.toLocaleString()} EGP annually`}
-                        </p>
-                      )}
+                      <p className="mt-1 text-[11px] text-[#B86B76] font-medium font-mono">
+                        {billingCycle === "annual"
+                          ? (isAr ? "(تدفع سنوياً مع خصم 20%)" : "(Billed annually, save 20%)")
+                          : (isAr ? "(فاتورة شهرية مرنة)" : "(Flexible monthly billing)")}
+                      </p>
                     </div>
 
                     <div className="space-y-3">
@@ -429,7 +467,7 @@ export default function PricingPage() {
                           ? "ترقية واشتراك فوري"
                           : "Upgrade & Subscribe"
                         : isAr
-                        ? "ابدأ تجربة الـ 14 يوماً"
+                        ? "ابدأ الفترة التجريبية"
                         : "Start 14-Day Free Trial"}
                     </Button>
                   </div>

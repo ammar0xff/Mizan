@@ -13,6 +13,7 @@ import { MarketingLayout } from "./MarketingLayout";
 import { toast } from "sonner";
 import { useState } from "react";
 import { useTranslation } from "@/i18n";
+import { assetUrl } from "@/lib/utils";
 
 export default function BlogPostPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -92,19 +93,30 @@ export default function BlogPostPage() {
             </div>
           </div>
 
-          {/* 3. Header Architectural Banner Image */}
+          {/* 3. Header Architectural Banner Image matching Screen 10 */}
           <div className="relative rounded-3xl overflow-hidden border border-[#E7D6C1] aspect-[21/9] bg-[#35151D] shadow-md">
             <img
-              src="./assets/marketing/arch-hero-feature.jpg"
+              src={assetUrl("assets/marketing/blog-post-arch.jpg")}
               alt={post.title}
-              className="w-full h-full object-cover opacity-90 hover:scale-105 transition-transform duration-700"
+              className="w-full h-full object-cover opacity-95 hover:scale-105 transition-transform duration-700"
             />
           </div>
 
-          {/* 4. Lead Editorial Paragraph */}
-          <p className="font-display text-xl sm:text-2xl font-normal leading-relaxed text-[#262321] border-s-2 border-[#651E2C] ps-5 py-1">
-            {post.content.intro}
-          </p>
+          {/* 4. Lead Editorial Paragraph & Laptop Showcase Split matching Screen 10 */}
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center pt-2">
+            <div className="md:col-span-5 rounded-2xl overflow-hidden border border-[#E7D6C1] shadow-md bg-white p-2">
+              <img
+                src={assetUrl("assets/marketing/blog-post-laptop.jpg")}
+                alt="Mizan Dashboard on Laptop"
+                className="w-full h-auto object-cover rounded-xl"
+              />
+            </div>
+            <div className="md:col-span-7 space-y-4">
+              <p className="font-display text-xl sm:text-2xl font-normal leading-relaxed text-[#262321] border-s-2 border-[#651E2C] ps-5 py-1">
+                {post.content.intro}
+              </p>
+            </div>
+          </div>
 
           {/* 5. Article Body Sections */}
           <div className="space-y-10 pt-4 font-body text-sm sm:text-base text-[#262321] leading-relaxed">

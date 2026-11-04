@@ -14,21 +14,23 @@ VIEWPORTS = {
 
 PAGES = [
     {"name": "landing_ar", "path": "/", "locale": "ar"},
-    {"name": "landing_en", "path": "/", "locale": "en"},
-    {"name": "product_en", "path": "/product", "locale": "en"},
     {"name": "product_ar", "path": "/product", "locale": "ar"},
     {"name": "features_ar", "path": "/features", "locale": "ar"},
+    {"name": "feature_details_ar", "path": "/features/inventory", "locale": "ar"},
     {"name": "industries_ar", "path": "/industries", "locale": "ar"},
     {"name": "pricing_ar", "path": "/pricing", "locale": "ar"},
-    {"name": "pricing_en", "path": "/pricing", "locale": "en"},
     {"name": "about_ar", "path": "/about", "locale": "ar"},
     {"name": "contact_ar", "path": "/contact", "locale": "ar"},
     {"name": "blog_ar", "path": "/blog", "locale": "ar"},
-    {"name": "docs_ar", "path": "/docs", "locale": "ar"},
-    {"name": "demo_light", "path": "/demo", "locale": "ar", "action": "light"},
-    {"name": "demo_dark", "path": "/demo", "locale": "ar", "action": "dark"},
+    {"name": "blog_post_ar", "path": "/blog/building-materials-cashier-velocity", "locale": "ar"},
     {"name": "login_ar", "path": "/login", "locale": "ar"},
     {"name": "signup_ar", "path": "/signup", "locale": "ar"},
+    {"name": "docs_ar", "path": "/docs", "locale": "ar"},
+    {"name": "docs_article_ar", "path": "/docs/introduction", "locale": "ar"},
+    {"name": "demo_light", "path": "/demo", "locale": "ar", "action": "light"},
+    {"name": "demo_dark", "path": "/demo", "locale": "ar", "action": "dark"},
+    {"name": "landing_en", "path": "/", "locale": "en"},
+    {"name": "pricing_en", "path": "/pricing", "locale": "en"},
 ]
 
 def run():
@@ -44,14 +46,16 @@ def run():
                 viewport=vp,
                 device_scale_factor=2,
             )
-            page = context.new_page()
-            
-            page.goto(target_url, wait_until="networkidle")
-            
-            # Ensure correct language via vendora.locale
+            # Abort external network calls (e.g. google fonts) to avoid DNS timeouts in sandbox
+            context.route(lambda url: "localhost" not in url and "127.0.0.1" not in url, lambda route: route.abort())
+
+            # Ensure correct language via vendora.locale before page scripts run
             desired_locale = pinfo["locale"]
-            page.evaluate(f"() => {{ localStorage.setItem('vendora.locale', '{desired_locale}'); }}")
-            page.reload(wait_until="networkidle")
+            context.add_init_script(f"localStorage.setItem('vendora.locale', '{desired_locale}');")
+
+            page = context.new_page()
+            page.goto(target_url, wait_until="domcontentloaded", timeout=15000)
+            page.wait_for_timeout(1000)
 
             # Handle Dark mode action on demo page
             if pinfo.get("action") == "dark":
@@ -59,11 +63,11 @@ def run():
                     dark_btn = page.locator("button:has-text('Dark'), button:has-text('الداكن')").first
                     if dark_btn.is_visible():
                         dark_btn.click()
-                        time.sleep(0.5)
+                        page.wait_for_timeout(500)
                 except Exception as e:
                     pass
 
-            time.sleep(0.8) # Allow smooth framer motion to settle
+            page.wait_for_timeout(800) # Allow smooth framer motion to settle
 
             # Capture Desktop
             desk_path = os.path.join(OUT_DIR, f"mizan_editorial_{pinfo['name']}_desktop.png")

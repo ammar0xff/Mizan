@@ -15,6 +15,7 @@ import { MarketingLayout } from "./MarketingLayout";
 import { toast } from "sonner";
 import { sound } from "@/lib/sound";
 import { useTranslation } from "@/i18n";
+import { assetUrl } from "@/lib/utils";
 
 export default function ContactPage() {
   const { locale } = useTranslation();
@@ -95,7 +96,7 @@ export default function ContactPage() {
               <div className="rounded-3xl border border-[#E7D6C1] bg-white p-8 shadow-xs space-y-6">
                 <div className="relative rounded-2xl overflow-hidden border border-[#E7D6C1] aspect-[16/10] bg-[#35151D]">
                   <img
-                    src="./assets/marketing/arch-floating-card.jpg"
+                    src={assetUrl("assets/marketing/contact-building.jpg")}
                     alt="Mizan Headquarters"
                     className="w-full h-full object-cover opacity-90 hover:scale-105 transition-transform duration-500"
                   />

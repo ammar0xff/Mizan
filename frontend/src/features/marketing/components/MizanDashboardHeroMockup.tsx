@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { useTranslation } from "@/i18n";
 import { MizanLogo } from "@/components/MizanLogo";
+import { assetUrl } from "@/lib/utils";
 
 export function MizanDashboardHeroMockup() {
   const { locale } = useTranslation();
@@ -72,7 +73,7 @@ export function MizanDashboardHeroMockup() {
         } z-10 w-28 h-32 rounded-2xl overflow-hidden border border-white/20 shadow-2xl`}
       >
         <img
-          src="./assets/marketing/arch-floating-card.jpg"
+          src={assetUrl("assets/marketing/arch-floating-card.jpg")}
           alt="Mizan Architectural Balance"
           className="w-full h-full object-cover brightness-95 hover:scale-105 transition-transform duration-500"
           onError={(e) => {

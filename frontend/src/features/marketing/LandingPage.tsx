@@ -22,6 +22,7 @@ import { MizanDashboardHeroMockup } from "./components/MizanDashboardHeroMockup"
 import { BuildingMaterialsPosDemo } from "./components/BuildingMaterialsPosDemo";
 import { PLANS } from "./plans";
 import { useTranslation } from "@/i18n";
+import { assetUrl } from "@/lib/utils";
 
 export default function LandingPage() {
   const { locale } = useTranslation();
@@ -276,7 +277,7 @@ export default function LandingPage() {
                   {/* High-Resolution Architectural Archways Photograph */}
                   <div className="relative z-10 rounded-2xl sm:rounded-3xl overflow-hidden border border-[#DECFC0] shadow-2xl bg-[#EFE4D6]">
                     <img
-                      src="./assets/marketing/arch-hero-feature.jpg"
+                      src={assetUrl("assets/marketing/arch-hero-feature.jpg")}
                       alt="Mizan Architectural Balance & Structure"
                       className="w-full h-80 sm:h-96 object-cover hover:scale-105 transition-transform duration-700"
                     />

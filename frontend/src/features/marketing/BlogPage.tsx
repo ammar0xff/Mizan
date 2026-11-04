@@ -10,6 +10,7 @@ import {
 import { BLOG_POSTS } from "./blogData";
 import { MarketingLayout } from "./MarketingLayout";
 import { useTranslation } from "@/i18n";
+import { assetUrl } from "@/lib/utils";
 
 export default function BlogPage() {
   const { locale } = useTranslation();
@@ -120,7 +121,7 @@ export default function BlogPage() {
                 <div className="lg:col-span-5">
                   <div className="relative rounded-2xl overflow-hidden border border-[#E7D6C1] aspect-[16/11] bg-[#35151D]">
                     <img
-                      src="./assets/marketing/arch-hero-feature.jpg"
+                      src={assetUrl("assets/marketing/arch-hero-feature.jpg")}
                       alt="PostgreSQL RLS Architecture"
                       className="w-full h-full object-cover opacity-90 hover:scale-105 transition-transform duration-500"
                     />
