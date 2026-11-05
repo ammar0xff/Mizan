@@ -46,9 +46,12 @@ backend/app/modules/<module_id>/
 ├── schemas.py            # Optional: Pydantic v2 validation models
 ├── services/             # Optional: Domain services and complex algorithms
 │   └── processor.py
-└── ui/                   # Optional: Bundled static/micro-frontend assets
-    ├── index.html
-    └── bundle.js
+├── ui/                   # Optional: Bundled static/micro-frontend assets
+│   ├── index.html
+│   └── bundle.js
+└── templates/            # Optional: Printable template layouts (HTML)
+    └── <category>/       # e.g. invoices/, receipts/, tickets/, reports/
+        └── <name>.html
 ```
 
 ### File Responsibilities:

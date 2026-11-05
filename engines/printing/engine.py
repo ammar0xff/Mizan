@@ -12,6 +12,9 @@ from pathlib import Path
 from typing import Any
 
 ENGINE_DIR = Path(__file__).resolve().parent
+# Templates now live inside each module: <repo>/modules/<module_id>/templates/<category>/*.html
+# (the 'modules' symlink points at backend/app/modules)
+MODULES_DIR = Path(__file__).resolve().parents[2] / "modules"
 TEMPLATES_DIR = ENGINE_DIR / "templates"
 CONFIG_FILE = ENGINE_DIR / "config.json"
 
@@ -19,8 +22,9 @@ CONFIG_FILE = ENGINE_DIR / "config.json"
 class PrintEngine:
     """Core Print Management Engine."""
 
-    def __init__(self, templates_dir: Path = TEMPLATES_DIR, config_file: Path = CONFIG_FILE) -> None:
+    def __init__(self, templates_dir: Path = TEMPLATES_DIR, config_file: Path = CONFIG_FILE, modules_dir: Path = MODULES_DIR) -> None:
         self.templates_dir = templates_dir
+        self.modules_dir = modules_dir
         self.config_file = config_file
         self._config = self._load_config()
 
@@ -40,22 +44,31 @@ class PrintEngine:
     def paper_profiles(self) -> dict[str, Any]:
         return self._config.get("paper_profiles", {})
 
-    def get_template_path(self, category: str, name: str) -> Path:
-        """category is 'documents' or 'tickets'."""
+    def get_template_path(self, module_id: str, category: str, name: str) -> Path:
+        """Resolve a template file inside a module's templates/<category>/ folder."""
         filename = name if name.endswith(".html") else f"{name}.html"
-        return self.templates_dir / category / filename
+        return self.modules_dir / module_id / "templates" / category / filename
 
-    def list_templates(self) -> dict[str, list[str]]:
-        """List all available templates under documents and tickets."""
-        result: dict[str, list[str]] = {"documents": [], "tickets": []}
-        docs_dir = self.templates_dir / "documents"
-        if docs_dir.exists():
-            result["documents"] = [f.stem for f in docs_dir.glob("*.html")]
-
-        tickets_dir = self.templates_dir / "tickets"
-        if tickets_dir.exists():
-            result["tickets"] = [f.stem for f in tickets_dir.glob("*.html")]
-
+    def list_templates(self) -> dict[str, dict[str, list[str]]]:
+        """List all templates grouped by module -> category -> [names]."""
+        result: dict[str, dict[str, list[str]]] = {}
+        if not self.modules_dir.exists():
+            return result
+        for mod_dir in sorted(self.modules_dir.iterdir()):
+            if not mod_dir.is_dir() or mod_dir.name.startswith(("_", ".")):
+                continue
+            tpl_root = mod_dir / "templates"
+            if not tpl_root.exists():
+                continue
+            mod_entry: dict[str, list[str]] = {}
+            for cat_dir in sorted(tpl_root.iterdir()):
+                if not cat_dir.is_dir():
+                    continue
+                names = [f.stem for f in cat_dir.glob("*.html")]
+                if names:
+                    mod_entry[cat_dir.name] = names
+            if mod_entry:
+                result[mod_dir.name] = mod_entry
         return result
 
     @staticmethod
@@ -91,9 +104,9 @@ class PrintEngine:
         except Exception:
             return str(val) if val else ""
 
-    def render_template(self, category: str, name: str, context: dict[str, Any]) -> str:
+    def render_template(self, module_id: str, category: str, name: str, context: dict[str, Any]) -> str:
         """Render an HTML template with context variables and engine helpers."""
-        tpl_path = self.get_template_path(category, name)
+        tpl_path = self.get_template_path(module_id, category, name)
         if not tpl_path.exists():
             raise FileNotFoundError(f"Template not found at {tpl_path}")
 
@@ -115,14 +128,18 @@ class PrintEngine:
 
         return rendered
 
-    def render(self, name: str, context: dict[str, Any]) -> str:
-        """Convenience render method that looks up template in tickets or documents."""
-        clean_name = name if name.endswith(".html") else f"{name}.html"
-        if (self.templates_dir / "tickets" / clean_name).exists():
-            return self.render_template("tickets", clean_name, context)
-        if (self.templates_dir / "documents" / clean_name).exists():
-            return self.render_template("documents", clean_name, context)
-        raise FileNotFoundError(f"Template '{name}' not found in tickets or documents.")
+    def render(self, module_id: str, category: str, name: str, context: dict[str, Any]) -> str:
+        """Convenience render method that looks up a template inside a module."""
+        return self.render_template(module_id, category, name, context)
+
+    def find_template(self, name: str) -> tuple[str, str] | None:
+        """Find (module_id, category) for a template by stem name across all modules."""
+        clean = name[:-5] if name.endswith(".html") else name
+        for mod, cats in self.list_templates().items():
+            for cat, names in cats.items():
+                if clean in names:
+                    return mod, cat
+        return None
 
 
 print_engine = PrintEngine()
