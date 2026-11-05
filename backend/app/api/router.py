@@ -96,6 +96,9 @@ router.include_router(ecommerce_router)
 from app.modules.clinic.router import router as clinic_router
 router.include_router(clinic_router)
 
+from app.modules.whatsapp_gateway.router import router as whatsapp_gateway_router
+router.include_router(whatsapp_gateway_router)
+
 from app.modules.law.router import router as law_router
 router.include_router(law_router)
 

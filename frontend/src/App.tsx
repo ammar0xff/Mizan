@@ -26,6 +26,7 @@ const LogisticsFleetPage = lazy(() => import("@modules/logistics/frontend/Logist
 const WmsWarehousePage = lazy(() => import("@modules/wms/frontend/WmsWarehousePage"));
 const EcommerceHubPage = lazy(() => import("@modules/ecommerce/frontend/EcommerceHubPage"));
 const ClinicHealthcarePage = lazy(() => import("@modules/clinic/frontend/ClinicHealthcarePage"));
+const WhatsAppGatewayPage = lazy(() => import("@modules/whatsapp_gateway/frontend/WhatsAppGatewayPage"));
 const LawPracticePage = lazy(() => import("@modules/law/frontend/LawPracticePage"));
 const TravelTourismPage = lazy(() => import("@modules/travel/frontend/TravelTourismPage"));
 const HospitalityPmsPage = lazy(() => import("@modules/hospitality/frontend/HospitalityPmsPage"));
@@ -191,6 +192,7 @@ function renderErpChildRoutes(includeIndex: boolean = true) {
       <Route path="wms" element={<Guard perm="" module="wms"><WmsWarehousePage /></Guard>} />
       <Route path="ecommerce" element={<Guard perm="" module="ecommerce"><EcommerceHubPage /></Guard>} />
       <Route path="clinic" element={<Guard perm="" module="clinic"><ClinicHealthcarePage /></Guard>} />
+      <Route path="integrations/whatsapp" element={<Guard perm="" module="whatsapp_gateway"><WhatsAppGatewayPage /></Guard>} />
       <Route path="law" element={<Guard perm="" module="law"><LawPracticePage /></Guard>} />
       <Route path="travel" element={<Guard perm="" module="travel"><TravelTourismPage /></Guard>} />
       <Route path="hospitality" element={<Guard perm="" module="hospitality"><HospitalityPmsPage /></Guard>} />

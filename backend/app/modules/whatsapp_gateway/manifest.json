@@ -1,0 +1,50 @@
+{
+  "id": "whatsapp_gateway",
+  "name": "ربط WhatsApp Business وإرسال الإيصالات",
+  "name_en": "WhatsApp Business & Digital Receipt Dispatch",
+  "category": "integrations",
+  "target_business_types": ["*"],
+  "version": "1.0.0",
+  "icon": "MessageCircle",
+  "description": "إرسال إيصالات رقمية وفواتير تلقائياً إلى WhatsApp العملاء عند إتمام البيع أو طلب المتجر، مع قوالب رسائل قابلة للتخصيص.",
+  "dependencies": ["core", "sales"],
+  "is_core": false,
+  "settings_schema": [
+    {
+      "key": "whatsapp_api_token",
+      "label": "WhatsApp Cloud API Access Token",
+      "type": "string",
+      "default": "",
+      "description": "رمز الوصول من Meta Business (لا تشاركه مع أحد)."
+    },
+    {
+      "key": "phone_number_id",
+      "label": "Phone Number ID",
+      "type": "string",
+      "default": "",
+      "description": "معرّف رقم الهاتف (Phone Number ID) من لوحة Meta."
+    },
+    {
+      "key": "default_template",
+      "label": "قالب الرسالة الافتراضي",
+      "type": "select",
+      "default": "receipt_basic",
+      "options": ["receipt_basic", "receipt_detailed", "receipt_with_qr"],
+      "description": "القالب المستخدم لإرسال الإيصالات تلقائياً."
+    },
+    {
+      "key": "auto_send_on_sale",
+      "label": "إرسال تلقائي عند إتمام بيع",
+      "type": "boolean",
+      "default": true,
+      "description": "إرسال إيصال WhatsApp تلقائياً عند إتمام فاتورة بيع (POS أو متجر)."
+    },
+    {
+      "key": "auto_send_on_storefront_order",
+      "label": "إرسال تلقائي عند طلب متجر",
+      "type": "boolean",
+      "default": true,
+      "description": "إرسال تأكيد طلب WhatsApp عند استلام طلب من المتجر الإلكتروني."
+    }
+  ]
+}

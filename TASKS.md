@@ -18,7 +18,9 @@ Current as of 2026-11-03. All core operational ERP screens, multi-tenancy SaaS i
 
 ## 2. Next Major Integration Candidates (Modular Architecture)
 
-- [ ] **Egyptian Tax Authority (ETA) e-Invoicing & e-Receipt Module (`eta_einvoice`)** — Direct integration with ETA portal (مصلحة الضرائب المصرية), automatic document signing schema (UUID, issuer tax ID, tax activity code, 14% VAT + 1% WHT breakdown), submission queue, and status dashboard.
-- [ ] **WhatsApp Business & Digital Receipt Dispatch Module (`whatsapp_gateway`)** — Automatic digital invoice dispatch directly to customer's WhatsApp upon checkout or storefront order placement, template messaging, and customer receipt portal.
-- [ ] **Customer Loyalty Points & Tiered Rewards Module (`loyalty_rewards`)** — Points earning per EGP, tier progression (Bronze/Silver/Gold), in-POS points redemption discount at checkout, and customer balance statements.
+Integration modules now live under the **`integrations`** category (`backend/app/modules/<id>/` + `frontend/`), following the same module contract as core/vertical modules. Each integration is a self-contained, activatable module with its own settings schema, router, models, and UI.
+
+- [x] **WhatsApp Business & Digital Receipt Dispatch (`whatsapp_gateway`)** — Scaffolded as an integration module: settings schema (Cloud API token, phone number ID, template selector, auto-send toggles), message log model, `/integrations/whatsapp/*` endpoints (status, send-receipt, messages), and a management page. Real dispatch to Meta's Cloud API is queued for the worker.
+- [ ] **Egyptian Tax Authority (ETA) e-Invoicing & e-Receipt Module (`eta_einvoice`)** — Implement as an `integrations` module: ETA portal submission queue, document signing schema (UUID, issuer tax ID, activity code, 14% VAT + 1% WHT), status dashboard.
+- [ ] **Customer Loyalty Points & Tiered Rewards Module (`loyalty_rewards`)** — Implement as an `integrations` module: points per EGP, Bronze/Silver/Gold tiers, in-POS redemption, balance statements.
 - [ ] **UI Kit Modernization & Cleanup** — Migrate remaining legacy screen internals from `components/ui.tsx` shim to direct `components/kit/` design system primitives.

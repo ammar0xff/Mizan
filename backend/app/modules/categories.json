@@ -45,7 +45,9 @@
       "icon": "Boxes",
       "description": "إدارة المستودعات، الجرد الدوري، تحويلات الفروع، وأوامر الشراء والتوريد لكافة المنشآت",
       "order": 3,
-      "allowed_business_types": ["*"]
+      "allowed_business_types": [
+        "*"
+      ]
     },
     {
       "id": "financial_management",
@@ -54,7 +56,9 @@
       "icon": "DollarSign",
       "description": "الخزائن النقدية، الحسابات البنكية، دفاتر اليومية، الضرائب، ومراكز التكلفة",
       "order": 4,
-      "allowed_business_types": ["*"]
+      "allowed_business_types": [
+        "*"
+      ]
     },
     {
       "id": "human_capital",
@@ -63,7 +67,9 @@
       "icon": "Users",
       "description": "شؤون الموظفين، البصمة الحيوية، الورديات، مسيرات الأجور والخصومات القانونية",
       "order": 5,
-      "allowed_business_types": ["*"]
+      "allowed_business_types": [
+        "*"
+      ]
     },
     {
       "id": "distribution_logistics",
@@ -129,7 +135,20 @@
       "icon": "Cpu",
       "description": "محرك الطباعة والإيصالات الحرارية، محرك الموافقات، الجدولة، والاشتراكات الدورية",
       "order": 10,
-      "allowed_business_types": ["*"]
+      "allowed_business_types": [
+        "*"
+      ]
+    },
+    {
+      "id": "integrations",
+      "name": "التكاملات والربط مع الأطراف الثالثة",
+      "name_en": "Integrations & Third-Party Connectors",
+      "icon": "Plug",
+      "description": "ربط Mizan مع خدمات خارجية (WhatsApp, ETA, بوابات دفع، loyalty، CRM) كوحدات قابلة للتفعيل/التعطيل.",
+      "order": 11,
+      "allowed_business_types": [
+        "*"
+      ]
     }
   ],
   "business_types": [
@@ -140,7 +159,13 @@
       "phase": 1,
       "prefix": "RET",
       "primary_pos_collection": "retail-pos",
-      "recommended_modules": ["retail-pos", "inventory", "purchases", "invoicing", "safes"]
+      "recommended_modules": [
+        "retail-pos",
+        "inventory",
+        "purchases",
+        "invoicing",
+        "safes"
+      ]
     },
     {
       "code": "restaurant",
@@ -149,7 +174,13 @@
       "phase": 1,
       "prefix": "RES",
       "primary_pos_collection": "restaurant-pos",
-      "recommended_modules": ["restaurant-pos", "kitchen_display", "inventory", "purchases", "safes"]
+      "recommended_modules": [
+        "restaurant-pos",
+        "kitchen_display",
+        "inventory",
+        "purchases",
+        "safes"
+      ]
     },
     {
       "code": "pharmacy",
@@ -158,7 +189,13 @@
       "phase": 1,
       "prefix": "PHA",
       "primary_pos_collection": "retail-pos",
-      "recommended_modules": ["retail-pos", "inventory", "purchases", "invoicing", "safes"]
+      "recommended_modules": [
+        "retail-pos",
+        "inventory",
+        "purchases",
+        "invoicing",
+        "safes"
+      ]
     },
     {
       "code": "consulting",
@@ -167,7 +204,13 @@
       "phase": 1,
       "prefix": "CON",
       "primary_pos_collection": null,
-      "recommended_modules": ["invoicing", "ledger", "services", "safes", "employees"]
+      "recommended_modules": [
+        "invoicing",
+        "ledger",
+        "services",
+        "safes",
+        "employees"
+      ]
     },
     {
       "code": "school",
@@ -176,7 +219,13 @@
       "phase": 1,
       "prefix": "EDU",
       "primary_pos_collection": null,
-      "recommended_modules": ["school", "invoicing", "safes", "ledger", "employees"]
+      "recommended_modules": [
+        "school",
+        "invoicing",
+        "safes",
+        "ledger",
+        "employees"
+      ]
     },
     {
       "code": "wholesale",
@@ -185,7 +234,13 @@
       "phase": 2,
       "prefix": "WHO",
       "primary_pos_collection": "retail-pos",
-      "recommended_modules": ["inventory", "purchases", "invoicing", "ledger", "safes"]
+      "recommended_modules": [
+        "inventory",
+        "purchases",
+        "invoicing",
+        "ledger",
+        "safes"
+      ]
     },
     {
       "code": "logistics",
@@ -194,7 +249,13 @@
       "phase": 2,
       "prefix": "LOG",
       "primary_pos_collection": null,
-      "recommended_modules": ["services", "invoicing", "safes", "ledger", "employees"]
+      "recommended_modules": [
+        "services",
+        "invoicing",
+        "safes",
+        "ledger",
+        "employees"
+      ]
     },
     {
       "code": "wms_3pl",
@@ -203,7 +264,13 @@
       "phase": 2,
       "prefix": "WMS",
       "primary_pos_collection": null,
-      "recommended_modules": ["inventory", "invoicing", "purchases", "safes", "ledger"]
+      "recommended_modules": [
+        "inventory",
+        "invoicing",
+        "purchases",
+        "safes",
+        "ledger"
+      ]
     },
     {
       "code": "ecommerce",
@@ -212,7 +279,13 @@
       "phase": 2,
       "prefix": "ECS",
       "primary_pos_collection": "retail-pos",
-      "recommended_modules": ["retail-pos", "inventory", "invoicing", "safes", "purchases"]
+      "recommended_modules": [
+        "retail-pos",
+        "inventory",
+        "invoicing",
+        "safes",
+        "purchases"
+      ]
     },
     {
       "code": "healthcare",
@@ -221,7 +294,13 @@
       "phase": 3,
       "prefix": "HLT",
       "primary_pos_collection": null,
-      "recommended_modules": ["clinic", "invoicing", "inventory", "safes", "employees"]
+      "recommended_modules": [
+        "clinic",
+        "invoicing",
+        "inventory",
+        "safes",
+        "employees"
+      ]
     },
     {
       "code": "law_firm",
@@ -230,7 +309,13 @@
       "phase": 3,
       "prefix": "LAW",
       "primary_pos_collection": null,
-      "recommended_modules": ["services", "invoicing", "safes", "ledger", "employees"]
+      "recommended_modules": [
+        "services",
+        "invoicing",
+        "safes",
+        "ledger",
+        "employees"
+      ]
     },
     {
       "code": "travel",
@@ -239,7 +324,13 @@
       "phase": 3,
       "prefix": "TRV",
       "primary_pos_collection": null,
-      "recommended_modules": ["services", "invoicing", "safes", "ledger", "employees"]
+      "recommended_modules": [
+        "services",
+        "invoicing",
+        "safes",
+        "ledger",
+        "employees"
+      ]
     },
     {
       "code": "hotel",
@@ -248,7 +339,13 @@
       "phase": 3,
       "prefix": "HOT",
       "primary_pos_collection": "restaurant-pos",
-      "recommended_modules": ["restaurant-pos", "inventory", "invoicing", "safes", "employees"]
+      "recommended_modules": [
+        "restaurant-pos",
+        "inventory",
+        "invoicing",
+        "safes",
+        "employees"
+      ]
     },
     {
       "code": "gym",
@@ -257,7 +354,14 @@
       "phase": 3,
       "prefix": "GYM",
       "primary_pos_collection": "gym-pos",
-      "recommended_modules": ["gym-pos", "gym_fitness", "invoicing", "inventory", "safes", "employees"]
+      "recommended_modules": [
+        "gym-pos",
+        "gym_fitness",
+        "invoicing",
+        "inventory",
+        "safes",
+        "employees"
+      ]
     },
     {
       "code": "salon",
@@ -266,7 +370,13 @@
       "phase": 3,
       "prefix": "SAL",
       "primary_pos_collection": "retail-pos",
-      "recommended_modules": ["retail-pos", "inventory", "invoicing", "safes", "employees"]
+      "recommended_modules": [
+        "retail-pos",
+        "inventory",
+        "invoicing",
+        "safes",
+        "employees"
+      ]
     },
     {
       "code": "agency",
@@ -275,7 +385,13 @@
       "phase": 3,
       "prefix": "AGE",
       "primary_pos_collection": null,
-      "recommended_modules": ["services", "invoicing", "safes", "ledger", "employees"]
+      "recommended_modules": [
+        "services",
+        "invoicing",
+        "safes",
+        "ledger",
+        "employees"
+      ]
     },
     {
       "code": "field_service",
@@ -284,7 +400,13 @@
       "phase": 3,
       "prefix": "FSM",
       "primary_pos_collection": null,
-      "recommended_modules": ["services", "inventory", "invoicing", "safes", "employees"]
+      "recommended_modules": [
+        "services",
+        "inventory",
+        "invoicing",
+        "safes",
+        "employees"
+      ]
     },
     {
       "code": "discrete_mfg",
@@ -293,7 +415,13 @@
       "phase": 4,
       "prefix": "MFG",
       "primary_pos_collection": null,
-      "recommended_modules": ["inventory", "purchases", "invoicing", "ledger", "safes"]
+      "recommended_modules": [
+        "inventory",
+        "purchases",
+        "invoicing",
+        "ledger",
+        "safes"
+      ]
     },
     {
       "code": "food_mfg",
@@ -302,7 +430,13 @@
       "phase": 4,
       "prefix": "FOD",
       "primary_pos_collection": null,
-      "recommended_modules": ["inventory", "purchases", "invoicing", "ledger", "safes"]
+      "recommended_modules": [
+        "inventory",
+        "purchases",
+        "invoicing",
+        "ledger",
+        "safes"
+      ]
     },
     {
       "code": "pharma_mfg",
@@ -311,7 +445,13 @@
       "phase": 4,
       "prefix": "PHM",
       "primary_pos_collection": null,
-      "recommended_modules": ["inventory", "purchases", "invoicing", "ledger", "safes"]
+      "recommended_modules": [
+        "inventory",
+        "purchases",
+        "invoicing",
+        "ledger",
+        "safes"
+      ]
     },
     {
       "code": "printing",
@@ -320,7 +460,13 @@
       "phase": 4,
       "prefix": "PRN",
       "primary_pos_collection": null,
-      "recommended_modules": ["inventory", "purchases", "invoicing", "ledger", "safes"]
+      "recommended_modules": [
+        "inventory",
+        "purchases",
+        "invoicing",
+        "ledger",
+        "safes"
+      ]
     },
     {
       "code": "construction",
@@ -329,7 +475,13 @@
       "phase": 5,
       "prefix": "CST",
       "primary_pos_collection": null,
-      "recommended_modules": ["services", "purchases", "invoicing", "ledger", "safes"]
+      "recommended_modules": [
+        "services",
+        "purchases",
+        "invoicing",
+        "ledger",
+        "safes"
+      ]
     },
     {
       "code": "real_estate",
@@ -338,7 +490,13 @@
       "phase": 5,
       "prefix": "RE",
       "primary_pos_collection": null,
-      "recommended_modules": ["services", "invoicing", "safes", "ledger", "employees"]
+      "recommended_modules": [
+        "services",
+        "invoicing",
+        "safes",
+        "ledger",
+        "employees"
+      ]
     },
     {
       "code": "agriculture",
@@ -347,7 +505,13 @@
       "phase": 5,
       "prefix": "AGR",
       "primary_pos_collection": null,
-      "recommended_modules": ["inventory", "purchases", "invoicing", "ledger", "safes"]
+      "recommended_modules": [
+        "inventory",
+        "purchases",
+        "invoicing",
+        "ledger",
+        "safes"
+      ]
     },
     {
       "code": "energy",
@@ -356,7 +520,13 @@
       "phase": 5,
       "prefix": "ENG",
       "primary_pos_collection": null,
-      "recommended_modules": ["services", "inventory", "purchases", "safes", "ledger"]
+      "recommended_modules": [
+        "services",
+        "inventory",
+        "purchases",
+        "safes",
+        "ledger"
+      ]
     },
     {
       "code": "banking",
@@ -365,7 +535,12 @@
       "phase": 6,
       "prefix": "BNK",
       "primary_pos_collection": null,
-      "recommended_modules": ["ledger", "safes", "invoicing", "employees"]
+      "recommended_modules": [
+        "ledger",
+        "safes",
+        "invoicing",
+        "employees"
+      ]
     },
     {
       "code": "insurance",
@@ -374,7 +549,12 @@
       "phase": 6,
       "prefix": "INS",
       "primary_pos_collection": null,
-      "recommended_modules": ["ledger", "invoicing", "safes", "employees"]
+      "recommended_modules": [
+        "ledger",
+        "invoicing",
+        "safes",
+        "employees"
+      ]
     },
     {
       "code": "government",
@@ -383,7 +563,13 @@
       "phase": 6,
       "prefix": "GOV",
       "primary_pos_collection": null,
-      "recommended_modules": ["ledger", "purchases", "invoicing", "safes", "employees"]
+      "recommended_modules": [
+        "ledger",
+        "purchases",
+        "invoicing",
+        "safes",
+        "employees"
+      ]
     },
     {
       "code": "entertainment",
@@ -392,7 +578,13 @@
       "phase": 6,
       "prefix": "ENT",
       "primary_pos_collection": "retail-pos",
-      "recommended_modules": ["retail-pos", "restaurant-pos", "inventory", "invoicing", "safes"]
+      "recommended_modules": [
+        "retail-pos",
+        "restaurant-pos",
+        "inventory",
+        "invoicing",
+        "safes"
+      ]
     },
     {
       "code": "oil_gas",
@@ -401,7 +593,13 @@
       "phase": 6,
       "prefix": "OIL",
       "primary_pos_collection": null,
-      "recommended_modules": ["services", "inventory", "purchases", "ledger", "safes"]
+      "recommended_modules": [
+        "services",
+        "inventory",
+        "purchases",
+        "ledger",
+        "safes"
+      ]
     }
   ]
 }
