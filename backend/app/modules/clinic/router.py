@@ -117,6 +117,10 @@ async def get_clinic_summary(
     """Overview KPIs for Clinic / Hospital operations."""
     q_patients = await db.execute(select(ClinicPatient).where(ClinicPatient.tenant_id == tenant_id))
     patients = q_patients.scalars().all()
+    if not patients:
+        await _seed_clinic_records(db, tenant_id)
+        q_patients = await db.execute(select(ClinicPatient).where(ClinicPatient.tenant_id == tenant_id))
+        patients = q_patients.scalars().all()
 
     q_appts = await db.execute(select(ClinicAppointment).where(ClinicAppointment.tenant_id == tenant_id))
     appts = q_appts.scalars().all()
@@ -155,7 +159,14 @@ async def list_patients(
     q = await db.execute(
         select(ClinicPatient).where(ClinicPatient.tenant_id == tenant_id).order_by(ClinicPatient.created_at.desc())
     )
-    return q.scalars().all()
+    patients = q.scalars().all()
+    if not patients:
+        await _seed_clinic_records(db, tenant_id)
+        q = await db.execute(
+            select(ClinicPatient).where(ClinicPatient.tenant_id == tenant_id).order_by(ClinicPatient.created_at.desc())
+        )
+        patients = q.scalars().all()
+    return patients
 
 
 @router.post("/patients")
@@ -495,16 +506,10 @@ async def clean_bed(
     return bed
 
 
-@router.post("/seed")
-async def seed_clinic_data(
-    db: AsyncSession = Depends(get_db),
-    tenant_id: str = Depends(get_current_tenant_id),
-    current_user: User = Depends(get_current_user),
-):
-    """Seed initial sample clinical, appointment, EMR, and inpatient bed data."""
+async def _seed_clinic_records(db: AsyncSession, tenant_id: str) -> bool:
     q_patients = await db.execute(select(ClinicPatient).where(ClinicPatient.tenant_id == tenant_id))
     if q_patients.scalars().first():
-        return {"message": "بيانات المركز الطبي والعناية السريرية مسجلة مسبقاً"}
+        return False
 
     # Seed Patients
     p1 = ClinicPatient(
@@ -744,4 +749,17 @@ async def seed_clinic_data(
     db.add_all([b1, b2, b3, b4, b5])
 
     await db.commit()
+    return True
+
+
+@router.post("/seed")
+async def seed_clinic_data(
+    db: AsyncSession = Depends(get_db),
+    tenant_id: str = Depends(get_current_tenant_id),
+    current_user: User = Depends(get_current_user),
+):
+    """Seed initial sample clinical, appointment, EMR, and inpatient bed data."""
+    seeded = await _seed_clinic_records(db, tenant_id)
+    if not seeded:
+        return {"message": "بيانات المركز الطبي والعناية السريرية مسجلة مسبقاً"}
     return {"message": "تم تهيئة وتوليد بيانات العيادات والملفات الطبية والأسرة بنجاح"}

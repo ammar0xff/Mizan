@@ -151,14 +151,28 @@ export function useTenantNav() {
    */
   const isPathActive = (targetPath: string): boolean => {
     const fullTarget = tenantTo(targetPath);
-    const current = location.pathname.replace(/\/+$/, "") || "/";
-    const target = fullTarget.replace(/\/+$/, "") || "/";
+    const [targetPathWithoutQuery, targetQuery] = fullTarget.split("?");
+    const currentPath = location.pathname.replace(/\/+$/, "") || "/";
+    const targetPathClean = targetPathWithoutQuery.replace(/\/+$/, "") || "/";
 
-    if (target === tenantRoot || target === "/") {
-      return current === target;
+    if (targetQuery) {
+      if (currentPath !== targetPathClean) return false;
+      const currentSearchParams = new URLSearchParams(location.search);
+      const targetSearchParams = new URLSearchParams(targetQuery);
+      let match = true;
+      targetSearchParams.forEach((val, key) => {
+        if (currentSearchParams.get(key) !== val) {
+          match = false;
+        }
+      });
+      return match;
     }
 
-    return current === target || current.startsWith(`${target}/`);
+    if (targetPathClean === tenantRoot || targetPathClean === "/") {
+      return currentPath === targetPathClean && !location.search;
+    }
+
+    return currentPath === targetPathClean || currentPath.startsWith(`${targetPathClean}/`);
   };
 
   return {

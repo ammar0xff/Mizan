@@ -219,3 +219,10 @@ async def seed_demo(db: AsyncSession, tenant_id: uuid.UUID, owner_id: uuid.UUID,
     db.add_all(sales)
     db.add_all(payments)
     await db.flush()
+
+    if sector == "healthcare":
+        try:
+            from app.modules.clinic.router import _seed_clinic_records
+            await _seed_clinic_records(db, str(tenant_id))
+        except Exception:
+            pass

@@ -20,7 +20,7 @@ import {
   Globe,
 } from "lucide-react";
 import { api } from "@/lib/api";
-import { NAV_GROUPS, NAV_ITEMS, type NavItem } from "@/lib/nav";
+import { NAV_ITEMS, getSectorNavigation } from "@/lib/nav";
 import { SECTOR_BADGES, SECTOR_PRIMARY_ROUTES } from "@/features/marketing/plans";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/stores/auth";
@@ -82,16 +82,13 @@ function AppSidebar({ onNavigate }: { onNavigate?: () => void }) {
     : "";
 
   const sectorBadge = tenant?.sector ? SECTOR_BADGES[tenant.sector] : null;
+  const isSpecializedSector = tenant?.sector === "healthcare" || tenant?.sector === "restaurant" || tenant?.sector === "pharmacy";
   const sectorPrimaryPath = tenant?.sector ? SECTOR_PRIMARY_ROUTES[tenant.sector] : null;
-  const sectorFeaturedItem = sectorPrimaryPath && sectorPrimaryPath !== "/" && sectorPrimaryPath !== "/pos"
+  const sectorFeaturedItem = !isSpecializedSector && sectorPrimaryPath && sectorPrimaryPath !== "/" && sectorPrimaryPath !== "/pos"
     ? NAV_ITEMS.find((n) => n.to === sectorPrimaryPath)
     : null;
 
-  const visible = NAV_ITEMS.filter((n) => (!n.perm || can(n.perm)) && (!n.module || hasModule(n.module)));
-  const regularVisible = visible.filter((n) => n.to !== sectorFeaturedItem?.to);
-  const groups = (Object.keys(NAV_GROUPS) as NavItem["group"][])
-    .map((g) => ({ id: g, label: NAV_GROUPS[g], items: regularVisible.filter((n) => n.group === g) }))
-    .filter((g) => g.items.length > 0);
+  const groups = getSectorNavigation(tenant?.sector, can, hasModule);
 
   return (
     <div className="flex h-full flex-col bg-sidebar text-sidebar-foreground border-e border-sidebar-border">
@@ -241,12 +238,13 @@ function AppSidebar({ onNavigate }: { onNavigate?: () => void }) {
 
 /* ── 2. Compact Icon Rail (High-Density Screen Real Estate) ── */
 function AppRail({ onNavigate }: { onNavigate?: () => void }) {
-  const { can } = useAuth();
+  const { can, tenant } = useAuth();
   const { hasModule } = useModulesStore();
   const { tenantTo, isPathActive } = useTenantNav();
   const setAppearanceModalOpen = useUiStore((s) => s.setAppearanceModalOpen);
 
-  const visible = NAV_ITEMS.filter((n) => (!n.perm || can(n.perm)) && (!n.module || hasModule(n.module)));
+  const groups = getSectorNavigation(tenant?.sector, can, hasModule);
+  const visible = groups.flatMap((g) => g.items);
 
   return (
     <div className="flex h-full w-16 flex-col items-center bg-sidebar text-sidebar-foreground border-e border-sidebar-border py-3">
@@ -299,14 +297,11 @@ function AppRail({ onNavigate }: { onNavigate?: () => void }) {
 
 /* ── 3. Horizontal Top Navigation Bar (ERP Menu Bar) ── */
 function AppTopNav() {
-  const { can } = useAuth();
+  const { can, tenant } = useAuth();
   const { hasModule } = useModulesStore();
   const { tenantTo, isPathActive } = useTenantNav();
 
-  const visible = NAV_ITEMS.filter((n) => (!n.perm || can(n.perm)) && (!n.module || hasModule(n.module)));
-  const groups = (Object.keys(NAV_GROUPS) as NavItem["group"][])
-    .map((g) => ({ id: g, label: NAV_GROUPS[g], items: visible.filter((n) => n.group === g) }))
-    .filter((g) => g.items.length > 0);
+  const groups = getSectorNavigation(tenant?.sector, can, hasModule);
 
   return (
     <div className="no-print hidden lg:flex items-center gap-1 border-b border-border/80 bg-card px-6 py-1.5 text-xs">

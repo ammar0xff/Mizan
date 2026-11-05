@@ -12,12 +12,13 @@ import {
   ShoppingCart,
   Users,
   UtensilsCrossed,
+  Calendar,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { useAuth } from "@/stores/auth";
 import { useModulesStore } from "@/stores/modules";
-import { NAV_ITEMS } from "@/lib/nav";
+import { getSectorNavigation } from "@/lib/nav";
 import { Dialog, DialogContent, DialogTitle } from "@/components/kit/dialog";
 import { Kbd } from "@/components/kit/kbd";
 import { sound } from "@/lib/sound";
@@ -102,7 +103,7 @@ interface PaletteAction {
 
 /* ── Precision Raycast/Linear Command Palette ──────────────────── */
 export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
-  const { can } = useAuth();
+  const { can, tenant } = useAuth();
   const { hasModule } = useModulesStore();
   const nav = useNavigate();
   const [q, setQ] = useState("");
@@ -143,44 +144,75 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
 
   // Static actions and navigation
   const staticItems = useMemo<PaletteAction[]>(() => {
-    const list: PaletteAction[] = [
-      {
-        id: "act-new-sale",
-        label: "فاتورة بيع جديدة",
-        hint: "نقطة البيع السريعة",
-        kbd: "F2",
-        group: "action",
-        icon: <ShoppingCart className="size-4 text-primary" />,
-        run: () => nav("/pos"),
-      },
-      {
-        id: "act-new-product",
-        label: "إضافة صنف جديد",
-        hint: "الكتالوج",
-        kbd: "N",
-        group: "action",
-        icon: <Plus className="size-4 text-emerald-500" />,
-        run: () => nav("/products"),
-      },
-      {
-        id: "act-new-shift",
-        label: "إدارة وردية الصندوق",
-        hint: "الورديات والخزائن",
-        kbd: "S",
-        group: "action",
-        icon: <Clock className="size-4 text-amber-500" />,
-        run: () => nav("/shifts"),
-      },
-      {
-        id: "act-sales-log",
-        label: "سجل الفواتير والمردودات",
-        hint: "المبيعات",
-        kbd: "V",
-        group: "action",
-        icon: <Receipt className="size-4 text-sky-500" />,
-        run: () => nav("/sales"),
-      },
-    ];
+    const isHealthcare = tenant?.sector === "healthcare";
+    const list: PaletteAction[] = isHealthcare
+      ? [
+          {
+            id: "act-new-clinic-appt",
+            label: "حجز موعد كشف جديد",
+            hint: "العيادات والمواعيد",
+            kbd: "F2",
+            group: "action",
+            icon: <Calendar className="size-4 text-teal-400" />,
+            run: () => nav("/clinic?tab=appointments"),
+          },
+          {
+            id: "act-new-clinic-patient",
+            label: "فتح ملف مريض جديد (EMR)",
+            hint: "سجل المرضى",
+            kbd: "N",
+            group: "action",
+            icon: <Users className="size-4 text-teal-400" />,
+            run: () => nav("/clinic?tab=patients"),
+          },
+          {
+            id: "act-new-clinic-shift",
+            label: "نوبتجيات الكادر الطبي",
+            hint: "مناوبات الأطباء والتمريض",
+            kbd: "S",
+            group: "action",
+            icon: <Clock className="size-4 text-amber-500" />,
+            run: () => nav("/shifts"),
+          },
+        ]
+      : [
+          {
+            id: "act-new-sale",
+            label: "فاتورة بيع جديدة",
+            hint: "نقطة البيع السريعة",
+            kbd: "F2",
+            group: "action",
+            icon: <ShoppingCart className="size-4 text-primary" />,
+            run: () => nav("/pos"),
+          },
+          {
+            id: "act-new-product",
+            label: "إضافة صنف جديد",
+            hint: "الكتالوج",
+            kbd: "N",
+            group: "action",
+            icon: <Plus className="size-4 text-emerald-500" />,
+            run: () => nav("/products"),
+          },
+          {
+            id: "act-new-shift",
+            label: "إدارة وردية الصندوق",
+            hint: "الورديات والخزائن",
+            kbd: "S",
+            group: "action",
+            icon: <Clock className="size-4 text-amber-500" />,
+            run: () => nav("/shifts"),
+          },
+          {
+            id: "act-sales-log",
+            label: "سجل الفواتير والمردودات",
+            hint: "المبيعات",
+            kbd: "V",
+            group: "action",
+            icon: <Receipt className="size-4 text-blue-500" />,
+            run: () => nav("/sales"),
+          },
+        ];
 
     if (hasModule("restaurant")) {
       list.push({
@@ -212,9 +244,8 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
       });
     }
 
-    for (const n of NAV_ITEMS) {
-      if (n.perm && !can(n.perm)) continue;
-      if (n.module && !hasModule(n.module)) continue;
+    const sectorItems = getSectorNavigation(tenant?.sector, can, hasModule).flatMap((g) => g.items);
+    for (const n of sectorItems) {
       list.push({
         id: `nav-${n.to}`,
         label: n.label,
@@ -225,7 +256,7 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
       });
     }
     return list;
-  }, [can, hasModule, nav]);
+  }, [can, hasModule, nav, tenant?.sector]);
 
   // Combine static and live search results
   const allResults = useMemo<PaletteAction[]>(() => {

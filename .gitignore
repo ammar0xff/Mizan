@@ -58,3 +58,6 @@ deploy-logs/
 scripts/ref_crops/
 .vercel
 .env*
+
+# Antigravity installer artifacts
+*.AppImage

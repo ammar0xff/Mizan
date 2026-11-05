@@ -44,6 +44,11 @@ import {
   Building,
   Ticket,
   Flame,
+  Bed,
+  Calendar,
+  HeartPulse,
+  Microscope,
+  Users,
   type LucideIcon,
 } from "lucide-react";
 
@@ -141,3 +146,180 @@ export const NAV_GROUPS: Record<NavItem["group"], string> = {
   money: "المال والعلاقات",
   admin: "الإدارة والنظام",
 };
+
+export interface NavGroup {
+  id: string;
+  label: string;
+  items: NavItem[];
+}
+
+export function getSectorNavigation(
+  sector: string | undefined,
+  can: (perm: string) => boolean,
+  hasModule: (mod: string) => boolean,
+): NavGroup[] {
+  if (sector === "healthcare") {
+    const rawGroups: NavGroup[] = [
+      {
+        id: "clinical",
+        label: "العيادات والتشغيل الطبي",
+        items: [
+          { to: "/clinic", label: "لوحة التحكم الطبية", perm: "", module: "", icon: Stethoscope, group: "main" },
+          { to: "/clinic?tab=appointments", label: "حجز المواعيد والانتظار", perm: "", module: "", icon: Calendar, group: "main" },
+          { to: "/clinic?tab=patients", label: "سجلات وملفات المرضى (EMR)", perm: "", module: "", icon: Users, group: "main" },
+          { to: "/clinic?tab=emr", label: "الكشوفات السريرية والتشخيص", perm: "", module: "", icon: HeartPulse, group: "main" },
+          { to: "/clinic?tab=rx_labs", label: "الروشتات والوصفات الرقمية", perm: "", module: "", icon: Pill, group: "main" },
+          { to: "/clinic?tab=labs", label: "الفحوصات والتحاليل المخبرية", perm: "", module: "", icon: Microscope, group: "main" },
+          { to: "/clinic?tab=beds", label: "أسرّة التنويم والأجنحة", perm: "", module: "", icon: Bed, group: "main" },
+        ],
+      },
+      {
+        id: "pharmacy_supplies",
+        label: "الصيدلية والمستلزمات الطبية",
+        items: [
+          { to: "/pharmacy", label: "صيدلية وصرف الأدوية", perm: "pos", module: "pharmacy", icon: Pill, group: "stock" },
+          { to: "/inventory", label: "المخزون والمستلزمات الطبية", perm: "inventory", module: "inventory", icon: Boxes, group: "stock" },
+          { to: "/purchases", label: "طلبيات وتوريد الأدوية", perm: "purchases", module: "inventory", icon: Truck, group: "stock" },
+        ],
+      },
+      {
+        id: "medical_finance",
+        label: "المالية والفوترة الطبية",
+        items: [
+          { to: "/sales", label: "فواتير الكشوفات والتأمين", perm: "sales", module: "", icon: Receipt, group: "money" },
+          { to: "/customers", label: "حسابات المرضى والتعاقدات", perm: "customers", module: "finance", icon: Contact, group: "money" },
+          { to: "/suppliers", label: "شركات الأدوية والموردين", perm: "customers", module: "finance", icon: Truck, group: "money" },
+          { to: "/finance", label: "الخزائن والإيرادات الطبية", perm: "finance", module: "finance", icon: Wallet, group: "money" },
+          { to: "/reports", label: "التقارير الطبية والمالية", perm: "reports", module: "core", icon: BarChart3, group: "money" },
+        ],
+      },
+      {
+        id: "medical_staff",
+        label: "الكادر الطبي والإدارة",
+        items: [
+          { to: "/hr", label: "الأطباء وهيئة التمريض", perm: "payroll", module: "hr", icon: UserCog, group: "admin" },
+          { to: "/shifts", label: "نوبتجيات ومناوبات الكادر", perm: "shifts", module: "core", icon: Clock, group: "admin" },
+          { to: "/modules", label: "سوق الوحدات الطبية", perm: "settings", module: "", icon: Blocks, group: "admin" },
+          { to: "/users", label: "المستخدمون وصلاحيات النظام", perm: "users", module: "core", icon: ShieldCheck, group: "admin" },
+          { to: "/settings", label: "إعدادات العيادات والمجمع", perm: "settings", module: "core", icon: Settings, group: "admin" },
+        ],
+      },
+    ];
+
+    return rawGroups
+      .map((g) => ({
+        ...g,
+        items: g.items.filter((item) => (!item.perm || can(item.perm)) && (!item.module || hasModule(item.module))),
+      }))
+      .filter((g) => g.items.length > 0);
+  }
+
+  if (sector === "restaurant") {
+    const rawGroups: NavGroup[] = [
+      {
+        id: "dining",
+        label: "الصالة والتشغيل الفندقي",
+        items: [
+          { to: "/restaurant/tables", label: "إدارة الطاولات والصالة", perm: "pos", module: "restaurant", icon: LayoutGrid, group: "main" },
+          { to: "/restaurant/kitchen", label: "شاشة المطبخ (KDS)", perm: "pos", module: "restaurant", icon: ChefHat, group: "main" },
+          { to: "/pos", label: "نقطة بيع المطعم والطلبات", perm: "pos", module: "pos", icon: ShoppingCart, group: "main" },
+          { to: "/sales", label: "فواتير الطلبات والضيافة", perm: "sales", module: "pos", icon: Receipt, group: "main" },
+        ],
+      },
+      {
+        id: "kitchen_stock",
+        label: "المطبخ والمخزون الغذائي",
+        items: [
+          { to: "/products", label: "قائمة المأكولات والمشروبات (Menu)", perm: "inventory", module: "inventory", icon: Utensils, group: "stock" },
+          { to: "/inventory", label: "المكونات والمخزون الغذائي", perm: "inventory", module: "inventory", icon: Boxes, group: "stock" },
+          { to: "/purchases", label: "توريدات الأغذية والخضار", perm: "purchases", module: "inventory", icon: Truck, group: "stock" },
+        ],
+      },
+      {
+        id: "dining_finance",
+        label: "المالية وحسابات العملاء",
+        items: [
+          { to: "/customers", label: "حسابات عملاء الشركات والولاء", perm: "customers", module: "finance", icon: Contact, group: "money" },
+          { to: "/suppliers", label: "موردو اللحوم والأغذية", perm: "customers", module: "finance", icon: Truck, group: "money" },
+          { to: "/finance", label: "الخزينة والمالية اليومية", perm: "finance", module: "finance", icon: Wallet, group: "money" },
+          { to: "/reports", label: "تقارير المبيعات وهدر المطبخ", perm: "reports", module: "core", icon: BarChart3, group: "money" },
+        ],
+      },
+      {
+        id: "dining_staff",
+        label: "الكادر والإدارة",
+        items: [
+          { to: "/hr", label: "الشيفات وطاقم الخدمة", perm: "payroll", module: "hr", icon: UserCog, group: "admin" },
+          { to: "/shifts", label: "ورديات العمل", perm: "shifts", module: "pos", icon: Clock, group: "admin" },
+          { to: "/settings", label: "إعدادات المطعم", perm: "settings", module: "core", icon: Settings, group: "admin" },
+        ],
+      },
+    ];
+
+    return rawGroups
+      .map((g) => ({
+        ...g,
+        items: g.items.filter((item) => (!item.perm || can(item.perm)) && (!item.module || hasModule(item.module))),
+      }))
+      .filter((g) => g.items.length > 0);
+  }
+
+  if (sector === "pharmacy") {
+    const rawGroups: NavGroup[] = [
+      {
+        id: "dispensing",
+        label: "صيدلية وصرف الأدوية",
+        items: [
+          { to: "/pharmacy", label: "الصيدلية وصرف الروشتات", perm: "pos", module: "pharmacy", icon: Pill, group: "main" },
+          { to: "/pos", label: "كاشير ونقطة بيع الأدوية", perm: "pos", module: "pos", icon: ShoppingCart, group: "main" },
+          { to: "/sales", label: "مبيعات الأدوية والمستلزمات", perm: "sales", module: "pos", icon: Receipt, group: "main" },
+        ],
+      },
+      {
+        id: "pharmacy_stock",
+        label: "الأدوية والتشغيلات والصلاحيات",
+        items: [
+          { to: "/products", label: "الأدوية والمستحضرات", perm: "inventory", module: "inventory", icon: Package, group: "stock" },
+          { to: "/inventory", label: "مخزون الأدوية وتواريخ الصلاحية", perm: "inventory", module: "inventory", icon: Boxes, group: "stock" },
+          { to: "/suppliers", label: "شركات ومستودعات الأدوية", perm: "customers", module: "finance", icon: Truck, group: "stock" },
+          { to: "/purchases", label: "طلبيات وتوريد الأدوية", perm: "purchases", module: "inventory", icon: Truck, group: "stock" },
+        ],
+      },
+      {
+        id: "pharmacy_finance",
+        label: "التأمين والمالية",
+        items: [
+          { to: "/customers", label: "عملاء التأمين والنقدي", perm: "customers", module: "finance", icon: Contact, group: "money" },
+          { to: "/finance", label: "الخزائن والمالية", perm: "finance", module: "finance", icon: Wallet, group: "money" },
+          { to: "/reports", label: "تقارير الصيدلية والنواقص", perm: "reports", module: "core", icon: BarChart3, group: "money" },
+        ],
+      },
+      {
+        id: "pharmacy_admin",
+        label: "فريق الصيادلة والإدارة",
+        items: [
+          { to: "/hr", label: "الصيادلة ومساعدو الصيدلي", perm: "payroll", module: "hr", icon: UserCog, group: "admin" },
+          { to: "/shifts", label: "ورديات الصيدلية", perm: "shifts", module: "pos", icon: Clock, group: "admin" },
+          { to: "/settings", label: "إعدادات الصيدلية", perm: "settings", module: "core", icon: Settings, group: "admin" },
+        ],
+      },
+    ];
+
+    return rawGroups
+      .map((g) => ({
+        ...g,
+        items: g.items.filter((item) => (!item.perm || can(item.perm)) && (!item.module || hasModule(item.module))),
+      }))
+      .filter((g) => g.items.length > 0);
+  }
+
+  // Default Standard Navigation
+  const visible = NAV_ITEMS.filter((n) => (!n.perm || can(n.perm)) && (!n.module || hasModule(n.module)));
+  return (Object.keys(NAV_GROUPS) as NavItem["group"][])
+    .map((g) => ({
+      id: g,
+      label: NAV_GROUPS[g],
+      items: visible.filter((n) => n.group === g),
+    }))
+    .filter((g) => g.items.length > 0);
+}
