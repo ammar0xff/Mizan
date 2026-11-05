@@ -49,7 +49,13 @@ import { api, ApiError } from "@/lib/api";
 import { useAuth, type TenantInfo } from "@/stores/auth";
 import { useUiStore, type ThemePalette } from "@/stores/ui";
 import { Button, ErrorBox, Input } from "@/components/ui";
-import { FEATURE_OPTIONS, PALETTE_OPTIONS, SECTOR_OPTIONS } from "./plans";
+import {
+  PALETTE_OPTIONS,
+  SECTOR_OPTIONS,
+  getSectorModules,
+  getSectorDefaultFeatures,
+  SECTOR_PRIMARY_ROUTES,
+} from "./plans";
 import { cn } from "@/lib/utils";
 import { MizanLogo } from "@/components/MizanLogo";
 
@@ -146,9 +152,14 @@ export default function OnboardingWizard() {
   const [company, setCompany] = useState("");
   const [scale, setScale] = useState("medium");
   const [palette, setPalette] = useState<string>("mizan");
-  const [features, setFeatures] = useState<string[]>(["pos", "inventory"]);
+  const [features, setFeatures] = useState<string[]>(() => getSectorDefaultFeatures("retail"));
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  function handleSelectSector(newSector: string) {
+    setSector(newSector);
+    setFeatures(getSectorDefaultFeatures(newSector));
+  }
 
   // Enriched sectors list
   const enrichedSectors: SectorMeta[] = useMemo(() => {
@@ -200,7 +211,7 @@ export default function OnboardingWizard() {
     setBusy(true);
     setError(null);
     try {
-      const r = await api.post<{ access_token: string; user: never; tenant: TenantInfo }>("/platform/signup", {
+      const r = await api.post<{ access_token: string; user: never; tenant: TenantInfo; primary_route?: string }>("/platform/signup", {
         company_name: company,
         sector,
         scale,
@@ -222,10 +233,11 @@ export default function OnboardingWizard() {
       sessionStorage.removeItem("vendora.owner");
 
       const targetSlug = r.tenant?.slug;
+      const primaryRoute = r.primary_route || r.tenant?.primary_route || SECTOR_PRIMARY_ROUTES[sector] || "/dashboard";
       if (targetSlug && targetSlug !== "undefined" && targetSlug !== "null") {
-        nav(`/c/${targetSlug}/pos`, { replace: true });
+        nav(`/c/${targetSlug}${primaryRoute}`, { replace: true });
       } else {
-        nav("/pos", { replace: true });
+        nav(primaryRoute, { replace: true });
       }
     } catch (err) {
       if (err instanceof ApiError && err.status === 409) {
@@ -360,7 +372,7 @@ export default function OnboardingWizard() {
                         <button
                           key={o.value}
                           type="button"
-                          onClick={() => setSector(o.value)}
+                          onClick={() => handleSelectSector(o.value)}
                           aria-pressed={isSelected}
                           className={cn(
                             "group relative flex flex-col justify-between rounded-xl border p-3.5 text-start transition-all duration-200 cursor-pointer",
@@ -593,42 +605,71 @@ export default function OnboardingWizard() {
               </div>
 
               <div className="border-t border-border/60 pt-4">
-                <div className="flex items-center gap-2 mb-2.5">
-                  <Layers className="size-4 text-primary" />
-                  <span className="text-xs font-bold text-foreground">الوحدات المطلوب تفعيلها أولياً</span>
-                  <span className="text-[10px] text-muted-foreground">(يمكنك تشغيل باقي الوحدات لاحقاً)</span>
+                <div className="flex items-center justify-between gap-2 mb-2.5">
+                  <div className="flex items-center gap-2">
+                    <Layers className="size-4 text-primary" />
+                    <span className="text-xs font-bold text-foreground">
+                      الوحدات والمنظومات التخصصية لقطاع (
+                      <span className="text-primary font-bold">{selectedSectorObj?.label.split("(")[0].trim() || "المنشأة"}</span>)
+                    </span>
+                  </div>
+                  <span className="text-[10px] text-muted-foreground bg-primary/10 text-primary font-bold px-2 py-0.5 rounded-full font-mono">
+                    {features.length} مفعلة
+                  </span>
                 </div>
-                <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                  {FEATURE_OPTIONS.map((o) => {
-                    const isSelected = features.includes(o.value);
+                <p className="text-[11px] text-muted-foreground mb-3 leading-relaxed">
+                  تم تحديد هذه المنظومات آلياً لتناسب طبيعة نشاطك التجاري والتشغيلي بالكامل. يمكنك تفعيل أو تعطيل أي وحدة بضغطة واحدة:
+                </p>
+                <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
+                  {getSectorModules(sector).map((o) => {
+                    const isSelected = features.includes(o.id);
                     return (
                       <button
-                        key={o.value}
+                        key={o.id}
                         type="button"
-                        onClick={() => toggleFeature(o.value)}
+                        onClick={() => toggleFeature(o.id)}
                         className={cn(
-                          "flex items-start gap-3 rounded-xl border p-3 text-start transition cursor-pointer",
+                          "flex flex-col justify-between rounded-xl border p-3.5 text-start transition cursor-pointer group",
                           isSelected
                             ? "border-primary bg-primary/5 ring-1 ring-primary shadow-xs"
                             : "border-line bg-card hover:border-primary/40 hover:bg-muted/30"
                         )}
                       >
-                        <span
-                          className={cn(
-                            "mt-0.5 grid size-4 shrink-0 place-items-center rounded-md border transition-all",
-                            isSelected
-                              ? "border-primary bg-primary text-primary-foreground"
-                              : "border-muted-foreground/30 bg-muted/20"
-                          )}
-                        >
-                          {isSelected && <Check className="size-2.5 stroke-[3]" />}
-                        </span>
-                        <div className="min-w-0">
-                          <span className="block text-xs font-bold text-foreground">{o.label}</span>
-                          <span className="mt-0.5 block text-[10px] text-muted-foreground leading-relaxed line-clamp-1">
+                        <div>
+                          <div className="flex items-start justify-between gap-2 mb-1.5">
+                            <span className="block text-xs font-bold text-foreground group-hover:text-primary transition-colors">
+                              {o.label}
+                            </span>
+                            <span
+                              className={cn(
+                                "mt-0.5 grid size-4 shrink-0 place-items-center rounded-md border transition-all",
+                                isSelected
+                                  ? "border-primary bg-primary text-primary-foreground"
+                                  : "border-muted-foreground/30 bg-muted/20"
+                              )}
+                            >
+                              {isSelected && <Check className="size-2.5 stroke-[3]" />}
+                            </span>
+                          </div>
+                          <span className="block text-[10px] text-muted-foreground leading-relaxed line-clamp-2">
                             {o.desc}
                           </span>
                         </div>
+                        {o.badge && (
+                          <div className="mt-2.5 pt-2 border-t border-border/40 flex items-center justify-between">
+                            <span
+                              className={cn(
+                                "text-[9px] font-mono px-1.5 py-0.5 rounded font-bold",
+                                isSelected ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"
+                              )}
+                            >
+                              {o.badge}
+                            </span>
+                            <span className="text-[9px] text-muted-foreground/70">
+                              {isSelected ? "جاهز للتشغيل ✓" : "معطل"}
+                            </span>
+                          </div>
+                        )}
                       </button>
                     );
                   })}

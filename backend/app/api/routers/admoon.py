@@ -129,6 +129,13 @@ async def resolve_tenant_slug(slug_or_domain: str, db: AsyncSession = Depends(ge
             detail=f"المنشأة ذات المعرف '{slug_or_domain}' غير موجودة في ميزان",
         )
 
+    from app.api.routers.platform import SECTOR_PRIMARY_MODULES, SECTOR_PRIMARY_ROUTES
+    active_mods = tenant.active_modules
+    if not active_mods or active_mods == ["pos", "inventory"]:
+        active_mods = SECTOR_PRIMARY_MODULES.get(tenant.sector, ["pos", "inventory", "finance"])
+
+    primary_route = SECTOR_PRIMARY_ROUTES.get(tenant.sector, "/pos")
+
     return {
         "id": str(tenant.id),
         "name": tenant.name,
@@ -136,11 +143,12 @@ async def resolve_tenant_slug(slug_or_domain: str, db: AsyncSession = Depends(ge
         "custom_domain": tenant.custom_domain,
         "business_type": tenant.business_type,
         "sector": tenant.sector,
+        "primary_route": primary_route,
         "status": tenant.status,
         "plan": tenant.plan,
         "palette": tenant.palette,
         "deployment_mode": tenant.deployment_mode,
-        "active_modules": tenant.active_modules or ["pos", "inventory"],
+        "active_modules": active_mods,
         "limits": tenant.limits,
     }
 

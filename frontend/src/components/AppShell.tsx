@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { api } from "@/lib/api";
 import { NAV_GROUPS, NAV_ITEMS, type NavItem } from "@/lib/nav";
+import { SECTOR_BADGES, SECTOR_PRIMARY_ROUTES } from "@/features/marketing/plans";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/stores/auth";
 import { useModulesStore } from "@/stores/modules";
@@ -60,13 +61,13 @@ interface Warehouse {
 
 export function useBranch() {
   const user = useAuth((s) => s.user);
-  const { data } = useQuery({
+  const { data } = useQuery<Warehouse[]>({
     queryKey: ["warehouses"],
     queryFn: () => api.get<Warehouse[]>("/stock/warehouses"),
     staleTime: 5 * 60_000,
   });
   const [branchId, setBranchId] = useState<string | null>(() => localStorage.getItem("mizan.branch") ?? localStorage.getItem("vendora.branch"));
-  const current = data?.find((w) => w.id === branchId) ?? data?.find((w) => w.id === user?.default_warehouse_id) ?? data?.[0];
+  const current = data?.find((w: Warehouse) => w.id === branchId) ?? data?.find((w: Warehouse) => w.id === user?.default_warehouse_id) ?? data?.[0];
   return { warehouses: data ?? [], branchId: current?.id ?? null, branchName: current?.name ?? "…", setBranchId };
 }
 
@@ -79,9 +80,17 @@ function AppSidebar({ onNavigate }: { onNavigate?: () => void }) {
   const tenantTrialEnds = tenant?.trial_ends_at
     ? new Intl.DateTimeFormat("ar-EG-u-nu-latn", { day: "numeric", month: "long" }).format(new Date(tenant.trial_ends_at))
     : "";
+
+  const sectorBadge = tenant?.sector ? SECTOR_BADGES[tenant.sector] : null;
+  const sectorPrimaryPath = tenant?.sector ? SECTOR_PRIMARY_ROUTES[tenant.sector] : null;
+  const sectorFeaturedItem = sectorPrimaryPath && sectorPrimaryPath !== "/" && sectorPrimaryPath !== "/pos"
+    ? NAV_ITEMS.find((n) => n.to === sectorPrimaryPath)
+    : null;
+
   const visible = NAV_ITEMS.filter((n) => (!n.perm || can(n.perm)) && (!n.module || hasModule(n.module)));
+  const regularVisible = visible.filter((n) => n.to !== sectorFeaturedItem?.to);
   const groups = (Object.keys(NAV_GROUPS) as NavItem["group"][])
-    .map((g) => ({ id: g, label: NAV_GROUPS[g], items: visible.filter((n) => n.group === g) }))
+    .map((g) => ({ id: g, label: NAV_GROUPS[g], items: regularVisible.filter((n) => n.group === g) }))
     .filter((g) => g.items.length > 0);
 
   return (
@@ -94,20 +103,51 @@ function AppSidebar({ onNavigate }: { onNavigate?: () => void }) {
         <span className="flex size-9 items-center justify-center rounded-lg bg-sidebar-primary/20 p-1 border border-sidebar-border/30">
           <MizanLogo size="sm" variant="icon" theme="dark" />
         </span>
-        <div className="flex flex-col leading-tight">
+        <div className="flex flex-col leading-tight min-w-0">
           <div className="flex items-center gap-1.5">
-            <span className="font-bold">{tenant?.name ?? "ميزان"}</span>
-            {currentPreset && (
-              <span className="rounded bg-sidebar-primary/20 px-1.5 py-0.5 text-[9px] font-bold text-sidebar-primary">
+            <span className="font-bold truncate max-w-[125px]">{tenant?.name ?? "ميزان"}</span>
+            {sectorBadge ? (
+              <span className="rounded bg-primary/20 px-1.5 py-0.5 text-[9px] font-bold text-primary shrink-0 border border-primary/30">
+                {sectorBadge.split(" ")[0]}
+              </span>
+            ) : currentPreset ? (
+              <span className="rounded bg-sidebar-primary/20 px-1.5 py-0.5 text-[9px] font-bold text-sidebar-primary shrink-0">
                 {currentPreset.name.split(" ")[0]}
               </span>
-            )}
+            ) : null}
           </div>
           <span className="truncate text-xs text-sidebar-foreground/60">{tenant?.slug ? `/${tenant.slug}` : "مساحة العمل"}</span>
         </div>
       </Link>
       <nav aria-label="القائمة الرئيسية" className="flex-1 overflow-y-auto px-3 py-4">
-        <div className="flex flex-col gap-5">
+        <div className="flex flex-col gap-4">
+          {/* Sector Highlight Banner if vertical business */}
+          {sectorFeaturedItem && (
+            <div className="rounded-xl border border-primary/30 bg-primary/5 p-2 shadow-xs mb-1">
+              <div className="flex items-center justify-between pb-1 px-1">
+                <span className="text-[10px] font-bold text-primary flex items-center gap-1">
+                  <span>منظومة النشاط التخصصية</span>
+                </span>
+                <span className="rounded-full bg-primary/20 px-1.5 py-0.2 text-[9px] font-bold text-primary">
+                  {sectorBadge ? sectorBadge.split(" ")[0] : "مخصصة"} ✓
+                </span>
+              </div>
+              <Link
+                to={tenantTo(sectorFeaturedItem.to)}
+                onClick={onNavigate}
+                className={cn(
+                  "flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-bold transition-all",
+                  isPathActive(sectorFeaturedItem.to)
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "bg-sidebar-accent/80 hover:bg-sidebar-accent text-sidebar-foreground border border-sidebar-border/40"
+                )}
+              >
+                <sectorFeaturedItem.icon className={cn("size-4 shrink-0", isPathActive(sectorFeaturedItem.to) ? "text-primary-foreground" : "text-primary")} />
+                <span className="truncate">{sectorFeaturedItem.label}</span>
+              </Link>
+            </div>
+          )}
+
           {groups.map((group) => (
             <div key={group.id} className="flex flex-col gap-1">
               <p className="px-3 pb-1 text-[11px] font-medium text-sidebar-foreground/50">{group.label}</p>
@@ -376,7 +416,7 @@ function AppTopbar({ onOpenMenu, onOpenSearch }: { onOpenMenu: () => void; onOpe
                 setBranchId(String(v));
               }}
             >
-              {warehouses.map((b) => (
+              {warehouses.map((b: Warehouse) => (
                 <DropdownMenuRadioItem key={b.id} value={b.id}>
                   {b.name}
                 </DropdownMenuRadioItem>

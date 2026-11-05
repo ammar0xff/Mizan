@@ -18,6 +18,8 @@ import {
   Receipt,
   ShoppingCart,
   TrendingUp,
+  Sparkles,
+  ArrowLeft,
 } from "lucide-react";
 import { api } from "@/lib/api";
 import { useBranch } from "@/components/AppShell";
@@ -25,8 +27,10 @@ import { ListState, Money, Num, StatusBadge, TableShell } from "@/components/app
 import { Button } from "@/components/kit/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/kit/table";
 import { Skeleton } from "@/components/kit/skeleton";
-import { Kbd } from "@/components/kit/kbd";
 import { formatDateTime, formatNumber } from "@/lib/format";
+import { useAuth } from "@/stores/auth";
+import { useTenantNav } from "@/lib/tenant";
+import { SECTOR_BADGES, SECTOR_PRIMARY_ROUTES } from "@/features/marketing/plans";
 
 interface DailyReport {
   date: string;
@@ -119,6 +123,12 @@ function Sparkline({ data, className }: { data: { day: string; sales: number }[]
 
 export default function DashboardPage() {
   const { branchId, branchName } = useBranch();
+  const tenant = useAuth((s) => s.tenant);
+  const { tenantTo } = useTenantNav();
+
+  const sectorBadge = tenant?.sector ? SECTOR_BADGES[tenant.sector] : null;
+  const sectorPrimaryRoute = tenant?.sector ? SECTOR_PRIMARY_ROUTES[tenant.sector] : null;
+  const showSectorHero = Boolean(sectorPrimaryRoute && sectorPrimaryRoute !== "/" && sectorPrimaryRoute !== "/pos");
 
   const daily = useQuery({
     queryKey: ["report", "daily"],
@@ -202,10 +212,55 @@ export default function DashboardPage() {
           >
             <ShoppingCart data-icon="inline-start" className="size-3.5" />
             فاتورة بيع جديدة
-            <Kbd className="ms-1.5 text-[9px]">F2</Kbd>
           </Button>
         </div>
       </div>
+
+      {/* ── Specialized Sector Executive Hero ── */}
+      {showSectorHero && sectorPrimaryRoute && (
+        <div className="rounded-2xl border border-primary/30 bg-gradient-to-r from-primary/[0.08] via-primary/[0.03] to-background p-4 sm:p-5 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div className="space-y-1.5 min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="flex size-7 items-center justify-center rounded-lg bg-primary/20 text-primary shrink-0">
+                <Sparkles className="size-4" />
+              </span>
+              <span className="rounded-full bg-primary/20 px-2.5 py-0.5 text-[10px] font-bold text-primary font-mono border border-primary/30 shrink-0">
+                منظومة {sectorBadge || "النشاط"} التخصصية
+              </span>
+              <span className="text-[10px] text-muted-foreground font-medium truncate">مهيأة بالكامل لقطاعك ✓</span>
+            </div>
+            <h2 className="text-sm sm:text-base font-extrabold text-foreground truncate">
+              {tenant?.sector === "healthcare"
+                ? "نظام إدارة العيادات، المرضى، والملفات الطبية الرقمية (EMR & Clinic)"
+                : tenant?.sector === "restaurant"
+                ? "إدارة الصالة، الطاولات، وشاشات المطبخ التفاعلية (KDS & Restaurant-POS)"
+                : tenant?.sector === "pharmacy"
+                ? "إدارة الروشتات، التأمين الطبي، وتتبع الصلاحيات (FEFO & Pharmacy)"
+                : tenant?.sector === "school"
+                ? "شؤون الطلاب، تحصيل الأقساط المدرسية، وحافلات النقل"
+                : tenant?.sector === "law_firm"
+                ? "إدارة القضايا، الجلسات، وأمانات الموكلين (Legal Practice)"
+                : `منظومة العمليات التخصصية لنشاط ${sectorBadge || tenant?.name || ""}`}
+            </h2>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              {tenant?.sector === "healthcare"
+                ? "سجلات المرضى، أرتال الانتظار، الكشوفات الطبية، الروشتات الإلكترونية، وأسرّة التنويم والتحاليل جاهزة للتشغيل الفوري."
+                : tenant?.sector === "restaurant"
+                ? "خريطة الطاولات، شاشات المطبخ اللحظية KDS، وقوائم الوجبات ووصفات المكونات مهيأة."
+                : `تم تخصيص شاشات العمليات وسجلات النشاط لتلائم قطاع ${sectorBadge || ""} وفق أفضل الممارسات والمعايير.`}
+            </p>
+          </div>
+
+          <div className="shrink-0 flex items-center gap-2 w-full md:w-auto">
+            <Link to={tenantTo(sectorPrimaryRoute)} className="w-full md:w-auto">
+              <Button size="sm" className="w-full md:w-auto font-bold gap-2 shadow-sm text-xs h-9 px-4">
+                <span>فتح شاشة {sectorBadge || "المنظومة التخصصية"}</span>
+                <ArrowLeft className="size-3.5" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+      )}
 
       {/* ── Hero Trading Band — The Dominant Sales Velocity & Trend ── */}
       <div className="precision-surface grid grid-cols-1 gap-6 rounded-2xl p-5 lg:grid-cols-[1.2fr_1fr_auto]">

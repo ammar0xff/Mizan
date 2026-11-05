@@ -61,6 +61,96 @@ SECTORS = [
 ]
 SCALES = ["small", "medium", "large"]
 
+SECTOR_PRIMARY_MODULES: dict[str, list[str]] = {
+    # Phase 1: Core Business Systems
+    "retail": ["pos", "inventory", "sales", "finance", "hr"],
+    "restaurant": ["restaurant", "pos", "inventory", "finance"],
+    "pharmacy": ["pharmacy", "inventory", "pos", "finance"],
+    "consulting": ["services", "finance", "hr"],
+    "school": ["school", "finance", "hr"],
+    # Phase 2: Distribution and Logistics
+    "wholesale": ["wholesale", "inventory", "sales", "finance"],
+    "logistics": ["logistics", "finance", "operations"],
+    "wms_3pl": ["wms", "inventory", "finance"],
+    "ecommerce": ["ecommerce", "inventory", "sales", "finance"],
+    # Phase 3: Service-Based Systems
+    "healthcare": ["clinic", "pharmacy", "finance", "inventory", "hr"],
+    "law_firm": ["law", "finance", "hr"],
+    "travel": ["travel", "sales", "finance"],
+    "hotel": ["hospitality", "restaurant", "finance"],
+    "gym": ["gym", "pos", "finance"],
+    "salon": ["salon", "pos", "finance"],
+    "agency": ["agency", "finance", "operations"],
+    "field_service": ["field_service", "inventory", "operations", "finance"],
+    # Phase 4: Manufacturing and Production
+    "discrete_mfg": ["mfg", "inventory", "operations", "finance"],
+    "food_mfg": ["fod", "inventory", "operations", "finance"],
+    "pharma_mfg": ["phm", "inventory", "operations", "finance"],
+    "printing": ["prn", "inventory", "operations", "finance"],
+    # Phase 5: Projects and Infrastructure
+    "construction": ["cst", "inventory", "operations", "finance"],
+    "real_estate": ["rec", "finance", "operations"],
+    "agriculture": ["agr", "inventory", "operations", "finance"],
+    "energy": ["eng", "inventory", "operations", "finance"],
+    # Phase 6: Specialized Systems
+    "banking": ["bnk", "finance"],
+    "insurance": ["ins", "finance"],
+    "government": ["gov", "finance", "operations"],
+    "entertainment": ["ent", "pos", "finance", "operations"],
+    "oil_gas": ["oil", "operations", "finance"],
+    # Legacy aliases
+    "services": ["services", "finance", "hr"],
+    "plumbing": ["pos", "inventory", "finance"],
+    "electrical": ["pos", "inventory", "finance"],
+    "tiles": ["pos", "inventory", "finance"],
+    "paint": ["pos", "inventory", "finance"],
+}
+
+SECTOR_PRIMARY_ROUTES: dict[str, str] = {
+    # Phase 1: Core Business Systems
+    "retail": "/pos",
+    "restaurant": "/restaurant/tables",
+    "pharmacy": "/pharmacy",
+    "consulting": "/services",
+    "school": "/school/students",
+    # Phase 2: Distribution and Logistics
+    "wholesale": "/wholesale",
+    "logistics": "/logistics",
+    "wms_3pl": "/wms",
+    "ecommerce": "/ecommerce",
+    # Phase 3: Service-Based Systems
+    "healthcare": "/clinic",
+    "law_firm": "/law",
+    "travel": "/travel",
+    "hotel": "/hospitality",
+    "gym": "/gym",
+    "salon": "/salon",
+    "agency": "/agency",
+    "field_service": "/field-service",
+    # Phase 4: Manufacturing and Production
+    "discrete_mfg": "/mfg",
+    "food_mfg": "/fod",
+    "pharma_mfg": "/phm",
+    "printing": "/prn",
+    # Phase 5: Projects and Infrastructure
+    "construction": "/cst",
+    "real_estate": "/rec",
+    "agriculture": "/agr",
+    "energy": "/eng",
+    # Phase 6: Specialized Systems
+    "banking": "/bnk",
+    "insurance": "/ins",
+    "government": "/gov",
+    "entertainment": "/ent",
+    "oil_gas": "/oil",
+    # Legacy aliases
+    "services": "/services",
+    "plumbing": "/pos",
+    "electrical": "/pos",
+    "tiles": "/pos",
+    "paint": "/pos",
+}
+
 PALETTE_HUES = {
     "mizan": 350,
     "slate": 240,
@@ -121,6 +211,13 @@ async def signup(data: SignupRequest, request: Request, db: AsyncSession = Depen
 
     tenant_slug = candidate
     hue = PALETTE_HUES.get(data.palette, 250)
+
+    # Calculate initial active modules: sector defaults merged with requested features
+    base_mods = SECTOR_PRIMARY_MODULES.get(data.sector, ["pos", "inventory", "finance"])
+    requested_features = data.features or []
+    all_active = list(dict.fromkeys(base_mods + requested_features))
+    primary_route = SECTOR_PRIMARY_ROUTES.get(data.sector, "/pos")
+
     tenant = Tenant(
         id=uuid.uuid4(),
         name=data.company_name.strip(),
@@ -128,11 +225,11 @@ async def signup(data: SignupRequest, request: Request, db: AsyncSession = Depen
         sector=data.sector,
         scale=data.scale,
         palette={"name": data.palette, "hue": hue},
-        features=data.features,
-        active_modules=data.features if data.features else ["pos", "inventory"],
+        features=requested_features,
+        active_modules=all_active,
         status="active",
         deployment_mode="cloud_saas",
-        business_type="retail",
+        business_type=data.sector,
         plan="trial",
         trial_ends_at=datetime.now(UTC) + timedelta(days=TRIAL_DAYS),
     )
@@ -151,7 +248,7 @@ async def signup(data: SignupRequest, request: Request, db: AsyncSession = Depen
     db.add(owner)
     await db.flush()
 
-    await seed_demo(db, tenant.id, owner.id, data.sector, data.scale, data.features)
+    await seed_demo(db, tenant.id, owner.id, data.sector, data.scale, all_active)
 
     await db.commit()
 
@@ -165,11 +262,13 @@ async def signup(data: SignupRequest, request: Request, db: AsyncSession = Depen
         full_name=token["full_name"], role=token["role"],
     ).model_dump()
     from fastapi.responses import JSONResponse
-    resp = JSONResponse(content={**body, "tenant": {
+    resp = JSONResponse(content={**body, "primary_route": primary_route, "tenant": {
         "id": str(tenant.id),
         "name": tenant.name,
         "slug": tenant.slug,
         "sector": tenant.sector,
+        "business_type": tenant.business_type,
+        "primary_route": primary_route,
         "plan": tenant.plan,
         "trial_ends_at": tenant.trial_ends_at.isoformat(),
         "palette": tenant.palette,

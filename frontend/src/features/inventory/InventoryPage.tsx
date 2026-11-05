@@ -102,7 +102,7 @@ export default function InventoryPage() {
             className="h-9 w-48 text-xs font-semibold"
             aria-label="تحديد الفرع أو المخزن"
           >
-            {warehouses.map((w) => (
+            {warehouses.map((w: { id: string; name: string }) => (
               <option key={w.id} value={w.id}>
                 {w.name}
               </option>

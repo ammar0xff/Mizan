@@ -57,9 +57,10 @@ export default function TenantScopeLayout() {
           useUiStore.getState().setPalette(resolved.palette.name as ThemePalette);
         }
         if (resolved.active_modules && Array.isArray(resolved.active_modules)) {
-          resolved.active_modules.forEach((modId) => {
-            useModulesStore.getState().toggleModule(modId, true).catch(() => {});
-          });
+          const currentMods = useModulesStore.getState().activeModules;
+          const merged = Array.from(new Set([...currentMods, ...resolved.active_modules]));
+          localStorage.setItem("mizan.active_modules", JSON.stringify(merged));
+          useModulesStore.setState({ activeModules: merged });
         }
       } catch (err) {
         if (!isMounted) return;

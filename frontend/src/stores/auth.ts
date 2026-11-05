@@ -21,6 +21,7 @@ export interface TenantInfo {
   custom_domain?: string | null;
   sector: string;
   business_type?: string;
+  primary_route?: string | null;
   scale: string;
   palette: { name?: string; hue?: number };
   features: string[];
