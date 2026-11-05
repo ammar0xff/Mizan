@@ -25,6 +25,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),
+      "@modules": fileURLToPath(new URL("../modules", import.meta.url)),
     },
   },
   build: {
@@ -41,6 +42,9 @@ export default defineConfig({
     },
   },
   server: {
+    fs: {
+      allow: [".."],
+    },
     port: 5173,
     proxy: {
       "/api": {
