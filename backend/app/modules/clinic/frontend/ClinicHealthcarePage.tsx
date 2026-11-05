@@ -645,7 +645,7 @@ export default function ClinicHealthcarePage() {
       queryClient.invalidateQueries({ queryKey: ["clinic-appointments"] });
       queryClient.invalidateQueries({ queryKey: ["clinic-summary"] });
     } catch {
-      toast("success", "تم تسجيل الموعد بنجاح");
+      toast("info", "تعذر حفظ الموعد على الخادم — عُرض محلياً");
       setIsBookingOpen(false);
     }
   };
@@ -674,7 +674,7 @@ export default function ClinicHealthcarePage() {
       queryClient.invalidateQueries({ queryKey: ["clinic-patients"] });
       queryClient.invalidateQueries({ queryKey: ["clinic-summary"] });
     } catch {
-      toast("success", `تم تسجيل ملف المريض بنجاح برقم: ${mrn}`);
+      toast("info", `تعذر حفظ ملف المريض على الخادم — عُرض محلياً (${mrn})`);
       setIsPatientModalOpen(false);
     }
   };
@@ -703,7 +703,7 @@ export default function ClinicHealthcarePage() {
       setIsEncounterModalOpen(false);
       queryClient.invalidateQueries({ queryKey: ["clinic-encounters"] });
     } catch {
-      toast("success", "تم حفظ الكشف السريري");
+      toast("info", "تعذر حفظ الكشف السريري على الخادم — عُرض محلياً");
       setIsEncounterModalOpen(false);
     }
   };
@@ -727,7 +727,7 @@ export default function ClinicHealthcarePage() {
       setIsRxModalOpen(false);
       queryClient.invalidateQueries({ queryKey: ["clinic-prescriptions"] });
     } catch {
-      toast("success", "تم إصدار الروشتة الطبية");
+      toast("info", "تعذر إصدار الروشتة على الخادم — عُرضت محلياً");
       setIsRxModalOpen(false);
     }
   };
@@ -749,7 +749,7 @@ export default function ClinicHealthcarePage() {
       setIsLabModalOpen(false);
       queryClient.invalidateQueries({ queryKey: ["clinic-labs"] });
     } catch {
-      toast("success", "تم طلب الفحص بنجاح");
+      toast("info", "تعذر إرسال طلب الفحص إلى الخادم — عُرض محلياً");
       setIsLabModalOpen(false);
     }
   };
@@ -761,7 +761,7 @@ export default function ClinicHealthcarePage() {
       toast("success", "تم صرف الروشتة الطبية من الصيدلية بنجاح");
       queryClient.invalidateQueries({ queryKey: ["clinic-prescriptions"] });
     } catch {
-      toast("success", "تم اعتماد صرف الروشتة");
+      toast("info", "تعذر اعتماد صرف الروشتة على الخادم — عُرض محلياً");
     }
   };
 
@@ -780,7 +780,7 @@ export default function ClinicHealthcarePage() {
       queryClient.invalidateQueries({ queryKey: ["clinic-beds"] });
       queryClient.invalidateQueries({ queryKey: ["clinic-summary"] });
     } catch {
-      toast("success", `تم تسكين المريض بالسرير`);
+      toast("info", "تعذر تسكين المريض على الخادم — عُرض محلياً");
       setAdmitBedTarget(null);
     }
   };
@@ -805,7 +805,7 @@ export default function ClinicHealthcarePage() {
       queryClient.invalidateQueries({ queryKey: ["clinic-beds"] });
       queryClient.invalidateQueries({ queryKey: ["clinic-summary"] });
     } catch {
-      toast("success", "تم اعتماد نظافة السرير");
+      toast("info", "تعذر اعتماد تعقيم السرير على الخادم — عُرض محلياً");
     }
   };
 
@@ -823,7 +823,7 @@ export default function ClinicHealthcarePage() {
       setLabResultValue("");
       queryClient.invalidateQueries({ queryKey: ["clinic-labs"] });
     } catch {
-      toast("success", "تم اعتماد النتيجة");
+      toast("info", "تعذر اعتماد نتيجة التحليل على الخادم — عُرضت محلياً");
       setLabResultModalTarget(null);
     }
   };
