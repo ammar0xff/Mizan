@@ -106,10 +106,10 @@ class ModuleRegistry:
                 logger.info("Discovered module: %s v%s", manifest.id, manifest.version)
 
                 # Dynamically load router.py if present
-                router_file = entry / "router.py"
+                router_file = entry / "backend" / "router.py"
                 if router_file.exists():
                     try:
-                        mod = importlib.import_module(f"app.modules.{entry.name}.router")
+                        mod = importlib.import_module(f"app.modules.{entry.name}.backend.router")
                         if hasattr(mod, "router") and isinstance(mod.router, APIRouter):
                             self._routers[manifest.id] = mod.router
                             logger.info("Mounted router for module: %s", manifest.id)

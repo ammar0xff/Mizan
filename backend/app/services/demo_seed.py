@@ -222,7 +222,7 @@ async def seed_demo(db: AsyncSession, tenant_id: uuid.UUID, owner_id: uuid.UUID,
 
     if sector == "healthcare":
         try:
-            from app.modules.healthcare_clinic.router import _seed_clinic_records
+            from app.modules.healthcare_clinic.backend.router import _seed_clinic_records
             await _seed_clinic_records(db, str(tenant_id))
         except Exception:
             pass

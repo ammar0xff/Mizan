@@ -93,7 +93,7 @@ router.include_router(wms_router)
 from app.modules.ecommerce.router import router as ecommerce_router
 router.include_router(ecommerce_router)
 
-from app.modules.healthcare_clinic.router import router as clinic_router
+from app.modules.healthcare_clinic.backend.router import router as clinic_router
 router.include_router(clinic_router)
 
 from app.modules.whatsapp_gateway.router import router as whatsapp_gateway_router
