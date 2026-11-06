@@ -13,12 +13,15 @@ interface UserRow {
 const ALL_PERMS = [
   "pos", "sales", "quotations", "inventory", "operations", "purchases",
   "customers", "reports", "archive", "payroll", "users", "settings", "admin", "shifts", "finance",
+  "clinic", "clinic:view", "clinic:manage", "clinic:doctor", "clinic:nurse",
 ];
 const PERM_LABELS: Record<string, string> = {
   pos: "نقطة البيع", sales: "المبيعات", quotations: "عروض الأسعار", inventory: "المخزون",
   operations: "العمليات", purchases: "المشتريات", customers: "العملاء", reports: "التقارير",
   archive: "الأرشيف", payroll: "الموارد البشرية", users: "المستخدمون", settings: "الإعدادات",
   admin: "إدارة", shifts: "الورديات", finance: "المالية",
+  clinic: "العيادات (وصول)", "clinic:view": "عرض العيادات", "clinic:manage": "إدارة العيادات",
+  "clinic:doctor": "طبيب", "clinic:nurse": "تمريض",
 };
 const ROLES = ["admin", "manager", "cashier", "storekeeper", "accountant"];
 

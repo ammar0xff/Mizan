@@ -15,6 +15,27 @@ from app.models.user import User
 
 async def get_current_tenant_id(user: User = Depends(get_current_user)) -> str:
     return str(user.tenant_id)
+
+
+def _has_clinic_perm(user: User, *perms: str) -> bool:
+    if user.role in ("admin", "manager"):
+        return True
+    user_perms = user.permissions or []
+    if not perms:
+        return "clinic" in user_perms or "clinic:view" in user_perms
+    return any(p in user_perms for p in perms)
+
+
+async def require_clinic_view(current_user: User = Depends(get_current_user)) -> User:
+    if not _has_clinic_perm(current_user):
+        raise HTTPException(status_code=403, detail="لا تملك صلاحية الوصول إلى العيادات")
+    return current_user
+
+
+async def require_clinic_manage(current_user: User = Depends(get_current_user)) -> User:
+    if not _has_clinic_perm(current_user, "clinic:manage", "clinic:doctor", "clinic:nurse"):
+        raise HTTPException(status_code=403, detail="لا تملك صلاحية إدارة بيانات العيادات")
+    return current_user
 from app.modules.clinic.models import (
     ClinicAppointment,
     ClinicEncounter,
@@ -25,7 +46,7 @@ from app.modules.clinic.models import (
     ClinicPrescription,
 )
 
-router = APIRouter(prefix="/clinic", tags=["Healthcare & Clinic ERP"])
+router = APIRouter(prefix="/clinic", tags=["Healthcare & Clinic ERP"], dependencies=[Depends(require_clinic_view)])
 
 
 # Pydantic Schemas
@@ -176,6 +197,7 @@ async def create_patient(
     db: AsyncSession = Depends(get_db),
     tenant_id: str = Depends(get_current_tenant_id),
     current_user: User = Depends(get_current_user),
+    _: User = Depends(require_clinic_manage),
 ):
     patient = ClinicPatient(
         tenant_id=tenant_id,
@@ -216,6 +238,7 @@ async def create_appointment(
     db: AsyncSession = Depends(get_db),
     tenant_id: str = Depends(get_current_tenant_id),
     current_user: User = Depends(get_current_user),
+    _: User = Depends(require_clinic_manage),
 ):
     ref = f"APT-{uuid.uuid4().hex[:6].upper()}"
     q_count = await db.execute(
@@ -254,6 +277,7 @@ async def update_appointment_status(
     db: AsyncSession = Depends(get_db),
     tenant_id: str = Depends(get_current_tenant_id),
     current_user: User = Depends(get_current_user),
+    _: User = Depends(require_clinic_manage),
 ):
     q = await db.execute(
         select(ClinicAppointment).where(ClinicAppointment.id == appt_id, ClinicAppointment.tenant_id == tenant_id)
@@ -285,6 +309,7 @@ async def create_encounter(
     db: AsyncSession = Depends(get_db),
     tenant_id: str = Depends(get_current_tenant_id),
     current_user: User = Depends(get_current_user),
+    _: User = Depends(require_clinic_manage),
 ):
     ref = f"ENC-{uuid.uuid4().hex[:6].upper()}"
     enc = ClinicEncounter(
@@ -329,6 +354,7 @@ async def create_prescription(
     db: AsyncSession = Depends(get_db),
     tenant_id: str = Depends(get_current_tenant_id),
     current_user: User = Depends(get_current_user),
+    _: User = Depends(require_clinic_manage),
 ):
     ref = f"RX-{uuid.uuid4().hex[:6].upper()}"
     rx = ClinicPrescription(
@@ -358,6 +384,7 @@ async def dispense_prescription(
     db: AsyncSession = Depends(get_db),
     tenant_id: str = Depends(get_current_tenant_id),
     current_user: User = Depends(get_current_user),
+    _: User = Depends(require_clinic_manage),
 ):
     q = await db.execute(
         select(ClinicPrescription).where(ClinicPrescription.id == rx_id, ClinicPrescription.tenant_id == tenant_id)
@@ -389,6 +416,7 @@ async def create_lab_order(
     db: AsyncSession = Depends(get_db),
     tenant_id: str = Depends(get_current_tenant_id),
     current_user: User = Depends(get_current_user),
+    _: User = Depends(require_clinic_manage),
 ):
     ref = f"LAB-{uuid.uuid4().hex[:6].upper()}"
     order = ClinicLabOrder(
@@ -418,6 +446,7 @@ async def record_lab_result(
     db: AsyncSession = Depends(get_db),
     tenant_id: str = Depends(get_current_tenant_id),
     current_user: User = Depends(get_current_user),
+    _: User = Depends(require_clinic_manage),
 ):
     q = await db.execute(
         select(ClinicLabOrder).where(ClinicLabOrder.id == order_id, ClinicLabOrder.tenant_id == tenant_id)
@@ -452,6 +481,7 @@ async def admit_bed(
     db: AsyncSession = Depends(get_db),
     tenant_id: str = Depends(get_current_tenant_id),
     current_user: User = Depends(get_current_user),
+    _: User = Depends(require_clinic_manage),
 ):
     q = await db.execute(
         select(ClinicInpatientBed).where(ClinicInpatientBed.id == bed_id, ClinicInpatientBed.tenant_id == tenant_id)
@@ -473,6 +503,7 @@ async def discharge_bed(
     db: AsyncSession = Depends(get_db),
     tenant_id: str = Depends(get_current_tenant_id),
     current_user: User = Depends(get_current_user),
+    _: User = Depends(require_clinic_manage),
 ):
     q = await db.execute(
         select(ClinicInpatientBed).where(ClinicInpatientBed.id == bed_id, ClinicInpatientBed.tenant_id == tenant_id)
@@ -494,6 +525,7 @@ async def clean_bed(
     db: AsyncSession = Depends(get_db),
     tenant_id: str = Depends(get_current_tenant_id),
     current_user: User = Depends(get_current_user),
+    _: User = Depends(require_clinic_manage),
 ):
     q = await db.execute(
         select(ClinicInpatientBed).where(ClinicInpatientBed.id == bed_id, ClinicInpatientBed.tenant_id == tenant_id)
@@ -545,6 +577,7 @@ async def create_invoice(
     db: AsyncSession = Depends(get_db),
     tenant_id: str = Depends(get_current_tenant_id),
     current_user: User = Depends(get_current_user),
+    _: User = Depends(require_clinic_manage),
 ):
     ref = f"INV-{uuid.uuid4().hex[:6].upper()}"
     total = round(sum(float(c.get("amount", 0)) for c in payload.charges), 2)
@@ -578,6 +611,7 @@ async def bill_appointment(
     db: AsyncSession = Depends(get_db),
     tenant_id: str = Depends(get_current_tenant_id),
     current_user: User = Depends(get_current_user),
+    _: User = Depends(require_clinic_manage),
 ):
     q = await db.execute(
         select(ClinicAppointment).where(ClinicAppointment.id == appt_id, ClinicAppointment.tenant_id == tenant_id)
@@ -623,6 +657,7 @@ async def pay_invoice(
     db: AsyncSession = Depends(get_db),
     tenant_id: str = Depends(get_current_tenant_id),
     current_user: User = Depends(get_current_user),
+    _: User = Depends(require_clinic_manage),
 ):
     q = await db.execute(
         select(ClinicInvoice).where(ClinicInvoice.id == inv_id, ClinicInvoice.tenant_id == tenant_id)
@@ -649,6 +684,7 @@ async def discharge_bed_with_bill(
     db: AsyncSession = Depends(get_db),
     tenant_id: str = Depends(get_current_tenant_id),
     current_user: User = Depends(get_current_user),
+    _: User = Depends(require_clinic_manage),
 ):
     q = await db.execute(
         select(ClinicInpatientBed).where(ClinicInpatientBed.id == bed_id, ClinicInpatientBed.tenant_id == tenant_id)
@@ -923,6 +959,7 @@ async def seed_clinic_data(
     db: AsyncSession = Depends(get_db),
     tenant_id: str = Depends(get_current_tenant_id),
     current_user: User = Depends(get_current_user),
+    _: User = Depends(require_clinic_manage),
 ):
     """Seed initial sample clinical, appointment, EMR, and inpatient bed data."""
     seeded = await _seed_clinic_records(db, tenant_id)

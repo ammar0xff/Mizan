@@ -3,7 +3,7 @@ from datetime import datetime
 
 from pydantic import BaseModel, Field, field_validator
 
-_VALID_ROLES = {"admin", "manager", "cashier", "storekeeper", "accountant"}
+_VALID_ROLES = {"admin", "manager", "cashier", "storekeeper", "accountant", "doctor", "nurse", "receptionist", "lab_tech", "pharmacist"}
 
 
 class UserCreate(BaseModel):

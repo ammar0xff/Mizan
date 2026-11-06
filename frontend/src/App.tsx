@@ -191,7 +191,7 @@ function renderErpChildRoutes(includeIndex: boolean = true) {
       <Route path="logistics" element={<Guard perm="" module="logistics"><LogisticsFleetPage /></Guard>} />
       <Route path="wms" element={<Guard perm="" module="wms"><WmsWarehousePage /></Guard>} />
       <Route path="ecommerce" element={<Guard perm="" module="ecommerce"><EcommerceHubPage /></Guard>} />
-      <Route path="clinic" element={<Guard perm="" module="clinic"><ClinicHealthcarePage /></Guard>} />
+      <Route path="clinic" element={<Guard perm="clinic:view" module="clinic"><ClinicHealthcarePage /></Guard>} />
       <Route path="integrations/whatsapp" element={<Guard perm="" module="whatsapp_gateway"><WhatsAppGatewayPage /></Guard>} />
       <Route path="law" element={<Guard perm="" module="law"><LawPracticePage /></Guard>} />
       <Route path="travel" element={<Guard perm="" module="travel"><TravelTourismPage /></Guard>} />
