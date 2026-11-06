@@ -119,8 +119,8 @@ MODULE_CATALOG: dict[str, ModuleManifest] = {
         description="شؤون الطلاب، إدارة المراحل والفصول، تحصيل الأقساط والمصروفات المجدولة، ودفاتر الحضور الأكاديمي.",
         dependencies=["core", "finance"],
     ),
-    "clinic": ModuleManifest(
-        id="clinic",
+    "healthcare_clinic": ModuleManifest(
+        id="healthcare_clinic",
         name="العيادات والمراكز الطبية والمستشفيات",
         name_en="Healthcare & Clinic/Hospital ERP",
         category="healthcare",
@@ -507,7 +507,7 @@ BUSINESS_PRESETS: dict[str, BusinessPreset] = {
         icon="Stethoscope",
         badge="مراكز طبية",
         description="الملفات الطبية الإلكترونية EMR، حجز المواعيد والكشوفات، الروشتات الرقمية e-Rx، الفحوصات، وإدارة غرف وأسِرّة التنويم والمطالبات.",
-        modules=["core", "clinic", "pharmacy", "finance"],
+        modules=["core", "healthcare_clinic", "pharmacy", "finance"],
     ),
     "law_firm": BusinessPreset(
         id="law_firm",

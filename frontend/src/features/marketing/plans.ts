@@ -195,7 +195,7 @@ export const SECTOR_PRIMARY_ROUTES: Record<string, string> = {
 
 export const SECTOR_MODULES_MAP: Record<string, SectorModuleItem[]> = {
   healthcare: [
-    { id: "clinic", label: "ملفات المرضى والتاريخ الطبي (EHR)", desc: "الملفات الطبية الرقمية، التاريخ المرضي، الحساسيات والأمراض المزمنة", badge: "أساسي", defaultChecked: true },
+    { id: "healthcare_clinic", label: "ملفات المرضى والتاريخ الطبي (EHR)", desc: "الملفات الطبية الرقمية، التاريخ المرضي، الحساسيات والأمراض المزمنة", badge: "أساسي", defaultChecked: true },
     { id: "appointments", label: "حجز المواعيد وأرتال الانتظار", desc: "جدولة كشوفات الأطباء، تنظيم شاشات وغرف الانتظار وتذاكر الدور", badge: "أساسي", defaultChecked: true },
     { id: "prescriptions", label: "الروشتات الطبية الإلكترونية (e-Rx)", desc: "كتابة الوصفات والجرعات والتداخلات وإرسالها إلكترونياً للصيدلية", badge: "طبي", defaultChecked: true },
     { id: "insurance_claims", label: "فواتير ومطالبات التأمين الصحي", desc: "حساب نسب التحمل Copay، بوالص التأمين والمطالبات الشهرية", badge: "تأمين", defaultChecked: true },

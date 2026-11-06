@@ -75,7 +75,7 @@ SECTOR_PRIMARY_MODULES: dict[str, list[str]] = {
     "wms_3pl": ["wms", "inventory", "finance"],
     "ecommerce": ["ecommerce", "inventory", "sales", "finance"],
     # Phase 3: Service-Based Systems
-    "healthcare": ["clinic", "pharmacy", "finance", "inventory", "hr"],
+    "healthcare": ["healthcare_clinic", "pharmacy", "finance", "inventory", "hr"],
     "law_firm": ["law", "finance", "hr"],
     "travel": ["travel", "sales", "finance"],
     "hotel": ["hospitality", "restaurant", "finance"],

@@ -394,7 +394,7 @@ export const DOC_SECTIONS: DocSection[] = [
         },
       },
       {
-        slug: "modules/clinic",
+        slug: "modules/healthcare_clinic",
         title: "العيادات والمراكز الطبية",
         titleEn: "Healthcare & Clinic EMR",
         description: "الملفات الطبية الإلكترونية، الروشتات الرقمية، المواعيد، والفحوصات المخبرية.",

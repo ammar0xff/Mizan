@@ -36,7 +36,7 @@ async def require_clinic_manage(current_user: User = Depends(get_current_user)) 
     if not _has_clinic_perm(current_user, "clinic:manage", "clinic:doctor", "clinic:nurse"):
         raise HTTPException(status_code=403, detail="لا تملك صلاحية إدارة بيانات العيادات")
     return current_user
-from app.modules.clinic.models import (
+from app.modules.healthcare_clinic.models import (
     ClinicAppointment,
     ClinicEncounter,
     ClinicInpatientBed,

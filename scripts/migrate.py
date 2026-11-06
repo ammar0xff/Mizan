@@ -1440,6 +1440,18 @@ MIGRATIONS = [
         END
         $fn$;
     """),
+    # v37 — rename module id 'clinic' -> 'healthcare_clinic' (naming convention pilot)
+    ("v37_rename_clinic_module", """
+        UPDATE tenants SET active_modules = (
+            SELECT jsonb_agg(CASE WHEN elem = 'clinic' THEN 'healthcare_clinic' ELSE elem END)
+            FROM jsonb_array_elements_text(active_modules) AS elem
+        ) WHERE active_modules @> '["clinic"]'::jsonb;
+
+        UPDATE store_settings SET value = (
+            SELECT jsonb_agg(CASE WHEN elem = 'clinic' THEN 'healthcare_clinic' ELSE elem END)::text
+            FROM jsonb_array_elements_text(value::jsonb) AS elem
+        ) WHERE key = 'installed_modules' AND value::jsonb @> '["clinic"]'::jsonb;
+    """),
 ]
 
 def ensure_foundation():
