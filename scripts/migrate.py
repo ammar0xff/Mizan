@@ -1354,6 +1354,10 @@ MIGRATIONS = [
         ALTER TABLE users ADD COLUMN IF NOT EXISTS is_superadmin boolean NOT NULL DEFAULT false;
         ALTER TABLE payroll_periods ADD COLUMN IF NOT EXISTS tenant_id uuid;
     """),
+    # v34 — per-user personal settings (separate from global store settings)
+    ("v34_user_settings", """
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS settings jsonb NOT NULL DEFAULT '{}'::jsonb;
+    """),
 ]
 
 def ensure_foundation():

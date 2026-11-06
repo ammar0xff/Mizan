@@ -1,8 +1,9 @@
 import uuid
+from typing import Any
 
 from fastapi import APIRouter, Depends
 from sqlalchemy import delete as sqldelete
-from sqlalchemy import select, text
+from sqlalchemy import select, text, update as sqlupdate
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import NotFoundError
@@ -22,11 +23,21 @@ async def list_managers(db: AsyncSession = Depends(get_db), _=Depends(get_curren
     return [{"id": str(r.id), "full_name": r.full_name} for r in rows.fetchall()]
 
 
-@router.get("/staff")
-async def list_staff(db: AsyncSession = Depends(get_db), _=Depends(get_current_user)):
-    """Any authenticated user can get basic staff list (id + name) for display purposes."""
-    rows = await db.execute(text("SELECT id, full_name, role, is_manager FROM users WHERE is_active = true ORDER BY full_name"))
-    return [{"id": str(r.id), "full_name": r.full_name, "role": r.role, "is_manager": r.is_manager} for r in rows.fetchall()]
+@router.get("/me/settings")
+async def get_my_settings(db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """Per-user personal settings (separate from global store settings)."""
+    return {"settings": current_user.settings or {}}
+
+
+@router.put("/me/settings")
+async def update_my_settings(data: dict[str, Any], db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """Update per-user personal settings (merges into existing)."""
+    incoming = data.get("settings") if isinstance(data.get("settings"), dict) else data
+    merged = {**(current_user.settings or {}), **(incoming or {})}
+    await db.execute(sqlupdate(User).where(User.id == current_user.id).values(settings=merged))
+    await db.commit()
+    current_user.settings = merged
+    return {"settings": merged}
 
 
 @router.get("")

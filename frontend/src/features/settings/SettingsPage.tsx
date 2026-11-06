@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Skeleton } from "@/components/kit/skeleton";
 import { api } from "@/lib/api";
-import { Button, Card, ErrorBox, Input, Spinner } from "@/components/ui";
+import { Button, Card, ErrorBox, Input, Select, Spinner } from "@/components/ui";
 
 interface Settings {
   store_name?: string; store_phone?: string; store_address?: string;
@@ -10,15 +10,28 @@ interface Settings {
   logo_url?: string;
 }
 
+interface UserSettings {
+  theme?: string;
+  language?: string;
+  notify_low_stock?: boolean;
+  notify_sales?: boolean;
+}
+
 export default function SettingsPage() {
   const qc = useQueryClient();
   const q = useQuery({ queryKey: ["settings"], queryFn: () => api.get<Settings>("/settings") });
+  const uq = useQuery({ queryKey: ["user-settings"], queryFn: () => api.get<{ settings: UserSettings }>("/users/me/settings") });
   const [form, setForm] = useState<Settings>({});
   const [dirty, setDirty] = useState(false);
+  const [uform, setUform] = useState<UserSettings>({});
+  const [udirty, setUdirty] = useState(false);
 
   useEffect(() => {
     if (q.data && !dirty) setForm(q.data);
   }, [q.data, dirty]);
+  useEffect(() => {
+    if (uq.data && !udirty) setUform(uq.data.settings ?? {});
+  }, [uq.data, udirty]);
 
   const save = useMutation({
     mutationFn: () =>
@@ -33,6 +46,11 @@ export default function SettingsPage() {
     onSuccess: () => { setDirty(false); qc.invalidateQueries({ queryKey: ["settings"] }); },
   });
 
+  const usave = useMutation({
+    mutationFn: () => api.put("/users/me/settings", { settings: uform }),
+    onSuccess: () => { setUdirty(false); qc.invalidateQueries({ queryKey: ["user-settings"] }); },
+  });
+
   const fields: { key: keyof Settings; label: string; type?: string }[] = [
     { key: "store_name", label: "اسم المتجر" },
     { key: "store_phone", label: "الهاتف" },
@@ -42,7 +60,7 @@ export default function SettingsPage() {
     { key: "low_stock_threshold", label: "حد المخزون المنخفض" },
   ];
 
-  if (q.isLoading) return <div className="flex flex-col gap-2" aria-busy="true" aria-label="جارٍ التحميل">
+  if (q.isLoading || uq.isLoading) return <div className="flex flex-col gap-2" aria-busy="true" aria-label="جارٍ التحميل">
             <Skeleton className="h-10 w-full" />
             {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
           </div>;
@@ -50,7 +68,7 @@ export default function SettingsPage() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-4">
-      <h1 className="text-2xl font-semibold tracking-tight">إعدادات المتجر</h1>
+      <h1 className="text-2xl font-semibold tracking-tight">الإعدادات</h1>
 
       {form.logo_url && (
         <Card className="flex items-center gap-4">
@@ -62,7 +80,9 @@ export default function SettingsPage() {
         </Card>
       )}
 
+      {/* Global / store settings */}
       <Card className="space-y-4">
+        <h2 className="text-lg font-semibold">إعدادات المتجر (عامة لجميع المستخدمين)</h2>
         {fields.map((f) => (
           <div key={f.key}>
             <label className="mb-1 block text-sm font-medium">{f.label}</label>
@@ -96,6 +116,54 @@ export default function SettingsPage() {
         >
           فتح المتجر ↗
         </a>
+      </Card>
+
+      {/* Per-user settings */}
+      <Card className="space-y-4">
+        <h2 className="text-lg font-semibold">إعداداتي (شخصية)</h2>
+        <p className="text-sm text-muted">هذه الإعدادات خاصة بحسابك ولا تؤثر على بقية المستخدمين.</p>
+        <div>
+          <label className="mb-1 block text-sm font-medium">السمة (Theme)</label>
+          <Select value={uform.theme ?? "default"} onChange={(e) => { setUform({ ...uform, theme: e.target.value }); setUdirty(true); }}>
+            <option value="default">افتراضي</option>
+            <option value="dark">داكن</option>
+            <option value="light">فاتح</option>
+          </Select>
+        </div>
+        <div>
+          <label className="mb-1 block text-sm font-medium">اللغة (Language)</label>
+          <Select value={uform.language ?? "ar"} onChange={(e) => { setUform({ ...uform, language: e.target.value }); setUdirty(true); }}>
+            <option value="ar">العربية</option>
+            <option value="en">English</option>
+          </Select>
+        </div>
+        <div className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={uform.notify_low_stock ?? true}
+            onChange={(e) => { setUform({ ...uform, notify_low_stock: e.target.checked }); setUdirty(true); }}
+          />
+          <label className="text-sm">تنبيهات المخزون المنخفض</label>
+        </div>
+        <div className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={uform.notify_sales ?? true}
+            onChange={(e) => { setUform({ ...uform, notify_sales: e.target.checked }); setUdirty(true); }}
+          />
+          <label className="text-sm">تنبيهات المبيعات</label>
+        </div>
+        {usave.isError && <ErrorBox message={(usave.error as Error).message} />}
+        <div className="flex items-center gap-2">
+          <Button disabled={usave.isPending || !udirty} onClick={() => usave.mutate()}>
+            {usave.isPending ? <Spinner /> : udirty ? "حفظ إعداداتي" : "لا توجد تغييرات"}
+          </Button>
+          {udirty && (
+            <Button variant="ghost" onClick={() => { setUform(uq.data?.settings ?? {}); setUdirty(false); }}>
+              تراجع
+            </Button>
+          )}
+        </div>
       </Card>
     </div>
   );
