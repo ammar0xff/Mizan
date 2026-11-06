@@ -75,7 +75,15 @@ export function parseTenantFromLocation(
   hostname: string = window.location.hostname
 ): TenantRouteInfo {
   // 1. Check Subdomain (e.g. monset-gym.mizan.app or monset-gym.localhost)
-  if (hostname && !hostname.match(/^(\d{1,3}\.){3}\d{1,3}$/) && hostname !== "localhost") {
+  // Only treat as a tenant subdomain on the app's own domains, not on hosting
+  // preview URLs (vercel.app, netlify.app, ...) where the first label is a
+  // deploy hash, not a tenant slug.
+  const isAppHost =
+    hostname === "localhost" ||
+    hostname.endsWith(".mizan.app") ||
+    hostname.endsWith(".mizan.com") ||
+    hostname.endsWith(".mizan.io");
+  if (isAppHost && hostname && !hostname.match(/^(\d{1,3}\.){3}\d{1,3}$/)) {
     const parts = hostname.split(".");
     if (parts.length >= 3 || (parts.length === 2 && parts[1] === "localhost")) {
       const sub = parts[0].toLowerCase();
