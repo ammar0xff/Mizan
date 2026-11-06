@@ -19,6 +19,7 @@ from app.modules.clinic.models import (
     ClinicAppointment,
     ClinicEncounter,
     ClinicInpatientBed,
+    ClinicInvoice,
     ClinicLabOrder,
     ClinicPatient,
     ClinicPrescription,
@@ -504,6 +505,171 @@ async def clean_bed(
     await db.commit()
     await db.refresh(bed)
     return bed
+
+
+class InvoiceCreate(BaseModel):
+    patient_id: str
+    patient_name: str
+    appointment_id: str | None = None
+    encounter_ref: str = ""
+    charges: list[dict[str, Any]]  # [{description, amount}]
+    copay_percent: float = 0.0
+
+
+class InvoicePayRequest(BaseModel):
+    amount: float
+    payment_method: str = "cash"
+
+
+class InvoicePayRequest(BaseModel):
+    amount: float
+    payment_method: str = "cash"
+
+
+# ─── Billing / Invoices ─────────────────────────────────────────────────────
+@router.get("/invoices")
+async def list_invoices(
+    db: AsyncSession = Depends(get_db),
+    tenant_id: str = Depends(get_current_tenant_id),
+    current_user: User = Depends(get_current_user),
+):
+    q = await db.execute(
+        select(ClinicInvoice).where(ClinicInvoice.tenant_id == tenant_id).order_by(ClinicInvoice.created_at.desc())
+    )
+    return q.scalars().all()
+
+
+@router.post("/invoices")
+async def create_invoice(
+    payload: InvoiceCreate,
+    db: AsyncSession = Depends(get_db),
+    tenant_id: str = Depends(get_current_tenant_id),
+    current_user: User = Depends(get_current_user),
+):
+    ref = f"INV-{uuid.uuid4().hex[:6].upper()}"
+    total = round(sum(float(c.get("amount", 0)) for c in payload.charges), 2)
+    copay = max(0.0, min(100.0, payload.copay_percent))
+    insurance_amount = round(total * (copay / 100.0), 2)
+    patient_amount = round(total - insurance_amount, 2)
+    inv = ClinicInvoice(
+        tenant_id=tenant_id,
+        invoice_ref=ref,
+        patient_id=payload.patient_id,
+        patient_name=payload.patient_name,
+        appointment_id=payload.appointment_id,
+        encounter_ref=payload.encounter_ref,
+        charges=payload.charges,
+        total=total,
+        copay_percent=copay,
+        insurance_amount=insurance_amount,
+        patient_amount=patient_amount,
+        paid_amount=0.0,
+        status="pending",
+    )
+    db.add(inv)
+    await db.commit()
+    await db.refresh(inv)
+    return inv
+
+
+@router.post("/appointments/{appt_id}/bill")
+async def bill_appointment(
+    appt_id: str,
+    db: AsyncSession = Depends(get_db),
+    tenant_id: str = Depends(get_current_tenant_id),
+    current_user: User = Depends(get_current_user),
+):
+    q = await db.execute(
+        select(ClinicAppointment).where(ClinicAppointment.id == appt_id, ClinicAppointment.tenant_id == tenant_id)
+    )
+    appt = q.scalar_one_or_none()
+    if not appt:
+        raise HTTPException(status_code=404, detail="الموعد الطبي غير موجود")
+    existing = await db.execute(
+        select(ClinicInvoice).where(ClinicInvoice.appointment_id == appt_id, ClinicInvoice.tenant_id == tenant_id)
+    )
+    if existing.scalar_one_or_none():
+        raise HTTPException(status_code=409, detail="تم إصدار فاتورة لهذا الموعد مسبقاً")
+    pq = await db.execute(select(ClinicPatient).where(ClinicPatient.id == appt.patient_id, ClinicPatient.tenant_id == tenant_id))
+    patient = pq.scalar_one_or_none()
+    copay = patient.copay_percent if patient else 0.0
+    total = round(appt.consultation_fee, 2)
+    insurance_amount = round(total * (copay / 100.0), 2)
+    patient_amount = round(total - insurance_amount, 2)
+    inv = ClinicInvoice(
+        tenant_id=tenant_id,
+        invoice_ref=f"INV-{uuid.uuid4().hex[:6].upper()}",
+        patient_id=appt.patient_id,
+        patient_name=appt.patient_name,
+        appointment_id=appt.id,
+        charges=[{"description": f"رسوم كشف — {appt.doctor_name} ({appt.department})", "amount": appt.consultation_fee}],
+        total=total,
+        copay_percent=copay,
+        insurance_amount=insurance_amount,
+        patient_amount=patient_amount,
+        paid_amount=0.0,
+        status="pending",
+    )
+    db.add(inv)
+    await db.commit()
+    await db.refresh(inv)
+    return inv
+
+
+@router.post("/invoices/{inv_id}/pay")
+async def pay_invoice(
+    inv_id: str,
+    payload: InvoicePayRequest,
+    db: AsyncSession = Depends(get_db),
+    tenant_id: str = Depends(get_current_tenant_id),
+    current_user: User = Depends(get_current_user),
+):
+    q = await db.execute(
+        select(ClinicInvoice).where(ClinicInvoice.id == inv_id, ClinicInvoice.tenant_id == tenant_id)
+    )
+    inv = q.scalar_one_or_none()
+    if not inv:
+        raise HTTPException(status_code=404, detail="الفاتورة غير موجودة")
+    inv.paid_amount = round(inv.paid_amount + payload.amount, 2)
+    inv.payment_method = payload.payment_method
+    if inv.paid_amount >= inv.patient_amount - 0.001:
+        inv.status = "paid"
+        from datetime import datetime, UTC
+        inv.paid_at = datetime.now(UTC)
+    elif inv.paid_amount > 0:
+        inv.status = "partial"
+    await db.commit()
+    await db.refresh(inv)
+    return inv
+
+
+@router.post("/beds/{bed_id}/discharge-bill")
+async def discharge_bed_with_bill(
+    bed_id: str,
+    db: AsyncSession = Depends(get_db),
+    tenant_id: str = Depends(get_current_tenant_id),
+    current_user: User = Depends(get_current_user),
+):
+    q = await db.execute(
+        select(ClinicInpatientBed).where(ClinicInpatientBed.id == bed_id, ClinicInpatientBed.tenant_id == tenant_id)
+    )
+    bed = q.scalar_one_or_none()
+    if not bed:
+        raise HTTPException(status_code=404, detail="السرير الطبي غير موجود")
+    from datetime import date, datetime
+    days = 1
+    try:
+        adm = datetime.fromisoformat(bed.admission_date).date()
+        days = max(1, (date.today() - adm).days)
+    except Exception:
+        days = 1
+    charge = round(bed.daily_rate * days, 2)
+    bed.status = "cleaning"
+    bed.current_patient_name = ""
+    bed.admission_date = ""
+    await db.commit()
+    await db.refresh(bed)
+    return {"bed": bed, "billed_days": days, "charge": charge}
 
 
 async def _seed_clinic_records(db: AsyncSession, tenant_id: str) -> bool:

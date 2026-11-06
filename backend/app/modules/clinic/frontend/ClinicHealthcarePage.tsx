@@ -6,6 +6,7 @@ import {
   Bed,
   Calendar,
   CheckCircle2,
+  FileText,
   HeartPulse,
   Hospital,
   Microscope,
@@ -134,6 +135,23 @@ interface ClinicBed {
   status: "available" | "occupied" | "cleaning" | "maintenance";
   current_patient_name: string;
   admission_date: string;
+}
+
+interface ClinicInvoice {
+  id: string;
+  invoice_ref: string;
+  patient_id: string;
+  patient_name: string;
+  appointment_id: string | null;
+  total: number;
+  copay_percent: number;
+  insurance_amount: number;
+  patient_amount: number;
+  paid_amount: number;
+  status: string;
+  payment_method: string;
+  created_at: string;
+  charges: { description: string; amount: number }[];
 }
 
 // ─── Realistic Fallback Demo Data ───────────────────────────────────────────
@@ -457,12 +475,12 @@ export default function ClinicHealthcarePage() {
 
   // Tab routing with URL parameter sync
   const tabParam = searchParams.get("tab");
-  const validTabs = ["appointments", "patients", "emr", "rx_labs", "labs", "beds"];
+  const validTabs = ["appointments", "patients", "emr", "rx_labs", "labs", "beds", "billing"];
   const tab = tabParam && validTabs.includes(tabParam)
-    ? (tabParam === "labs" ? "rx_labs" : (tabParam as "appointments" | "patients" | "emr" | "rx_labs" | "beds"))
+    ? (tabParam === "labs" ? "rx_labs" : (tabParam as "appointments" | "patients" | "emr" | "rx_labs" | "beds" | "billing"))
     : "appointments";
 
-  const handleTabChange = (newTab: "appointments" | "patients" | "emr" | "rx_labs" | "beds") => {
+  const handleTabChange = (newTab: "appointments" | "patients" | "emr" | "rx_labs" | "beds" | "billing") => {
     sound.click();
     setSearchParams({ tab: newTab });
   };
@@ -579,6 +597,11 @@ export default function ClinicHealthcarePage() {
   const { data: bedsData = [] } = useQuery<ClinicBed[]>({
     queryKey: ["clinic-beds"],
     queryFn: () => api.get("/clinic/beds"),
+  });
+
+  const { data: invoicesData = [] } = useQuery<ClinicInvoice[]>({
+    queryKey: ["clinic-invoices"],
+    queryFn: () => api.get("/clinic/invoices"),
   });
 
   // Effective Datasets (use database results if non-empty, otherwise populate realistic demo records)
@@ -806,6 +829,30 @@ export default function ClinicHealthcarePage() {
       queryClient.invalidateQueries({ queryKey: ["clinic-summary"] });
     } catch {
       toast("info", "تعذر اعتماد تعقيم السرير على الخادم — عُرض محلياً");
+    }
+  };
+
+  const handleBillAppointment = async (apptId: string) => {
+    sound.click();
+    try {
+      await api.post(`/clinic/appointments/${apptId}/bill`, {});
+      toast("success", "تم إصدار فاتورة الكشف بنجاح");
+      queryClient.invalidateQueries({ queryKey: ["clinic-invoices"] });
+    } catch (e: any) {
+      toast("info", e?.message || "تعذر إصدار الفاتورة");
+    }
+  };
+
+  const handlePayInvoice = async (inv: ClinicInvoice) => {
+    const amt = window.prompt(`المبلغ للدفع (المتبقي: ${inv.patient_amount - inv.paid_amount}):`, String(inv.patient_amount - inv.paid_amount));
+    if (!amt) return;
+    sound.click();
+    try {
+      await api.post(`/clinic/invoices/${inv.id}/pay`, { amount: parseFloat(amt), payment_method: "cash" });
+      toast("success", "تم تسجيل الدفع بنجاح");
+      queryClient.invalidateQueries({ queryKey: ["clinic-invoices"] });
+    } catch (e: any) {
+      toast("info", e?.message || "تعذر تسجيل الدفع");
     }
   };
 
@@ -1046,6 +1093,18 @@ export default function ClinicHealthcarePage() {
             <Bed className="w-3.5 h-3.5" />
             أقسام وأسِرّة التنويم ({beds.length})
           </button>
+
+          <button
+            onClick={() => handleTabChange("billing")}
+            className={`px-3.5 py-2 text-xs font-semibold border-b-2 transition-all flex items-center gap-1.5 ${
+              tab === "billing"
+                ? "border-teal-500 text-teal-400 bg-teal-500/5 rounded-t-lg"
+                : "border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/30 rounded-t-lg"
+            }`}
+          >
+            <FileText className="w-3.5 h-3.5" />
+            الفواتير والتحصيل ({invoicesData.length})
+          </button>
         </div>
 
         <div className="relative w-full sm:w-64">
@@ -1174,10 +1233,20 @@ export default function ClinicHealthcarePage() {
                         </Button>
                       )}
                       {a.status === "completed" && (
-                        <span className="text-emerald-400 text-xs flex items-center justify-center gap-1">
-                          <CheckCircle2 className="w-3.5 h-3.5" />
-                          تم الكشف
-                        </span>
+                        <div className="flex items-center justify-center gap-1">
+                          <span className="text-emerald-400 text-xs flex items-center justify-center gap-1">
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                            تم الكشف
+                          </span>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleBillAppointment(a.id)}
+                            className="text-[10px] h-7 px-2 border-amber-500/40 text-amber-400 hover:bg-amber-500/10"
+                          >
+                            إصدار فاتورة
+                          </Button>
+                        </div>
                       )}
                     </div>
                   </TableCell>
@@ -1653,6 +1722,68 @@ export default function ClinicHealthcarePage() {
                 </div>
               </Card>
             ))}
+          </div>
+        </div>
+      )}
+
+      {tab === "billing" && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-bold text-sm text-foreground flex items-center gap-2">
+                <FileText className="w-4 h-4 text-teal-400" />
+                فواتير الكشوفات والتحصيل (Billing &amp; Invoices)
+              </h3>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                إصدار فواتير الكشوفات، احتساب نسب التحمل (Copay)، وتسجيل المدفوعات
+              </p>
+            </div>
+          </div>
+
+          <div className="overflow-x-auto rounded-xl border border-border/60">
+            <table className="w-full text-xs">
+              <thead className="bg-muted/40">
+                <tr>
+                  <th className="text-start py-2 px-3">رقم الفاتورة</th>
+                  <th className="text-start py-2 px-3">المريض</th>
+                  <th className="text-start py-2 px-3">المجموع</th>
+                  <th className="text-start py-2 px-3">تحمل التأمين</th>
+                  <th className="text-start py-2 px-3">تحمل المريض</th>
+                  <th className="text-start py-2 px-3">المدفوع</th>
+                  <th className="text-start py-2 px-3">الحالة</th>
+                  <th className="text-start py-2 px-3">إجراء</th>
+                </tr>
+              </thead>
+              <tbody>
+                {invoicesData.map((inv) => (
+                  <tr key={inv.id} className="border-t border-border/40">
+                    <td className="py-2 px-3 font-mono">{inv.invoice_ref}</td>
+                    <td className="py-2 px-3">{inv.patient_name}</td>
+                    <td className="py-2 px-3 font-mono">{moneyEGP(inv.total)}</td>
+                    <td className="py-2 px-3 font-mono">{moneyEGP(inv.insurance_amount)}</td>
+                    <td className="py-2 px-3 font-mono">{moneyEGP(inv.patient_amount)}</td>
+                    <td className="py-2 px-3 font-mono">{moneyEGP(inv.paid_amount)}</td>
+                    <td className="py-2 px-3">
+                      <Badge variant={inv.status === "paid" ? "success" : "outline"}>{inv.status}</Badge>
+                    </td>
+                    <td className="py-2 px-3">
+                      {inv.status !== "paid" && (
+                        <Button size="sm" onClick={() => handlePayInvoice(inv)} className="text-xs h-7">
+                          تسجيل دفع
+                        </Button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+                {invoicesData.length === 0 && (
+                  <tr>
+                    <td colSpan={8} className="py-6 text-center text-muted-foreground">
+                      لا توجد فواتير. استخدم زر "إصدار فاتورة" في تبويب المواعيد.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
       )}

@@ -1,10 +1,12 @@
 """Database models for Healthcare & Clinic/Hospital ERP module (HLT-01..12)."""
 from __future__ import annotations
 
+import json
 import uuid
 from datetime import datetime
 
 from sqlalchemy import Boolean, DateTime, Float, Integer, String, Text, func
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.tenancy import TenantScoped
@@ -126,3 +128,25 @@ class ClinicInpatientBed(TenantScoped, Base):
     current_patient_name: Mapped[str] = mapped_column(String(128), default="")
     admission_date: Mapped[str] = mapped_column(String(32), default="")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class ClinicInvoice(TenantScoped, Base):
+    """Clinic/Hospital billing invoice (consultation, bed, lab, pharmacy charges)."""
+    __tablename__ = "clinic_invoices"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    invoice_ref: Mapped[str] = mapped_column(String(32), index=True)
+    patient_id: Mapped[str] = mapped_column(String(36), index=True)
+    patient_name: Mapped[str] = mapped_column(String(128))
+    appointment_id: Mapped[str | None] = mapped_column(String(36), nullable=True, index=True)
+    encounter_ref: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    charges: Mapped[list] = mapped_column(JSONB, default=list)  # [{description, amount}]
+    total: Mapped[float] = mapped_column(Float, default=0.0)
+    copay_percent: Mapped[float] = mapped_column(Float, default=0.0)
+    insurance_amount: Mapped[float] = mapped_column(Float, default=0.0)
+    patient_amount: Mapped[float] = mapped_column(Float, default=0.0)
+    paid_amount: Mapped[float] = mapped_column(Float, default=0.0)
+    status: Mapped[str] = mapped_column(String(32), default="pending")  # pending, partial, paid
+    payment_method: Mapped[str] = mapped_column(String(32), default="cash")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    paid_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
