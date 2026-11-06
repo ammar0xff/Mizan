@@ -699,13 +699,25 @@ async def get_active_modules(db: AsyncSession) -> list[str]:
     """Retrieve the active module list for the current tenant from settings."""
     result = await db.execute(select(StoreSetting).where(StoreSetting.key == "installed_modules"))
     row = result.scalar_one_or_none()
-    if not row or not row.value:
-        return list(DEFAULT_MODULES)
+    if row and row.value:
+        try:
+            mods = json.loads(row.value)
+            if isinstance(mods, list):
+                # Ensure 'core' is always present
+                return list(set(["core"] + mods))
+        except Exception:
+            pass
+    # Fallback for tenants created before installed_modules was persisted:
+    # use the tenant's active_modules column.
     try:
-        mods = json.loads(row.value)
-        if isinstance(mods, list):
-            # Ensure 'core' is always present
-            return list(set(["core"] + mods))
+        from app.core.tenancy import current_tenant_id
+        from app.models.tenant import Tenant
+
+        tid = current_tenant_id.get()
+        if tid is not None:
+            t = (await db.execute(select(Tenant).where(Tenant.id == tid))).scalar_one_or_none()
+            if t and getattr(t, "active_modules", None):
+                return list(set(["core"] + list(t.active_modules)))
     except Exception:
         pass
     return list(DEFAULT_MODULES)

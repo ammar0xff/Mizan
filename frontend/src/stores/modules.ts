@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { api } from "@/lib/api";
 import { sound } from "@/lib/sound";
+import { useAuth } from "@/stores/auth";
 
 export interface SettingField {
   key: string;
@@ -97,7 +98,18 @@ export const useModulesStore = create<ModulesState>((set, get) => ({
 
   hasModule: (moduleId: string) => {
     if (!moduleId || moduleId === "core") return true;
-    return get().activeModules.includes(moduleId);
+    if (get().activeModules.includes(moduleId)) return true;
+    // Safety net: sector-primary modules should always be available for their sector.
+    try {
+      const tenant = useAuth.getState().tenant;
+      if (tenant?.sector === "healthcare" && moduleId === "clinic") return true;
+      if (tenant?.sector === "restaurant" && (moduleId === "restaurant" || moduleId === "restaurant-pos")) return true;
+      if (tenant?.sector === "pharmacy" && moduleId === "pharmacy") return true;
+      if (tenant?.sector === "school" && moduleId === "school") return true;
+    } catch {
+      // ignore
+    }
+    return false;
   },
 
   applyPreset: async (presetId: string) => {
