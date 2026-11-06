@@ -44,6 +44,12 @@ export default function SignupPage() {
     e.preventDefault();
     setBusy(true);
     setError(null);
+    if (!/^[\w.\-]+$/u.test(username) || username.length < 3) {
+      sound.error();
+      setError(isAr ? "اسم المستخدم يجب أن يكون 3 أحرف على الأقل ويحتوي على أحرف/أرقام/._- فقط (يمكن استخدام العربية)" : "Username must be at least 3 characters (letters, numbers, . _ -).");
+      setBusy(false);
+      return;
+    }
     try {
       sound.click();
       const payload = JSON.stringify({ full_name: fullName, username, password });

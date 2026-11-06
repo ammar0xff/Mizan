@@ -171,7 +171,7 @@ class SignupRequest(BaseModel):
     scale: str
     palette: str = "mizan"
     features: list[str] = Field(default_factory=list)
-    owner_username: str = Field(min_length=3, max_length=64, pattern=r"^[a-zA-Z0-9_.-]+$")
+    owner_username: str = Field(min_length=3, max_length=64, pattern=r"^[\w.\-]+$")
     owner_password: str = Field(min_length=6, max_length=128)
     owner_full_name: str = Field(min_length=2, max_length=128)
     owner_phone: str | None = Field(default=None, max_length=32)
