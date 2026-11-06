@@ -1367,6 +1367,38 @@ MIGRATIONS = [
         ALTER TABLE store_settings ADD PRIMARY KEY (id);
         ALTER TABLE store_settings ADD CONSTRAINT uq_store_settings_tenant_key UNIQUE (tenant_id, key);
     """),
+    # v36 — clinic referential integrity: patient_id FKs (P0 #5)
+    ("v36_clinic_patient_fks", """
+        DELETE FROM clinic_appointments WHERE patient_id NOT IN (SELECT id FROM clinic_patients);
+        DELETE FROM clinic_encounters WHERE patient_id NOT IN (SELECT id FROM clinic_patients);
+        DELETE FROM clinic_prescriptions WHERE patient_id NOT IN (SELECT id FROM clinic_patients);
+        DELETE FROM clinic_lab_orders WHERE patient_id NOT IN (SELECT id FROM clinic_patients);
+        DELETE FROM clinic_invoices WHERE patient_id NOT IN (SELECT id FROM clinic_patients);
+        DELETE FROM clinic_insurance_claims WHERE patient_id NOT IN (SELECT id FROM clinic_patients);
+
+        DO $fn$
+        BEGIN
+            IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_clinic_appointments_patient') THEN
+                ALTER TABLE clinic_appointments ADD CONSTRAINT fk_clinic_appointments_patient FOREIGN KEY (patient_id) REFERENCES clinic_patients(id) ON DELETE CASCADE;
+            END IF;
+            IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_clinic_encounters_patient') THEN
+                ALTER TABLE clinic_encounters ADD CONSTRAINT fk_clinic_encounters_patient FOREIGN KEY (patient_id) REFERENCES clinic_patients(id) ON DELETE CASCADE;
+            END IF;
+            IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_clinic_prescriptions_patient') THEN
+                ALTER TABLE clinic_prescriptions ADD CONSTRAINT fk_clinic_prescriptions_patient FOREIGN KEY (patient_id) REFERENCES clinic_patients(id) ON DELETE CASCADE;
+            END IF;
+            IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_clinic_lab_orders_patient') THEN
+                ALTER TABLE clinic_lab_orders ADD CONSTRAINT fk_clinic_lab_orders_patient FOREIGN KEY (patient_id) REFERENCES clinic_patients(id) ON DELETE CASCADE;
+            END IF;
+            IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_clinic_invoices_patient') THEN
+                ALTER TABLE clinic_invoices ADD CONSTRAINT fk_clinic_invoices_patient FOREIGN KEY (patient_id) REFERENCES clinic_patients(id) ON DELETE CASCADE;
+            END IF;
+            IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_clinic_claims_patient') THEN
+                ALTER TABLE clinic_insurance_claims ADD CONSTRAINT fk_clinic_claims_patient FOREIGN KEY (patient_id) REFERENCES clinic_patients(id) ON DELETE CASCADE;
+            END IF;
+        END
+        $fn$;
+    """),
 ]
 
 def ensure_foundation():

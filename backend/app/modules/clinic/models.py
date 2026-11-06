@@ -5,7 +5,7 @@ import json
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, Float, Integer, String, Text, func
+from sqlalchemy import Boolean, DateTime, Float, Integer, ForeignKey, String, Text, func
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -39,7 +39,7 @@ class ClinicAppointment(TenantScoped, Base):
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     appointment_ref: Mapped[str] = mapped_column(String(32), index=True)
-    patient_id: Mapped[str] = mapped_column(String(36), index=True)
+    patient_id: Mapped[str] = mapped_column(String(36), ForeignKey("clinic_patients.id", ondelete="CASCADE"), index=True)
     patient_name: Mapped[str] = mapped_column(String(128))
     doctor_name: Mapped[str] = mapped_column(String(128), index=True)
     department: Mapped[str] = mapped_column(String(64))  # باطنة، أطفال، عظام، جراحة، جلدية
@@ -58,7 +58,7 @@ class ClinicEncounter(TenantScoped, Base):
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     encounter_ref: Mapped[str] = mapped_column(String(32), index=True)
-    patient_id: Mapped[str] = mapped_column(String(36), index=True)
+    patient_id: Mapped[str] = mapped_column(String(36), ForeignKey("clinic_patients.id", ondelete="CASCADE"), index=True)
     patient_name: Mapped[str] = mapped_column(String(128))
     doctor_name: Mapped[str] = mapped_column(String(128))
     department: Mapped[str] = mapped_column(String(64))
@@ -82,7 +82,7 @@ class ClinicPrescription(TenantScoped, Base):
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     rx_ref: Mapped[str] = mapped_column(String(32), index=True)
     encounter_ref: Mapped[str] = mapped_column(String(32), default="", index=True)
-    patient_id: Mapped[str] = mapped_column(String(36), index=True)
+    patient_id: Mapped[str] = mapped_column(String(36), ForeignKey("clinic_patients.id", ondelete="CASCADE"), index=True)
     patient_name: Mapped[str] = mapped_column(String(128))
     doctor_name: Mapped[str] = mapped_column(String(128))
     issue_date: Mapped[str] = mapped_column(String(32))
@@ -101,7 +101,7 @@ class ClinicLabOrder(TenantScoped, Base):
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     order_ref: Mapped[str] = mapped_column(String(32), index=True)
-    patient_id: Mapped[str] = mapped_column(String(36), index=True)
+    patient_id: Mapped[str] = mapped_column(String(36), ForeignKey("clinic_patients.id", ondelete="CASCADE"), index=True)
     patient_name: Mapped[str] = mapped_column(String(128))
     doctor_name: Mapped[str] = mapped_column(String(128))
     test_name: Mapped[str] = mapped_column(String(128))  # CBC, صورة دم كاملة, أشعة سينية الصدر
@@ -136,7 +136,7 @@ class ClinicInvoice(TenantScoped, Base):
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     invoice_ref: Mapped[str] = mapped_column(String(32), index=True)
-    patient_id: Mapped[str] = mapped_column(String(36), index=True)
+    patient_id: Mapped[str] = mapped_column(String(36), ForeignKey("clinic_patients.id", ondelete="CASCADE"), index=True)
     patient_name: Mapped[str] = mapped_column(String(128))
     appointment_id: Mapped[str | None] = mapped_column(String(36), nullable=True, index=True)
     encounter_ref: Mapped[str | None] = mapped_column(String(32), nullable=True)
@@ -158,7 +158,7 @@ class ClinicInsuranceClaim(TenantScoped, Base):
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     claim_ref: Mapped[str] = mapped_column(String(32), index=True)
-    patient_id: Mapped[str] = mapped_column(String(36), index=True)
+    patient_id: Mapped[str] = mapped_column(String(36), ForeignKey("clinic_patients.id", ondelete="CASCADE"), index=True)
     patient_name: Mapped[str] = mapped_column(String(128))
     invoice_id: Mapped[str | None] = mapped_column(String(36), nullable=True, index=True)
     insurance_provider: Mapped[str] = mapped_column(String(128))
