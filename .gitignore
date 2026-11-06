@@ -26,6 +26,8 @@ Thumbs.db
 
 # Temp deploy scripts
 _*.py
+!**/backend/__init__.py
+!backend/__init__.py
 
 # Tauri update private key (NEVER commit)
 .tauri-update-key
