@@ -13,6 +13,7 @@ import {
   Pill,
   Plus,
   Search,
+  ShieldCheck,
   UserPlus,
   Users,
   X,
@@ -152,6 +153,22 @@ interface ClinicInvoice {
   payment_method: string;
   created_at: string;
   charges: { description: string; amount: number }[];
+}
+
+interface ClinicInsuranceClaim {
+  id: string;
+  claim_ref: string;
+  patient_id: string;
+  patient_name: string;
+  invoice_id: string | null;
+  insurance_provider: string;
+  policy_no: string;
+  copay_percent: number;
+  claimed_amount: number;
+  approved_amount: number;
+  status: string;
+  submitted_at: string;
+  notes: string;
 }
 
 // ─── Realistic Fallback Demo Data ───────────────────────────────────────────
@@ -475,12 +492,12 @@ export default function ClinicHealthcarePage() {
 
   // Tab routing with URL parameter sync
   const tabParam = searchParams.get("tab");
-  const validTabs = ["appointments", "patients", "emr", "rx_labs", "labs", "beds", "billing"];
+  const validTabs = ["appointments", "patients", "emr", "rx_labs", "labs", "beds", "billing", "claims"];
   const tab = tabParam && validTabs.includes(tabParam)
-    ? (tabParam === "labs" ? "rx_labs" : (tabParam as "appointments" | "patients" | "emr" | "rx_labs" | "beds" | "billing"))
+    ? (tabParam === "labs" ? "rx_labs" : (tabParam as "appointments" | "patients" | "emr" | "rx_labs" | "beds" | "billing" | "claims"))
     : "appointments";
 
-  const handleTabChange = (newTab: "appointments" | "patients" | "emr" | "rx_labs" | "beds" | "billing") => {
+  const handleTabChange = (newTab: "appointments" | "patients" | "emr" | "rx_labs" | "beds" | "billing" | "claims") => {
     sound.click();
     setSearchParams({ tab: newTab });
   };
@@ -602,6 +619,11 @@ export default function ClinicHealthcarePage() {
   const { data: invoicesData = [] } = useQuery<ClinicInvoice[]>({
     queryKey: ["clinic-invoices"],
     queryFn: () => api.get("/clinic/invoices"),
+  });
+
+  const { data: claimsData = [] } = useQuery<ClinicInsuranceClaim[]>({
+    queryKey: ["clinic-claims"],
+    queryFn: () => api.get("/clinic/claims"),
   });
 
   // Effective Datasets (use database results if non-empty, otherwise populate realistic demo records)
@@ -1104,6 +1126,18 @@ export default function ClinicHealthcarePage() {
           >
             <FileText className="w-3.5 h-3.5" />
             الفواتير والتحصيل ({invoicesData.length})
+          </button>
+
+          <button
+            onClick={() => handleTabChange("claims")}
+            className={`px-3.5 py-2 text-xs font-semibold border-b-2 transition-all flex items-center gap-1.5 ${
+              tab === "claims"
+                ? "border-teal-500 text-teal-400 bg-teal-500/5 rounded-t-lg"
+                : "border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/30 rounded-t-lg"
+            }`}
+          >
+            <ShieldCheck className="w-3.5 h-3.5" />
+            مطالبات التأمين ({claimsData.length})
           </button>
         </div>
 
@@ -1779,6 +1813,58 @@ export default function ClinicHealthcarePage() {
                   <tr>
                     <td colSpan={8} className="py-6 text-center text-muted-foreground">
                       لا توجد فواتير. استخدم زر "إصدار فاتورة" في تبويب المواعيد.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {tab === "claims" && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-bold text-sm text-foreground flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-teal-400" />
+                مطالبات التأمين (Insurance Claims)
+              </h3>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                تقديم ومتابعة مطالبات شركات التأمين (Copay، موافقة، رفض، صرف)
+              </p>
+            </div>
+          </div>
+
+          <div className="overflow-x-auto rounded-xl border border-border/60">
+            <table className="w-full text-xs">
+              <thead className="bg-muted/40">
+                <tr>
+                  <th className="text-start py-2 px-3">رقم المطالبة</th>
+                  <th className="text-start py-2 px-3">المريض</th>
+                  <th className="text-start py-2 px-3">شركة التأمين</th>
+                  <th className="text-start py-2 px-3">المبلغ المطالب</th>
+                  <th className="text-start py-2 px-3">المعتمد</th>
+                  <th className="text-start py-2 px-3">الحالة</th>
+                </tr>
+              </thead>
+              <tbody>
+                {claimsData.map((c) => (
+                  <tr key={c.id} className="border-t border-border/40">
+                    <td className="py-2 px-3 font-mono">{c.claim_ref}</td>
+                    <td className="py-2 px-3">{c.patient_name}</td>
+                    <td className="py-2 px-3">{c.insurance_provider}</td>
+                    <td className="py-2 px-3 font-mono">{moneyEGP(c.claimed_amount)}</td>
+                    <td className="py-2 px-3 font-mono">{moneyEGP(c.approved_amount)}</td>
+                    <td className="py-2 px-3">
+                      <Badge variant={c.status === "approved" || c.status === "paid" ? "success" : c.status === "rejected" ? "destructive" : "outline"}>{c.status}</Badge>
+                    </td>
+                  </tr>
+                ))}
+                {claimsData.length === 0 && (
+                  <tr>
+                    <td colSpan={6} className="py-6 text-center text-muted-foreground">
+                      لا توجد مطالبات تأمين بعد.
                     </td>
                   </tr>
                 )}

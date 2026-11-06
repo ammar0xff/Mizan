@@ -150,3 +150,23 @@ class ClinicInvoice(TenantScoped, Base):
     payment_method: Mapped[str] = mapped_column(String(32), default="cash")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     paid_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+class ClinicInsuranceClaim(TenantScoped, Base):
+    """Insurance claim submission & tracking for clinic services."""
+    __tablename__ = "clinic_insurance_claims"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    claim_ref: Mapped[str] = mapped_column(String(32), index=True)
+    patient_id: Mapped[str] = mapped_column(String(36), index=True)
+    patient_name: Mapped[str] = mapped_column(String(128))
+    invoice_id: Mapped[str | None] = mapped_column(String(36), nullable=True, index=True)
+    insurance_provider: Mapped[str] = mapped_column(String(128))
+    policy_no: Mapped[str] = mapped_column(String(64), default="N/A")
+    copay_percent: Mapped[float] = mapped_column(Float, default=0.0)
+    claimed_amount: Mapped[float] = mapped_column(Float, default=0.0)
+    approved_amount: Mapped[float] = mapped_column(Float, default=0.0)
+    status: Mapped[str] = mapped_column(String(32), default="submitted")  # submitted, approved, rejected, paid
+    submitted_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    resolved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    notes: Mapped[str] = mapped_column(Text, default="")

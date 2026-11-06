@@ -40,6 +40,7 @@ from app.modules.clinic.models import (
     ClinicAppointment,
     ClinicEncounter,
     ClinicInpatientBed,
+    ClinicInsuranceClaim,
     ClinicInvoice,
     ClinicLabOrder,
     ClinicPatient,
@@ -393,6 +394,47 @@ async def dispense_prescription(
     if not rx:
         raise HTTPException(status_code=404, detail="الروشتة الطبية غير موجودة")
     rx.status = "dispensed"
+
+    # Best-effort link to the pharmacy module: if a matching drug exists,
+    # deduct stock via FEFO and record a pharmacy prescription + copay.
+    try:
+        from app.modules.pharmacy.models import PharmacyBatch, PharmacyDrug, PharmacyPrescription
+        from datetime import date, datetime
+        import uuid as _u
+
+        drug = (await db.execute(
+            select(PharmacyDrug).where(PharmacyDrug.tenant_id == tenant_id, PharmacyDrug.name.ilike(rx.medication_name))
+        )).scalars().first()
+        if drug is not None:
+            today_str = date.today().isoformat()
+            batch = (await db.execute(
+                select(PharmacyBatch).where(
+                    PharmacyBatch.drug_id == drug.id,
+                    PharmacyBatch.quantity_on_hand >= 1,
+                    PharmacyBatch.expiry_date >= today_str,
+                ).order_by(PharmacyBatch.expiry_date.asc()).limit(1)
+            )).scalar_one_or_none()
+            if batch is not None:
+                batch.quantity_on_hand -= 1
+                pharm_rx = PharmacyPrescription(
+                    rx_number=f"RX-{datetime.now().strftime('%Y%m%d')}-{_u.uuid4().hex[:4].upper()}",
+                    patient_name=rx.patient_name,
+                    patient_phone="",
+                    doctor_name=rx.doctor_name,
+                    doctor_license="",
+                    diagnosis="",
+                    insurance_company="",
+                    copay_percentage=0.0,
+                    total_amount=float(drug.unit_price),
+                    patient_paid=float(drug.unit_price),
+                    insurance_covered=0.0,
+                    status="dispensed",
+                )
+                db.add(pharm_rx)
+    except Exception:
+        # Pharmacy module not available or no matching drug — keep clinic dispense working.
+        pass
+
     await db.commit()
     await db.refresh(rx)
     return rx
@@ -706,6 +748,94 @@ async def discharge_bed_with_bill(
     await db.commit()
     await db.refresh(bed)
     return {"bed": bed, "billed_days": days, "charge": charge}
+
+
+class ClaimCreate(BaseModel):
+    patient_id: str
+    patient_name: str
+    invoice_id: str | None = None
+    insurance_provider: str
+    policy_no: str = "N/A"
+    copay_percent: float = 0.0
+    claimed_amount: float
+    notes: str = ""
+
+
+class ClaimStatusUpdate(BaseModel):
+    status: str  # submitted, approved, rejected, paid
+    approved_amount: float | None = None
+    notes: str = ""
+
+
+# ─── Insurance Claims ────────────────────────────────────────────────────────
+@router.get("/claims")
+async def list_claims(
+    db: AsyncSession = Depends(get_db),
+    tenant_id: str = Depends(get_current_tenant_id),
+    current_user: User = Depends(get_current_user),
+    _: User = Depends(require_clinic_manage),
+):
+    q = await db.execute(
+        select(ClinicInsuranceClaim).where(ClinicInsuranceClaim.tenant_id == tenant_id).order_by(ClinicInsuranceClaim.submitted_at.desc())
+    )
+    return q.scalars().all()
+
+
+@router.post("/claims")
+async def create_claim(
+    payload: ClaimCreate,
+    db: AsyncSession = Depends(get_db),
+    tenant_id: str = Depends(get_current_tenant_id),
+    current_user: User = Depends(get_current_user),
+    _: User = Depends(require_clinic_manage),
+):
+    ref = f"CLM-{uuid.uuid4().hex[:6].upper()}"
+    claim = ClinicInsuranceClaim(
+        tenant_id=tenant_id,
+        claim_ref=ref,
+        patient_id=payload.patient_id,
+        patient_name=payload.patient_name,
+        invoice_id=payload.invoice_id,
+        insurance_provider=payload.insurance_provider,
+        policy_no=payload.policy_no,
+        copay_percent=payload.copay_percent,
+        claimed_amount=payload.claimed_amount,
+        approved_amount=0.0,
+        status="submitted",
+        notes=payload.notes,
+    )
+    db.add(claim)
+    await db.commit()
+    await db.refresh(claim)
+    return claim
+
+
+@router.post("/claims/{claim_id}/status")
+async def update_claim_status(
+    claim_id: str,
+    payload: ClaimStatusUpdate,
+    db: AsyncSession = Depends(get_db),
+    tenant_id: str = Depends(get_current_tenant_id),
+    current_user: User = Depends(get_current_user),
+    _: User = Depends(require_clinic_manage),
+):
+    q = await db.execute(
+        select(ClinicInsuranceClaim).where(ClinicInsuranceClaim.id == claim_id, ClinicInsuranceClaim.tenant_id == tenant_id)
+    )
+    claim = q.scalar_one_or_none()
+    if not claim:
+        raise HTTPException(status_code=404, detail="المطالبة غير موجودة")
+    claim.status = payload.status
+    if payload.approved_amount is not None:
+        claim.approved_amount = payload.approved_amount
+    if payload.notes:
+        claim.notes = payload.notes
+    if payload.status in ("approved", "rejected", "paid"):
+        from datetime import datetime, UTC
+        claim.resolved_at = datetime.now(UTC)
+    await db.commit()
+    await db.refresh(claim)
+    return claim
 
 
 async def _seed_clinic_records(db: AsyncSession, tenant_id: str) -> bool:
