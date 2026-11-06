@@ -1369,6 +1369,47 @@ MIGRATIONS = [
     """),
     # v36 — clinic referential integrity: patient_id FKs (P0 #5)
     ("v36_clinic_patient_fks", """
+        -- Ensure new tables exist (create_all is disabled on Vercel)
+        CREATE TABLE IF NOT EXISTS clinic_invoices (
+            id varchar(36) PRIMARY KEY DEFAULT gen_random_uuid()::text,
+            tenant_id uuid NOT NULL,
+            invoice_ref varchar(32) NOT NULL,
+            patient_id varchar(36) NOT NULL,
+            patient_name varchar(128) NOT NULL,
+            appointment_id varchar(36),
+            encounter_ref varchar(32),
+            charges jsonb NOT NULL DEFAULT '[]'::jsonb,
+            total double precision NOT NULL DEFAULT 0,
+            copay_percent double precision NOT NULL DEFAULT 0,
+            insurance_amount double precision NOT NULL DEFAULT 0,
+            patient_amount double precision NOT NULL DEFAULT 0,
+            paid_amount double precision NOT NULL DEFAULT 0,
+            status varchar(32) NOT NULL DEFAULT 'pending',
+            payment_method varchar(32) NOT NULL DEFAULT 'cash',
+            created_at timestamptz NOT NULL DEFAULT now(),
+            paid_at timestamptz
+        );
+        CREATE TABLE IF NOT EXISTS clinic_insurance_claims (
+            id varchar(36) PRIMARY KEY DEFAULT gen_random_uuid()::text,
+            tenant_id uuid NOT NULL,
+            claim_ref varchar(32) NOT NULL,
+            patient_id varchar(36) NOT NULL,
+            patient_name varchar(128) NOT NULL,
+            invoice_id varchar(36),
+            insurance_provider varchar(128) NOT NULL,
+            policy_no varchar(64) NOT NULL DEFAULT 'N/A',
+            copay_percent double precision NOT NULL DEFAULT 0,
+            claimed_amount double precision NOT NULL DEFAULT 0,
+            approved_amount double precision NOT NULL DEFAULT 0,
+            status varchar(32) NOT NULL DEFAULT 'submitted',
+            submitted_at timestamptz NOT NULL DEFAULT now(),
+            resolved_at timestamptz,
+            notes text NOT NULL DEFAULT ''
+        );
+        -- RLS + tenant_id default
+        ALTER TABLE clinic_invoices ALTER COLUMN tenant_id SET DEFAULT NULLIF(current_setting('app.tenant_id', true), '')::uuid;
+        ALTER TABLE clinic_insurance_claims ALTER COLUMN tenant_id SET DEFAULT NULLIF(current_setting('app.tenant_id', true), '')::uuid;
+
         DELETE FROM clinic_appointments WHERE patient_id NOT IN (SELECT id FROM clinic_patients);
         DELETE FROM clinic_encounters WHERE patient_id NOT IN (SELECT id FROM clinic_patients);
         DELETE FROM clinic_prescriptions WHERE patient_id NOT IN (SELECT id FROM clinic_patients);
