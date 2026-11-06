@@ -158,11 +158,11 @@ The clinic module stores money-related fields but **never posts them to the fina
 ## 12. Gaps vs. a Real Hospital (Prioritized)
 
 ### P0 — Must fix before real use
-1. **Billing integration:** consultation fees, bed charges (daily_rate × days), pharmacy dispensing, and lab tests must generate invoices/sales and post to finance. Currently money fields are decorative.
-2. **Permission enforcement:** add clinical roles (doctor, nurse, receptionist, lab_tech, pharmacist, billing) to `ROLE_LABELS`/`ROLE_DEFAULT_PERMISSIONS` and `_VALID_ROLES`; enforce `clinic:*` perms in router endpoints and frontend Guard.
-3. **Pharmacy dispensing link:** dispense should deduct inventory and create a sale line.
-4. **Insurance claims:** create a claim entity, copay calculation, submission status.
-5. **Referential integrity:** patient_id should be a FK; bed.current_patient should reference patient.
+1. **Billing integration:** consultation fees, bed charges (daily_rate × days), pharmacy dispensing, and lab tests must generate invoices/sales and post to finance. Currently money fields are decorative. ✅ **DONE** (commit `fa0aae0`).
+2. **Permission enforcement:** add clinical roles (doctor, nurse, receptionist, lab_tech, pharmacist, billing) to `ROLE_LABELS`/`ROLE_DEFAULT_PERMISSIONS` and `_VALID_ROLES`; enforce `clinic:*` perms in router endpoints and frontend Guard. ✅ **DONE** (commit `cee7093`).
+3. **Pharmacy dispensing link:** dispense should deduct inventory and create a sale line. ⚠️ **PARTIAL** (commit `7e45ba5` — FEFO deduction + PharmacyPrescription; full sale-line pending).
+4. **Insurance claims:** create a claim entity, copay calculation, submission status. ✅ **DONE** (commit `7e45ba5`).
+5. **Referential integrity:** patient_id should be a FK; bed.current_patient should reference patient. ✅ **DONE** (commit `7772665`).
 
 ### P1 — Important
 6. Appointment reminders, no-show tracking, reschedule/cancel.
