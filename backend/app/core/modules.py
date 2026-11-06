@@ -694,6 +694,20 @@ BUSINESS_PRESETS: dict[str, BusinessPreset] = {
 DEFAULT_MODULES = ["core", "inventory", "pos", "finance", "hr"]
 DEFAULT_PRESET = "retail"
 
+SECTOR_TO_PRESET: dict[str, str] = {
+    "retail": "retail", "restaurant": "restaurant", "pharmacy": "pharmacy",
+    "consulting": "services", "school": "school", "wholesale": "wholesale",
+    "logistics": "logistics", "wms_3pl": "wms_3pl", "ecommerce": "ecommerce",
+    "healthcare": "healthcare", "law_firm": "services", "travel": "travel_agency",
+    "hotel": "hospitality_hotel", "gym": "gym_sports", "salon": "salon_spa",
+    "agency": "creative_agency", "field_service": "field_service",
+    "discrete_mfg": "mfg", "food_mfg": "mfg", "pharma_mfg": "mfg", "printing": "prn",
+    "construction": "cst", "real_estate": "rec", "agriculture": "agr", "energy": "services",
+    "banking": "bnk", "insurance": "ins", "government": "gov", "entertainment": "ent",
+    "oil_gas": "oil", "services": "services", "plumbing": "retail", "electrical": "retail",
+    "tiles": "retail", "paint": "retail",
+}
+
 
 async def get_active_modules(db: AsyncSession) -> list[str]:
     """Retrieve the active module list for the current tenant from settings."""
@@ -727,7 +741,21 @@ async def get_active_preset(db: AsyncSession) -> str:
     """Retrieve active preset identifier."""
     result = await db.execute(select(StoreSetting).where(StoreSetting.key == "active_business_preset"))
     row = result.scalar_one_or_none()
-    return row.value if row and row.value else DEFAULT_PRESET
+    if row and row.value:
+        return row.value
+    # Fallback for tenants created before preset was persisted: derive from sector.
+    try:
+        from app.core.tenancy import current_tenant_id
+        from app.models.tenant import Tenant
+
+        tid = current_tenant_id.get()
+        if tid is not None:
+            t = (await db.execute(select(Tenant).where(Tenant.id == tid))).scalar_one_or_none()
+            if t and getattr(t, "sector", None):
+                return SECTOR_TO_PRESET.get(t.sector, "retail")
+    except Exception:
+        pass
+    return DEFAULT_PRESET
 
 
 async def set_active_modules(db: AsyncSession, modules: list[str], preset_id: str | None = None) -> None:

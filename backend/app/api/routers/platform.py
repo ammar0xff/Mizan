@@ -19,7 +19,7 @@ from app.core.config import settings
 from app.core.ratelimit import RateLimiter
 from app.core.security import hash_password
 from app.core.tenancy import bind_tenant, current_tenant_id
-from app.core.modules import set_active_modules
+from app.core.modules import SECTOR_TO_PRESET, set_active_modules
 from app.db.base import get_db
 from app.dependencies import get_current_user
 from app.models.tenant import Subscription, Tenant
@@ -218,6 +218,7 @@ async def signup(data: SignupRequest, request: Request, db: AsyncSession = Depen
     requested_features = data.features or []
     all_active = list(dict.fromkeys(base_mods + requested_features))
     primary_route = SECTOR_PRIMARY_ROUTES.get(data.sector, "/pos")
+    preset_id = SECTOR_TO_PRESET.get(data.sector)
 
     tenant = Tenant(
         id=uuid.uuid4(),
@@ -251,8 +252,8 @@ async def signup(data: SignupRequest, request: Request, db: AsyncSession = Depen
 
     await seed_demo(db, tenant.id, owner.id, data.sector, data.scale, all_active)
 
-    # Persist the sector's active modules so guards (require_module) resolve
-    await set_active_modules(db, all_active)
+    # Persist the sector's active modules and preset so guards + Modules page resolve
+    await set_active_modules(db, all_active, preset_id=preset_id)
 
     await db.commit()
 
