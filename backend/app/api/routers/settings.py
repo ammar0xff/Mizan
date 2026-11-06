@@ -65,7 +65,7 @@ async def upload_logo(file: UploadFile = File(...), db: AsyncSession = Depends(g
     except Exception:
         raise HTTPException(400, "الملف ليس صورة صالحة") from None
     url = f"/uploads/logo{ext}"
-    await db.execute(text("UPDATE store_settings SET value=:v WHERE key='logo_url'"), {"v": url})
+    await _upsert_setting(db, "logo_url", url)
     await db.commit()
     return {"logo_url": url}
 

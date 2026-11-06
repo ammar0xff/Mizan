@@ -1358,6 +1358,15 @@ MIGRATIONS = [
     ("v34_user_settings", """
         ALTER TABLE users ADD COLUMN IF NOT EXISTS settings jsonb NOT NULL DEFAULT '{}'::jsonb;
     """),
+    # v35 — store_settings: per-tenant primary key (was global key PK, broke multi-tenancy)
+    ("v35_store_settings_per_tenant_pk", """
+        ALTER TABLE store_settings ADD COLUMN IF NOT EXISTS id uuid DEFAULT gen_random_uuid();
+        UPDATE store_settings SET id = gen_random_uuid() WHERE id IS NULL;
+        ALTER TABLE store_settings ALTER COLUMN id SET NOT NULL;
+        ALTER TABLE store_settings DROP CONSTRAINT IF EXISTS store_settings_pkey;
+        ALTER TABLE store_settings ADD PRIMARY KEY (id);
+        ALTER TABLE store_settings ADD CONSTRAINT uq_store_settings_tenant_key UNIQUE (tenant_id, key);
+    """),
 ]
 
 def ensure_foundation():
