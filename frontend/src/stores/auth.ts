@@ -113,7 +113,6 @@ export const useAuth = create<AuthState>((set, get) => ({
     const u = get().user;
     if (!u) return false;
     if (u.is_superadmin) return true;
-    if (u.role === "admin" || u.role === "manager") return true;
     if (!perm) return true;
     const perms = Array.isArray(u.permissions) ? u.permissions : [];
     return perms.includes("*") || perms.includes(perm);
