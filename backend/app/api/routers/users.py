@@ -29,6 +29,20 @@ async def get_my_settings(db: AsyncSession = Depends(get_db), current_user: User
     return {"settings": current_user.settings or {}}
 
 
+@router.get("/staff")
+async def list_staff(db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """List active users in the current tenant for staff selectors."""
+    rows = await db.execute(
+        select(User.id, User.full_name, User.role)
+        .where(User.tenant_id == current_user.tenant_id, User.is_active.is_(True))
+        .order_by(User.full_name)
+    )
+    return [
+        {"id": str(row.id), "full_name": row.full_name, "role": row.role}
+        for row in rows
+    ]
+
+
 @router.put("/me/settings")
 async def update_my_settings(data: dict[str, Any], db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
     """Update per-user personal settings (merges into existing)."""
